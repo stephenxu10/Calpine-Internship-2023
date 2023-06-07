@@ -7,7 +7,7 @@ import pandas as pd
 # Global parameters & variables
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 path_base = "./../../06 - CRR/Monthly"
-output_path = "./data/combined_data.csv"  # Relative file path of the outputted CSV.
+output_path = "./data/final_combined.csv"  # Relative file path of the outputted CSV.
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2019
@@ -54,15 +54,31 @@ def replaceCSV(csv_file: str, excel_file: str):
 
     df_lines_sorted = df_lines.sort_values(by=['CRR_Tag']).values
     df_autos_sorted = df_autos.sort_values(by=['CRR Name']).values
-    with open(csv_file, 'r') as csv_file:
-        reader = csv.reader(csv_file)
-        next(reader)
-
-    print(df_lines_sorted[bisect.bisect_left(df_lines_sorted, '241 WHITNEY8 138 243 WHITNEYSW 69 2', key=getFirstColValue)][1])
-    return None
 
 
-"""
+    df_csv = pd.read_csv(csv_file)
+    operationNames = []
+
+    for index, row in df_csv.iterrows():
+        deviceName = row['DeviceName']
+        deviceType = row['DeviceType']
+
+        if deviceType == "Line":
+            corresponding_val = df_lines_sorted[bisect.bisect_left(df_lines_sorted, deviceName, key=getFirstColValue)][1]
+            operationNames.append(corresponding_val)
+
+        elif deviceType == "Transformer":
+            corresponding_val = df_autos_sorted[bisect.bisect_left(df_autos_sorted, deviceName, key=getFirstColValue)][1]
+            operationNames.append(corresponding_val)
+
+        else:
+            operationNames.append(deviceName)
+
+    df_csv.pop("DeviceName")
+    df_csv.insert(0, 'Operations_Name', operationNames)
+    return df_csv
+
+
 merge = []
 for yr in range(start_year, end_year + 1):
     for mth in range(1, 13):
@@ -74,9 +90,10 @@ merged_df = pd.concat(merge, axis=0)
 merged_df = pd.DataFrame(merged_df)
 merged_df.to_csv(output_path, index=False)
 print("Generation Complete")
-"""
-csv_f, excel = getFiles(2023, 1)
-replaceCSV(csv_f, excel)
+
+
+
+
 
 
 
