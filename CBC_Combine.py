@@ -3,6 +3,7 @@ from typing import *
 from utils import convert, getFirstColValue
 import pandas as pd
 
+## TODO: Add documentation, comments and write a report
 
 # Global parameters & variables
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
