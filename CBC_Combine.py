@@ -55,22 +55,31 @@ def replaceCSV(csv_file: str, excel_file: str):
 
     df_lines_sorted = df_lines.sort_values(by=['CRR_Tag']).values
     df_autos_sorted = df_autos.sort_values(by=['CRR Name']).values
-
-
     df_csv = pd.read_csv(csv_file)
     operationNames = []
+
+    lines_opnames = {}
+    autos_opnames = {}
 
     for index, row in df_csv.iterrows():
         deviceName = row['DeviceName']
         deviceType = row['DeviceType']
 
         if deviceType == "Line":
-            corresponding_val = df_lines_sorted[bisect.bisect_left(df_lines_sorted, deviceName, key=getFirstColValue)][1]
-            operationNames.append(corresponding_val)
+            if deviceName in lines_opnames.keys():
+                operationNames.append(lines_opnames[deviceName])
+            else:
+                corresponding_val = df_lines_sorted[bisect.bisect_left(df_lines_sorted, deviceName, key=getFirstColValue)][1]
+                operationNames.append(corresponding_val)
+                lines_opnames[deviceName] = corresponding_val
 
         elif deviceType == "Transformer":
-            corresponding_val = df_autos_sorted[bisect.bisect_left(df_autos_sorted, deviceName, key=getFirstColValue)][1]
-            operationNames.append(corresponding_val)
+            if deviceName in autos_opnames.keys():
+                operationNames.append(autos_opnames[deviceName])
+            else:
+                corresponding_val = df_autos_sorted[bisect.bisect_left(df_autos_sorted, deviceName, key=getFirstColValue)][1]
+                operationNames.append(corresponding_val)
+                autos_opnames[deviceName] = corresponding_val
 
         else:
             operationNames.append(deviceName)
