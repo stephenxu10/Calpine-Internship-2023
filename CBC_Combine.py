@@ -45,8 +45,10 @@ def getFiles(year: int, month: int) -> Tuple[Union[str, Any], Union[str, Any]]:
     c_month = convert(month)
     year = str(year)
 
+    # 2019 is in a different directory - use a ternary expression
     new_base = path_base + "/" + year if year != "2019" else path_base + "/" + year + "/999 - Month"
 
+    # Years before 2021 refer to the Market Results folder as "Market Result"
     cbc_dir = new_base + "/" + year + "-" + c_month + ("/Market Results" if year >= "2021" else "/Market Result")
     excel_dir = new_base + "/" + year + "-" + c_month + "/Network Model"
 
