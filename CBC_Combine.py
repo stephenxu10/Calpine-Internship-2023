@@ -41,7 +41,7 @@ Inputs:
 Output: A two-element tuple containing the file paths specified above. If any of the files are invalid,
         we return an empty two-element tuple.
 """
-def getFiles(year: int, month: int) -> Tuple[Union[str, Any], Union[str, Any]]:
+def get_files(year: int, month: int) -> Tuple[str, str]:
     c_month = convert(month)
     year = str(year)
 
@@ -75,7 +75,7 @@ Output:
     This method outputs a Pandas DataFrame that contains the updated entry for each element in the 'DeviceName'
     column of the CSV file, matched with their corresponding Operation Names found in the Excel file.
 """
-def replaceCSV(csv_file: str, excel_file: str) -> pd.DataFrame:
+def replace_csv(csv_file: str, excel_file: str) -> pd.DataFrame:
     # Read both sheets of the Excel file.
     df_lines = pd.read_excel(excel_file, sheet_name=0)
     df_autos = pd.read_excel(excel_file, sheet_name=1)
@@ -134,9 +134,9 @@ is then stored in output_path.
 merge = []
 for yr in range(start_year, end_year + 1):
     for mth in range(1, 13):
-        csv_f, excel = getFiles(yr, mth)
+        csv_f, excel = get_files(yr, mth)
         if csv_f != "":
-            merge.append(replaceCSV(csv_f, excel))
+            merge.append(replace_csv(csv_f, excel))
 
 merged_df = pd.concat(merge, axis=0)
 merged_df = pd.DataFrame(merged_df)
