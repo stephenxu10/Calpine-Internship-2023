@@ -1,9 +1,23 @@
-import bisect, os, csv
+import bisect, os
 from typing import *
 from utils import convert, getFirstColValue
 import pandas as pd
 
-## TODO: Add documentation, comments and write a report
+"""
+In this Python script, two separate tasks are accomplished. First, for all historical Common Binding
+Constraint Monthly Auction records, the entries in the leftmost (DeviceName) column are replaced with
+their operation name in the corresponding Monthly Auction Mapping Document. Next, all of the modified
+records are aggregated into a large CSV file, stored in the data subfolder.
+
+Note:
+This script will only work properly if it is ran from
+\\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
+due to the File I/O.
+
+The searching and file-building process takes a while, expect to wait around 3 minutes for the script to
+finish generating. As usual, assuming a consistent file structure, running this script will generate
+an updated output whenever future data is added. 
+"""
 
 # Global parameters & variables
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
@@ -47,32 +61,52 @@ def getFiles(year: int, month: int) -> Tuple[Union[str, Any], Union[str, Any]]:
 
 
 """
+Helper method that processes an input csv file and replaces the 'DeviceName' column with its
+corresponding operation name found in the mapping excel file. Returns a new Pandas DataFrame with
+the updated entries
 
+Inputs:
+    - csv_file: A string giving the path to the CSV file. It is guaranteed to be valid.
+    - excel_file: A string giving the path to the Excel file. It is also guaranteed to be valid.
+    
+Output:
+    This method outputs a Pandas DataFrame that contains the updated entry for each element in the 'DeviceName'
+    column of the CSV file, matched with their corresponding Operation Names found in the Excel file.
 """
-def replaceCSV(csv_file: str, excel_file: str):
+def replaceCSV(csv_file: str, excel_file: str) -> pd.DataFrame:
+    # Read both sheets of the Excel file.
     df_lines = pd.read_excel(excel_file, sheet_name=0)
     df_autos = pd.read_excel(excel_file, sheet_name=1)
 
+    # First sort the rows of each Excel sheet based on the first column in ASCII order. This step improves the search time
+    # overall, since we are making thousands of queries to the Excel sheet at a time. Performing simple linear
+    # search each time feels too inefficient.
     df_lines_sorted = df_lines.sort_values(by=['CRR_Tag']).values
     df_autos_sorted = df_autos.sort_values(by=['CRR Name']).values
     df_csv = pd.read_csv(csv_file)
     operationNames = []
 
+    # There are quite a few duplicate DeviceNames in the CSV file, so recording the found matches in a dictionary
+    # also will slightly speed up the process.
     lines_opnames = {}
     autos_opnames = {}
 
+    # Iterate through each row of the CSV file.
     for index, row in df_csv.iterrows():
         deviceName = row['DeviceName']
         deviceType = row['DeviceType']
 
+        # Search the lines page of the Excel sheet
         if deviceType == "Line":
             if deviceName in lines_opnames.keys():
                 operationNames.append(lines_opnames[deviceName])
             else:
+                # Since the lines sheet is sorted, a simple Binary Search is optimal here.
                 corresponding_val = df_lines_sorted[bisect.bisect_left(df_lines_sorted, deviceName, key=getFirstColValue)][1]
                 operationNames.append(corresponding_val)
                 lines_opnames[deviceName] = corresponding_val
 
+        # Search the autos page of the Excel sheet
         elif deviceType == "Transformer":
             if deviceName in autos_opnames.keys():
                 operationNames.append(autos_opnames[deviceName])
@@ -81,14 +115,20 @@ def replaceCSV(csv_file: str, excel_file: str):
                 operationNames.append(corresponding_val)
                 autos_opnames[deviceName] = corresponding_val
 
+        # Make no change otherwise.
         else:
             operationNames.append(deviceName)
 
+    # Add the new column and remove the old 'DeviceName' column.
     df_csv.pop("DeviceName")
     df_csv.insert(0, 'Operations_Name', operationNames)
     return df_csv
 
 
+"""
+Main procedure. Filters each CSV file and aggregates them all into a merged CSV. The final result
+is then stored in output_path.
+"""
 merge = []
 for yr in range(start_year, end_year + 1):
     for mth in range(1, 13):

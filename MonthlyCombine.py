@@ -4,6 +4,21 @@ import pandas as pd
 from utils import convert, getSourceSinks
 from LimitSummary import months, path_base, start_year, end_year
 
+"""
+This Python script aims to aggregate the historical Commercial_CreditCoefficient CSV files into one large
+CSV file. Additionally, two columns are generated: a 'Path' column that stores the concatenated source, sink,
+and TimeOfUse, and a 'FileName' column storing the document where the data originated from. Finally, we
+do some filtering to only include entries with paths from
+
+https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/paths.csv?
+
+Note: This script will only work properly if it is ran from
+\\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
+due to the File I/O.
+
+The final output file is located in the data subfolder - it should take no longer than a few minutes to finish
+generating.
+"""
 
 # Global parameters & variables
 output_path = "./data/combined_monthly.csv"  # Relative file path of the outputted CSV.
