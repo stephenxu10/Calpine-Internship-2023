@@ -24,10 +24,17 @@ running this code will generate an updated output whenever new data is added.
 start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 path_base = "./../../06 - CRR/Monthly"
-output_path = "./data/auction_combined.csv"  # Relative file path of the outputted CSV.
+
+# Flag that groups together all matching Paths (within current year) by averaging ShadowPricePerMWH and BidPricePerMWH
+grouping_by = True
+
+
+ # Relative file path of the outputted CSV., dependent on the flag
+output_path = "./data/auction_combined_grouped.csv" if grouping_by else "./data/auction_combined.csv" 
+
 
 # Starting and ending years. By default, this encompasses all years with available data.
-start_year = 2018
+start_year = 2019
 end_year = 2023
 
 # Begin by constructing a dictionary that maps each path to a tuple of its Plant and Size (MW).
@@ -86,6 +93,16 @@ def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
         df_auction.insert(0, 'Size (MW)', sizes)
         df_auction.insert(0, 'Plant', plants)
         df_auction.insert(0, 'Path', paths)
+
+        if grouping_by:
+            grouped = df_auction.groupby(['Path'], as_index=False).mean()
+            df_auction['ShadowPricePerMWH'].map(
+                lambda x: grouped.loc[grouped['Path'] == x, 'ShadowPricePerMWH'])
+            df_auction['ShadowPricePerMWH'].map(
+                lambda x: grouped.loc[grouped['Path'] == x, 'BidPricePerMWH'])
+
+            df_auction = df_auction.drop_duplicates(subset='Path', keep="first")
+            
         return df_auction
     else:
         return None

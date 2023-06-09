@@ -49,4 +49,3 @@ def getSourceSinks():
         sourceSinks[source].add(sink)
 
     return sourceSinks
-
