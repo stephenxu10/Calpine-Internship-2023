@@ -1,4 +1,5 @@
 import csv
+import time
 import os
 from typing import *
 from utils import convert
@@ -20,15 +21,16 @@ The output should generate after about ten seconds. File IO takes a bit of time.
 """
 
 # Global parameters & variables
+start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 path_base = "./../../06 - CRR/Monthly"
-output_path = "./data/combined_data.csv"  # Relative file path of the outputted CSV.
+output_path = "./Data/combined_data.csv"  # Relative file path of the outputted CSV.
 
 filter_missing_entries = False  # Flag bit that filters out missing entries if set to true.
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2018
-end_year = 2023
+end_year = 2050
 
 """
 Given the currently aggregated company_data dictionary, this helper method adds to that dictionary by 
@@ -111,4 +113,7 @@ with open(output_path, 'w', newline="") as output_file:
                     rw = [str(yr), months[mth], name, aggregate_data[yr][name][mth]]
                     writer.writerow(rw)
 
-# print("Generation complete")
+end_time = time.time()
+execution_time = (end_time - start_time)
+print("Generation Complete")
+print(f"The script took {execution_time:.2f} seconds to run.")

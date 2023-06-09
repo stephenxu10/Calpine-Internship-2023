@@ -1,4 +1,5 @@
 import csv
+import time
 import os
 from typing import Union
 import pandas as pd
@@ -15,11 +16,12 @@ This script will only work properly if it is ran from
 \\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
 due to the File I/O.
 
-The resultant output is stored as a CSV file in the data subfolder. Runtime should be no longer than
-a minute or two.
+The resultant output is stored as a CSV file in the data subfolder. As usual, assuming a consistent file structure, 
+running this code will generate an updated output whenever new data is added.
 """
 
 # Global parameters & variables
+start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 path_base = "./../../06 - CRR/Monthly"
 output_path = "./data/auction_combined.csv"  # Relative file path of the outputted CSV.
@@ -27,6 +29,10 @@ output_path = "./data/auction_combined.csv"  # Relative file path of the outputt
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2018
 end_year = 2023
+
+# Begin by constructing a dictionary that maps each path to a tuple of its Plant and Size (MW).
+path_to_plant = {}
+nodeToPlantFile = "./../../06 - CRR/01 - General/Extracts/NodePlantMapping.CSV"
 
 """
 Helper method that locates the Private_(year).(month).Monthly.Auction_AUCTION.CSV file and creates
@@ -40,9 +46,11 @@ Inputs:
     - month: An integer in the interval [1, 12]
 
 Output:
-    - Returns this newly created DataFrame, or None if the CSV file was not located.
+    - Returns this newly created DataFrame, or None if the CSV file was not located. No data appears to be
+      available for 2016 and 2017.
 """
 def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
+    # Initialize and convert all necessary variables
     c_month = convert(month)
     year = str(year)
     paths = []
@@ -54,6 +62,7 @@ def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
     csv_dir = new_base + "/" + year + "-" + c_month + ("/Market Results" if year >= "2021" else "/Market Result")
     csv_file = csv_dir + "/Private_" + year + "." + months[month-1] + ".Monthly.Auction_AUCTION.CSV"
 
+    # Only perform the analysis if the CSV file was successfully found
     if os.path.isfile(csv_file):
         df_auction = pd.read_csv(csv_file)
 
@@ -62,6 +71,7 @@ def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
             sink = row['Sink']
             path = source + "+" + sink
 
+            # Generate the path and extract corresponding data from the path_to_plant mapping
             paths.append(path)
 
             if path in path_to_plant:
@@ -72,6 +82,7 @@ def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
                 plants.append("")
                 sizes.append("")
 
+        # Insert the new columns at the beginning of the output CSV
         df_auction.insert(0, 'Size (MW)', sizes)
         df_auction.insert(0, 'Plant', plants)
         df_auction.insert(0, 'Path', paths)
@@ -79,10 +90,6 @@ def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
     else:
         return None
 
-
-# Begin by constructing a dictionary that maps each path to a tuple of its Plant and Size (MW).
-path_to_plant = {}
-nodeToPlantFile = "./../../06 - CRR/01 - General/Extracts/NodePlantMapping.CSV"
 
 with open(nodeToPlantFile, "r") as mapping_file:
     reader = csv.reader(mapping_file)
@@ -104,4 +111,7 @@ merged_df = pd.concat(merge, axis=0)
 merged_df = pd.DataFrame(merged_df)
 merged_df.to_csv(output_path, index=False)
 
+end_time = time.time()
+execution_time = (end_time - start_time)
 print("Generation Complete")
+print(f"The script took {execution_time:.2f} seconds to run.")

@@ -1,4 +1,5 @@
 import os
+import time
 from typing import *
 import pandas as pd
 from utils import convert, getSourceSinks
@@ -16,12 +17,12 @@ Note: This script will only work properly if it is ran from
 \\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
 due to the File I/O.
 
-The final output file is located in the data subfolder - it should take no longer than a few minutes to finish
-generating.
+The final output file is located in the Data subfolder.
 """
 
 # Global parameters & variables
-output_path = "./data/combined_monthly.csv"  # Relative file path of the outputted CSV.
+start_time = time.time()
+output_path = "./Data/combined_monthly.csv"  # Relative file path of the outputted CSV.
 sourceSinks = getSourceSinks()
 
 """
@@ -78,4 +79,8 @@ for row in filtered.iterrows():
 
 finalFiltered = pd.DataFrame(finalFiltered)
 finalFiltered.to_csv(output_path, index=False)
-print("Generation complete")
+
+end_time = time.time()
+execution_time = (end_time - start_time)
+print("Generation Complete")
+print(f"The script took {execution_time:.2f} seconds to run.")

@@ -1,6 +1,7 @@
-import bisect, os
-from typing import *
-from utils import convert, getFirstColValue
+import os
+import time
+from typing import Dict, List, Tuple
+from utils import convert
 import pandas as pd
 
 """
@@ -20,13 +21,15 @@ an updated output whenever future data is added.
 """
 
 # Global parameters & variables
+start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 path_base = "./../../06 - CRR/Monthly"
-output_path = "./data/final_combined.csv"  # Relative file path of the outputted CSV.
+output_path = "./Data/final_combined.csv"  # Relative file path of the outputted CSV.
+
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2019
-end_year = 2023
+end_year = 2050
 
 
 """
@@ -60,6 +63,38 @@ def get_files(year: int, month: int) -> Tuple[str, str]:
 
     else:
         return "", ""
+    
+"""
+Performs a binary search on an input 2-dimensional list of strings. Searches the list for the unique
+index such that the first column equals to target and outputs the corresponding second column value.
+
+Inputs:
+    - input: A 2-dimensional list of strings. It is assumed that the first column is sorted in ASCII order.
+    - target: The target string
+
+Output:
+    - Performs a binary search to find the second column value corresponding to target.
+    
+     In practice, this helper method gives the corresponding operation name to a device name.
+"""
+def mod_binary_search(input: List[List[str]], target: str) -> str:
+    low = 0
+    high = len(input) - 1
+    
+    while low != high:
+        mid = (low + high) // 2
+        
+        if input[mid][0] == target:
+            return input[mid][1]
+        
+        elif input[mid][0] < target:
+            low = mid + 1
+    
+        else:
+            high = mid - 1
+            
+    
+    return input[low][1]
 
 
 """
@@ -104,18 +139,16 @@ def replace_csv(csv_file: str, excel_file: str) -> pd.DataFrame:
                 operationNames.append(lines_opnames[deviceName])
             else:
                 # Since the lines sheet is sorted, a simple Binary Search is optimal here.
-                corresponding_val = df_lines_sorted[bisect.bisect_left(df_lines_sorted, deviceName, key=getFirstColValue)][1]
+                corresponding_val = mod_binary_search(df_lines_sorted, deviceName)
                 operationNames.append(corresponding_val)
-                lines_opnames[deviceName] = corresponding_val
 
         # Search the autos page of the Excel sheet
         elif deviceType == "Transformer":
             if deviceName in autos_opnames.keys():
                 operationNames.append(autos_opnames[deviceName])
             else:
-                corresponding_val = df_autos_sorted[bisect.bisect_left(df_autos_sorted, deviceName, key=getFirstColValue)][1]
+                corresponding_val = mod_binary_search(df_autos_sorted, deviceName)
                 operationNames.append(corresponding_val)
-                autos_opnames[deviceName] = corresponding_val
 
         # Make no change otherwise.
         else:
@@ -141,8 +174,11 @@ for yr in range(start_year, end_year + 1):
 merged_df = pd.concat(merge, axis=0)
 merged_df = pd.DataFrame(merged_df)
 merged_df.to_csv(output_path, index=False)
-print("Generation Complete")
 
+end_time = time.time()
+execution_time = (end_time - start_time)
+print("Generation Complete")
+print(f"The script took {execution_time:.2f} seconds to run.")
 
 
 
