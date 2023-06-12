@@ -26,10 +26,10 @@ months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", 
 path_base = "./../../06 - CRR/Monthly"
 
 # Flag that groups together all matching Paths (within current year) by averaging ShadowPricePerMWH and BidPricePerMWH
-grouping_by = True
+grouping_by = False
 
 
- # Relative file path of the outputted CSV., dependent on the flag
+# Relative file path of the outputted CSV., dependent on the flag
 output_path = "./data/auction_combined_grouped.csv" if grouping_by else "./data/auction_combined.csv" 
 
 
@@ -86,6 +86,7 @@ def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
                 sizes.append(path_to_plant[path][1])
 
             else:
+                print("The Path: " + path + " was not found in the NodeToPlant mapping")
                 plants.append("")
                 sizes.append("")
 

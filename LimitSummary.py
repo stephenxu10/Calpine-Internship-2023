@@ -44,6 +44,8 @@ Inputs:
 Output:
     Returns nothing, but inputs the input company_data parameter to add data from the month.
 """
+
+
 def add_month_data(csv_file: str, company_data: Dict[str, List[str]], month: int):
     with open(csv_file, 'r') as csv_file:
         # Open and read the CSV file
@@ -75,6 +77,8 @@ Output:
     Collects the data into a dictionary that maps each unique company across the entire year to a list of 
     twelve entries representing the limit in each month. Utilizes the above helper methods along the way.
 """
+
+
 def accumulate_year(year: int) -> Dict[str, List[str]]:
     # Perform some File I/O to access the CSV files.
     new_base = path_base + "/" + str(year) if year != 2019 else path_base + "/" + str(year) + "/999 - Month"
@@ -87,9 +91,16 @@ def accumulate_year(year: int) -> Dict[str, List[str]]:
             csv_file = month_dir + "/" + str(year) + "." + months[
                 month - 1] + '.Monthly.Auction.Non-ThermalConstraints.csv'
 
+            csv_alt = month_dir + "/" + "Common_Non_ThermalConstraints_" + str(year) + "." + months[
+                month - 1] + ".Monthly.Auction_AUCTION_" \
+                      + months[month - 1] + "_" + str(year) + ".CSV"
+
             # Only perform the analysis if the CSV file was successfully found.
             if os.path.isfile(csv_file):
                 add_month_data(csv_file, company_data, month)
+
+            elif os.path.isfile(csv_alt):
+                add_month_data(csv_alt, company_data, month)
 
     return company_data
 

@@ -25,6 +25,13 @@ def convert(month: int) -> str:
 def getFirstColValue(row: List[str]) -> str:
     return row[0]
 
+def convertDate(input: str):
+    year = input[:4]
+    month = input[5:7]
+    day = input[8:]
+
+    return month + "/" + day + "/" + year
+
 def getSourceSinks():
     my_auth = ('transmission.yesapi@calpine.com', 'texasave717')
     PortfolioID = '759847'

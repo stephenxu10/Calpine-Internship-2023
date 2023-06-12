@@ -29,7 +29,7 @@ output_path = "./Data/final_combined.csv"  # Relative file path of the outputted
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2019
-end_year = 2050
+end_year = 2023
 
 
 """
@@ -92,8 +92,7 @@ def mod_binary_search(input: List[List[str]], target: str) -> str:
     
         else:
             high = mid - 1
-            
-    
+
     return input[low][1]
 
 
