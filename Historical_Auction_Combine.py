@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Dict, Tuple
 
 import pandas as pd
@@ -24,7 +25,7 @@ If any updates need to be made to that file, run AuctionCombine.py first.
 
 # Global Parameters and Variables
 start_time = time.time()
-auction_grouped = "./Data/auction_combined.CSV"
+auction_grouped = "./Data/auction_combined_grouped.CSV"
 historical = "./Data/ERCOT_historical_basis_assets.CSV"
 
 output_path = "./Data/ERCOT_historical_married.CSV"
@@ -39,10 +40,15 @@ bidPrices = []
 hedgeMapping = {"Option": "OPT", "Obligation": "OBL"}
 
 
+"""
+Helper method to accumulate the data inside df_auction into a
+large dictionary. This helps to reduce search time for each query in the historical ERCOT
+data to O(1) time, which dramatically speeds up the program.
+"""
 def process(df_auction) -> Dict[str, Dict[str, Dict[str, Tuple[str, str, str, str]]]]:
-    auction_summary = {}
+    auction_summary = defaultdict(lambda: defaultdict(dict))
 
-    for idx, row in df_auction.iterrows():
+    for _, row in df_auction.iterrows():
         path = row['Path']
         hedgeType = row['HedgeType']
         date = row['StartDate']
@@ -51,40 +57,43 @@ def process(df_auction) -> Dict[str, Dict[str, Dict[str, Tuple[str, str, str, st
         shadowPrice = row['ShadowPricePerMWH']
         bidPrice = row['BidPricePerMWH']
 
-        if date not in auction_summary:
-            auction_summary[date] = {}
-
-        if path not in auction_summary[date]:
-            auction_summary[date][path] = {}
-
         auction_summary[date][path][hedgeType] = (plant, size, shadowPrice, bidPrice)
-
+    
     return auction_summary
-
 
 """
 Given a DataFrame row, this method grabs the plant, size, shadowPricePerMWH, and
 bidPricePerMWH from the auction_grouped CSV. Performs a simple linear search to 
 find these values.
 
+Input:
+    - rw: The DataFrame row from the ERCOT historical basis data
+    - data: The pre-processed monthly auction grouped data.
+
 Output:
-    - A four-element tuple storing the data above. 
+    - A four-element tuple storing the plant, size (MW), shadowPricePerMWH,
+    and bidPricePerMWH
 """
 def grab_data(rw, data):
     row_path = rw['Path']
     row_hedge = rw['HEDGETYPE']
     row_period = str(convertDate(rw['Period']))
-
-    if row_period in data:
+    
+    # Handle a strange case with August 2022, otherwise read the pre-processed dictionary
+    if row_period in data or row_period == "08/01/2022":
+        if row_period == "08/01/2022":
+            row_period = "8/1/2022"
         if row_path in data[row_period]:
             if hedgeMapping[row_hedge] in data[row_period][row_path]:
                 return data[row_period][row_path][hedgeMapping[row_hedge]]
-                
+            
+    # Return empty entries if not found.
     return "", "", "", ""
 
 
 data = process(df_auction)
 
+# Grab the desired extra data for each row in the ERCOT historical data.
 for index, row in df_historical.iterrows():
     plant, size, shadowMWH, bidMWH = grab_data(row, data)
 
@@ -94,12 +103,14 @@ for index, row in df_historical.iterrows():
     bidPrices.append(bidMWH)
 
 
+# Add these new columns to the aggregated DataFrame
 df_historical['Plant'] = plants
 df_historical['Size (MW)'] = sizes
 df_historical['ShadowPricePerMWH'] = shadowPrices
 df_historical['BidPricePerMWH'] = bidPrices
 
 
+# Output the file and print total execution time
 df_historical = pd.DataFrame(df_historical)
 df_historical.to_csv(output_path, index=False)
 

@@ -26,7 +26,7 @@ months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", 
 path_base = "./../../06 - CRR/Monthly"
 
 # Flag that groups together all matching Paths (within current year) by averaging ShadowPricePerMWH and BidPricePerMWH
-grouping_by = False
+grouping_by = True
 
 
 # Relative file path of the outputted CSV., dependent on the flag
@@ -94,16 +94,14 @@ def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
         df_auction.insert(0, 'Size (MW)', sizes)
         df_auction.insert(0, 'Plant', plants)
         df_auction.insert(0, 'Path', paths)
-
+        
         if grouping_by:
-            grouped = df_auction.groupby(['Path'], as_index=False).mean()
-            df_auction['ShadowPricePerMWH'].map(
-                lambda x: grouped.loc[grouped['Path'] == x, 'ShadowPricePerMWH'])
-            df_auction['ShadowPricePerMWH'].map(
-                lambda x: grouped.loc[grouped['Path'] == x, 'BidPricePerMWH'])
+            average_columns = ['ShadowPricePerMWH', 'BidPricePerMWH']
+            grouped = df_auction.groupby(['Path', 'HedgeType'])[average_columns].mean().reset_index()
+            df_auction = df_auction.drop(average_columns, axis=1)
+            df_auction = df_auction.merge(grouped, on=['Path', 'HedgeType'], how='left')
+            df_auction = df_auction.drop_duplicates(subset=['Path', 'HedgeType'], keep='first')
 
-            df_auction = df_auction.drop_duplicates(subset='Path', keep="first")
-            
         return df_auction
     else:
         return None
