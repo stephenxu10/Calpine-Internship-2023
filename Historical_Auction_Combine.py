@@ -91,6 +91,7 @@ def grab_data(rw, data):
     return "", "", "", ""
 
 
+# Pre-process the monthly auction data into a nested dictionary.
 data = process(df_auction)
 
 # Grab the desired extra data for each row in the ERCOT historical data.
@@ -119,4 +120,3 @@ end_time = time.time()
 execution_time = (end_time - start_time)
 print("Generation Complete")
 print(f"The script took {execution_time:.2f} seconds to run.")
-

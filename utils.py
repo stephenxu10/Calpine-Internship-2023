@@ -18,7 +18,7 @@ Inputs:
 def convert(month: int) -> str:
     if month <= 9:
         return "0" + str(month)
-    else:
+    else: 
         return str(month)
 
 
