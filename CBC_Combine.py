@@ -24,7 +24,7 @@ an updated output whenever future data is added.
 start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 path_base = "./../../06 - CRR/Monthly"
-output_path = "./Data/final_combined.csv"  # Relative file path of the outputted CSV.
+output_path = "./Data/Common_BindingConstraint_Combined.csv"  # Relative file path of the outputted CSV.
 
 
 # Starting and ending years. By default, this encompasses all years with available data.

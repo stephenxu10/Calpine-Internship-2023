@@ -20,11 +20,11 @@ to finish running.
 
 # Global parameters & variables
 start_time = time.time()
-year = 2023
+year = 2019 # Aggregates the DAM data for this particular year
 path_base = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS " + str(year) + "\\56_DPNOMASF"
 
 # Relative file path of the outputted CSV.
-output_path = "./Data/MIS_DAM_" + str(year) + ".csv"
+output_path = "./Data/MIS Aggregates/MIS_DAM_" + str(year) + ".csv"
 
 # Grab the zip files across each year
 yearly_zip_files = os.listdir(path_base)
@@ -40,28 +40,27 @@ Inputs:
 Output:
     - A Pandas DataFrame containing the merged CSVs with the new column.
 """
-
-
 def aggregate_zip(zip_path: str) -> pd.DataFrame:
     merge = []
     try:
+        # Open the relevant CSV files and aggregate them through Pandas
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_contents = zip_ref.namelist()
             csv_files = [f for f in zip_contents if "_Gn_" in f]
             date = csv_files[0][3:5] + "/" + csv_files[0][5: 7] + "/" + csv_files[0][7:11]
-            print(date)
-
+            
+            # Add the date column into each DataFrame
             for csv_file in csv_files:
                 with zip_ref.open(csv_file) as csv:
                     df_csv = pd.read_csv(csv)
                     df_csv['Date'] = [date] * len(df_csv)
                     merge.append(df_csv)
-
+    
+    # Ignore any invalid zip files, log the exception to the console.
     except zipfile.BadZipFile:
         print("Invalid/Bad zip file located at " + str(zip_path) + ". No action was taken. \n")
         return pd.DataFrame()
 
-    print('done!')
     return pd.DataFrame(pd.concat(merge, axis=0))
 
 

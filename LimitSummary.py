@@ -24,7 +24,7 @@ The output should generate after about ten seconds. File IO takes a bit of time.
 start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
 path_base = "./../../06 - CRR/Monthly"
-output_path = "./Data/combined_data.csv"  # Relative file path of the outputted CSV.
+output_path = "./Data/CRR_NonThermalConstraints_Combined.csv"  # Relative file path of the outputted CSV.
 
 filter_missing_entries = False  # Flag bit that filters out missing entries if set to true.
 

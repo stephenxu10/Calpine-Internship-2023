@@ -3,7 +3,7 @@ import time
 from typing import *
 import pandas as pd
 from utils import convert, getSourceSinks
-from LimitSummary import months, path_base, start_year, end_year
+
 
 """
 This Python script aims to aggregate the historical Commercial_CreditCoefficient CSV files into one large
@@ -17,12 +17,19 @@ Note: This script will only work properly if it is ran from
 \\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
 due to the File I/O.
 
-The final output file is located in the Data subfolder.
+The final output file is located in the Data subfolder. It should take about 2 minutes to produce.
 """
 
 # Global parameters & variables
 start_time = time.time()
-output_path = "./Data/combined_monthly.csv"  # Relative file path of the outputted CSV.
+months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
+path_base = "./../../06 - CRR/Monthly"
+
+# Starting and ending years. By default, this encompasses all years with available data.
+start_year = 2018
+end_year = 2050
+
+output_path = "./Data/Commercial_CreditCoefficient_Combined.csv"  # Relative file path of the outputted CSV.
 sourceSinks = getSourceSinks()
 
 """
