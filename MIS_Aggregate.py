@@ -68,8 +68,7 @@ final_merge = []
 for zip_file in yearly_zip_files:
     full_path = os.path.join(path_base, zip_file)
 
-    if full_path[-4:] == ".zip":
-        final_merge.append(aggregate_zip(full_path))
+    final_merge.append(aggregate_zip(full_path))
 
 final_merged_df = pd.concat(final_merge, axis=0)
 final_merged_df = pd.DataFrame(final_merged_df)

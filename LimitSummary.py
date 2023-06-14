@@ -44,8 +44,6 @@ Inputs:
 Output:
     Returns nothing, but inputs the input company_data parameter to add data from the month.
 """
-
-
 def add_month_data(csv_file: str, company_data: Dict[str, List[str]], month: int):
     with open(csv_file, 'r') as csv_file:
         # Open and read the CSV file
