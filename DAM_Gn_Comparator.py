@@ -16,15 +16,21 @@ and reads each CSV (if valid), and outputs the comparison results to a new text 
 Be sure to change the global date/hour parameters immediately below to compare the desired files.
 """
 # Global parameters and variables. For convenience, the first_date & time should be before the second_date & time.
-first_date = "01/02/2022"  # Must be in MM/DD/YYYY format
-first_hour = 5  # Must be between 1 and 24 (inclusive)
-second_date = "06/14/2022"  # Must be in MM/DD/YYYY format
-second_hour = 12  # Must be between 1 and 24 (inclusive)
+first_date = "02/13/2022"  # Must be in MM/DD/YYYY format
+first_hour = 16  # Must be between 1 and 24 (inclusive)
+second_date = "06/14/2023"  # Must be in MM/DD/YYYY format
+second_hour = 16  # Must be between 1 and 24 (inclusive)
+
+# Flag that determines if the script should generate a text file summary in addition to the CSV
+text_flag = True
 
 start_time = time.time()
 path_base = "\\\\Pzpwuplancli01\\Uplan\\ERCOT"
-output_path = f"./Data/MIS Gen_CIM Comparisons/" \
+output_txt = f"./Data/MIS Gen_CIM Comparisons/" \
               f"{first_date.replace('/', '')}_{first_hour}_{second_date.replace('/', '')}_{second_hour}.txt"
+
+output_csv = f"./Data/MIS Gen_CIM Comparisons/" \
+              f"{first_date.replace('/', '')}_{first_hour}_{second_date.replace('/', '')}_{second_hour}.csv"
 
 success = True
 
@@ -142,71 +148,123 @@ def compare_data(df1: pd.DataFrame, df2: pd.DataFrame):
     return sharedPairs, uniqueFirst, uniqueSecond, changed
 
 
-if first_date == second_date and first_hour == second_hour:
-    print("The input dates & times are exactly the same. No comparisons can be done.")
-    success = False
+"""
+Combines the summary results into a new Pandas DataFrame.
+"""
+def write_results(share, un_first, un_second, changes, date1, date2) -> pd.DataFrame:
+    gen_names = []
+    first_statuses = []
+    second_statuses = []
 
-elif first_date == second_date and first_hour > second_hour:
-    print("Switch up the hours. The first hour should come before the second hour here.")
-    success = False
+    for unit, stat in changes:
+        gen_names.append(unit)
+        first_statuses.append("In-Service" if stat == 0 else "Out-Of-Service")
+        second_statuses.append("Out-Of-Service" if stat == 0 else "In-Service")
 
-elif datetime.strptime(first_date, "%m/%d/%Y") > datetime.strptime(second_date, "%m/%d/%Y"):
-    print("Please make sure that the first date & time comes before the second date & time. Switch up the variables.")
-    success = False
+    gen_names.append(" ")
+    first_statuses.append(" ")
+    second_statuses.append(" ")
 
-else:
+    for unit, stat in un_first:
+        gen_names.append(unit)
+        first_statuses.append(stat)
+        second_statuses.append("")
+
+    gen_names.append(" ")
+    first_statuses.append(" ")
+    second_statuses.append(" ")
+
+    for unit, stat in un_second:
+        gen_names.append(unit)
+        first_statuses.append("")
+        second_statuses.append(stat)
+
+    gen_names.append(" ")
+    first_statuses.append(" ")
+    second_statuses.append(" ")
+
+    for unit, stat in share:
+        gen_names.append(unit)
+        first_statuses.append(stat)
+        second_statuses.append(stat)
+
+    result = pd.DataFrame()
+    result['Generator Name '] = gen_names
+    result[f" {date1} Status "] = first_statuses
+    result[f" {date2} Status "] = second_statuses
+
+    return result
+
+
+if __name__ == "__main__":
     df_first = find_generator_data(first_date, first_hour)
     df_second = find_generator_data(second_date, second_hour)
 
-    if df_first is not None and df_second is not None:
-        shared, first, second, change = compare_data(df_first, df_second)
-
-        with open(output_path, 'w') as file:
-            file.write(f"Comparison Results from {first_date}, Hour {first_hour} to {second_date}, Hour {second_hour}\n")
-            file.write("\n")
-
-            # Output the changed generators
-            header = f"The following generator statuses have changed from from {first_date}, Hour {first_hour} to {second_date}, Hour {second_hour}\n"
-            file.write(header)
-            file.write("=" * (len(header) + 1) + "\n")
-
-            for name, status in change:
-                if status == 0:
-                    file.write(f"{name} has changed from In-Service to Out-Of-Service \n")
-                else:
-                    file.write(f"{name} has changed from Out-Of-Service to In-Service \n")
-
-            file.write("\n")
-            # Output the unique to first
-            header = f"The following generator statuses are unique to {first_date}, Hour {first_hour}'s data.\n"
-            file.write(header)
-            file.write("=" * (len(header) + 1) + "\n")
-
-            for name, status in first:
-                file.write(name + " " + status + "\n")
-
-            file.write("\n")
-            # Output the unique to second
-            header = f"The following generator statuses are unique to {second_date}, Hour {second_hour}'s data.\n"
-            file.write(header)
-            file.write("=" * (len(header) + 1) + "\n")
-
-            for name, status in second:
-                file.write(name + " " + status + "\n")
-
-            file.write("\n")
-            # Output all the shared data
-            header = f"The following generator statuses are shared between the two input dates. \n"
-            file.write(header)
-            file.write("=" * (len(header) + 1) + "\n")
-
-            for name, status in shared:
-                file.write(name + " " + status + "\n")
-
-    else:
+    if first_date == second_date and first_hour == second_hour:
+        print("The input dates & times are exactly the same. No comparisons can be done.")
         success = False
 
-end_time = time.time()
-execution_time = (end_time - start_time)
-print("Generation Complete." if success else "No Result Generated.")
-print(f"The script took {execution_time:.2f} seconds to run.")
+    elif first_date == second_date and first_hour > second_hour:
+        print("Switch up the hours. The first hour should come before the second hour here.")
+        success = False
+
+    elif datetime.strptime(first_date, "%m/%d/%Y") > datetime.strptime(second_date, "%m/%d/%Y"):
+        print("Please make sure that the first date & time comes before the second date & time. Switch up the variables.")
+        success = False
+
+    else:
+        if df_first is not None and df_second is not None:
+            shared, first, second, change = compare_data(df_first, df_second)
+
+            df_csv = write_results(shared, first, second, change)
+            df_csv.to_csv(output_csv, index=False)
+
+            if text_flag:
+                with open(output_txt, 'w') as file:
+                    file.write(f"Comparison Results from {first_date}, Hour {first_hour} to {second_date}, Hour {second_hour}\n")
+                    file.write("\n")
+
+                    # Output the changed generators
+                    header = f"The following generator statuses have changed from from {first_date}, Hour {first_hour} to {second_date}, Hour {second_hour}\n"
+                    file.write(header)
+                    file.write("=" * (len(header) + 1) + "\n")
+
+                    for name, status in change:
+                        if status == 0:
+                            file.write(f"{name} has changed from In-Service to Out-Of-Service \n")
+                        else:
+                            file.write(f"{name} has changed from Out-Of-Service to In-Service \n")
+
+                    file.write("\n")
+                    # Output the unique to first
+                    header = f"The following generator statuses are unique to {first_date}, Hour {first_hour}'s data.\n"
+                    file.write(header)
+                    file.write("=" * (len(header) + 1) + "\n")
+
+                    for name, status in first:
+                        file.write(name + " " + status + "\n")
+
+                    file.write("\n")
+                    # Output the unique to second
+                    header = f"The following generator statuses are unique to {second_date}, Hour {second_hour}'s data.\n"
+                    file.write(header)
+                    file.write("=" * (len(header) + 1) + "\n")
+
+                    for name, status in second:
+                        file.write(name + " " + status + "\n")
+
+                    file.write("\n")
+                    # Output all the shared data
+                    header = f"The following generator statuses are shared between the two input dates. \n"
+                    file.write(header)
+                    file.write("=" * (len(header) + 1) + "\n")
+
+                    for name, status in shared:
+                        file.write(name + " " + status + "\n")
+        else:
+            success = False
+
+    end_time = time.time()
+    execution_time = (end_time - start_time)
+    print("Generation Complete." if success else "No Result Generated.")
+    print(f"The script took {execution_time:.2f} seconds to run.")
