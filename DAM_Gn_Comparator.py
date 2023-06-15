@@ -16,9 +16,9 @@ and reads each CSV (if valid), and outputs the comparison results to a new text 
 Be sure to change the global date/hour parameters immediately below to compare the desired files.
 """
 # Global parameters and variables. For convenience, the first_date & time should be before the second_date & time.
-first_date = "08/22/2022"  # Must be in MM/DD/YYYY format
+first_date = "03/14/2019"  # Must be in MM/DD/YYYY format
 first_hour = 16  # Must be between 1 and 24 (inclusive)
-second_date = "06/14/2023"  # Must be in MM/DD/YYYY format
+second_date = "06/16/2023"  # Must be in MM/DD/YYYY format
 second_hour = 16  # Must be between 1 and 24 (inclusive)
 
 # Flag that determines if the script should generate a text file summary in addition to the CSV
@@ -124,7 +124,7 @@ Output:
 """
 def compare_data(df1: pd.DataFrame, df2: pd.DataFrame):
     first_statuses = dict(zip(df1[df1.columns[5]], df1[df1.columns[6]]))
-    second_statuses = dict(zip(df2[df2.columns[5]], df2[df1.columns[6]]))
+    second_statuses = dict(zip(df2[df2.columns[5]], df2[df2.columns[6]]))
 
     sharedPairs = set()
     uniqueFirst = set()
@@ -152,46 +152,54 @@ def compare_data(df1: pd.DataFrame, df2: pd.DataFrame):
 Combines the summary results into a new Pandas DataFrame.
 """
 def write_results(share, un_first, un_second, changes, date1, date2) -> pd.DataFrame:
+    # Read from the input sets and construct the output columns
     gen_names = []
     first_statuses = []
     second_statuses = []
+    descriptors = []
 
+    # Record all the changed statuses
     for unit, stat in changes:
         gen_names.append(unit)
         first_statuses.append("In-Service" if stat == 0 else "Out-Of-Service")
         second_statuses.append("Out-Of-Service" if stat == 0 else "In-Service")
+        descriptors.append("Changed")
 
-    gen_names.append(" ")
-    first_statuses.append(" ")
-    second_statuses.append(" ")
-
+    # Record all generators only in the first date.
     for unit, stat in un_first:
         gen_names.append(unit)
         first_statuses.append(stat)
         second_statuses.append("")
+        descriptors.append("Missing-In-Today")
 
-    gen_names.append(" ")
-    first_statuses.append(" ")
-    second_statuses.append(" ")
-
+    # Record all generators only in the second date.
     for unit, stat in un_second:
         gen_names.append(unit)
         first_statuses.append("")
         second_statuses.append(stat)
+        descriptors.append("Missing-From-Yesterday")
 
-    gen_names.append(" ")
-    first_statuses.append(" ")
-    second_statuses.append(" ")
+    # Record shared data and prioritize adding the Out-Of-Service generators first.
+    for unit, stat in share:
+        if stat == 'Out-Of-Service':
+            gen_names.append(unit)
+            first_statuses.append(stat)
+            second_statuses.append(stat)
+            descriptors.append("Shared-In-Both")
 
     for unit, stat in share:
-        gen_names.append(unit)
-        first_statuses.append(stat)
-        second_statuses.append(stat)
+        if stat == 'In-Service':
+            gen_names.append(unit)
+            first_statuses.append(stat)
+            second_statuses.append(stat)
+            descriptors.append("Shared-In-Both")
 
+    # Write the columns to a new DataFrame.
     result = pd.DataFrame()
     result['Generator Name '] = gen_names
-    result[f" {date1} Status "] = first_statuses
     result[f" {date2} Status "] = second_statuses
+    result[f" {date1} Status "] = first_statuses
+    result['Description'] = descriptors
 
     return result
 
@@ -200,6 +208,7 @@ if __name__ == "__main__":
     df_first = find_generator_data(first_date, first_hour)
     df_second = find_generator_data(second_date, second_hour)
 
+    # Perform some quick checks on the input dates.
     if first_date == second_date and first_hour == second_hour:
         print("The input dates & times are exactly the same. No comparisons can be done.")
         success = False
