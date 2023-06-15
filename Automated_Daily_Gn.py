@@ -30,8 +30,8 @@ body += '<html><body>' + df_csv.to_html(index=False) + '</body></html>'
 
 msg = MIMEMultipart('alternative')
 msg['Subject'] = "Daily DAM Generator Comparison Results"
-sender = 'Stephen.Xu@calpine.com'
-receivers = ['Stephen.Xu@calpine.com']
+sender = 'Transmission.Yesapi@calpine.com'
+receivers = ['Transmission@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)

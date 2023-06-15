@@ -16,7 +16,7 @@ and reads each CSV (if valid), and outputs the comparison results to a new text 
 Be sure to change the global date/hour parameters immediately below to compare the desired files.
 """
 # Global parameters and variables. For convenience, the first_date & time should be before the second_date & time.
-first_date = "02/13/2022"  # Must be in MM/DD/YYYY format
+first_date = "08/22/2022"  # Must be in MM/DD/YYYY format
 first_hour = 16  # Must be between 1 and 24 (inclusive)
 second_date = "06/14/2023"  # Must be in MM/DD/YYYY format
 second_hour = 16  # Must be between 1 and 24 (inclusive)
@@ -216,7 +216,7 @@ if __name__ == "__main__":
         if df_first is not None and df_second is not None:
             shared, first, second, change = compare_data(df_first, df_second)
 
-            df_csv = write_results(shared, first, second, change)
+            df_csv = write_results(shared, first, second, change, first_date, second_date)
             df_csv.to_csv(output_csv, index=False)
 
             if text_flag:
