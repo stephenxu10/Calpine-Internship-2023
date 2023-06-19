@@ -26,7 +26,7 @@ start_time = time.time()
 auction_grouped = "./../../Data/Private_auction_grouped.CSV"
 historical = "./../../Data/ERCOT Assets/ERCOT_historical_basis_assets.CSV"
 
-output_path = "./../../Data/ERCOT_historical_married.csv"
+output_path = "./../../Data/Aggregated Auction Data/ERCOT_historical_married.csv"
 
 df_auction = pd.read_csv(auction_grouped)
 df_historical = pd.read_csv(historical)

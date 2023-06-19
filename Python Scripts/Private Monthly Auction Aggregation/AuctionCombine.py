@@ -28,7 +28,8 @@ path_base = "./../../../../06 - CRR/Monthly"
 grouping_by = True
 
 # Relative file path of the outputted CSV., dependent on the flag
-output_path = "./../../Data/Private_auction_grouped.csv" if grouping_by else "./../../Data/Private_auction_combined.csv"
+output_path = "./../../Data/Aggregated Auction Data/Private_auction_grouped.csv" if grouping_by \
+    else "./../../Data/Aggregated Auction Data/Private_auction_combined.csv"
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2019
