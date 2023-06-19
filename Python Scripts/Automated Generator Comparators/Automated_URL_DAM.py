@@ -14,7 +14,7 @@ This Python tool aims to automate the comparison between today and yesterday's D
 by sending an email through Outlook storing the CSV that summarizes the comparison. Will send every day
 at 7 AM.
 
-Here, we extract the DAM data via our ERCOT API. More testing is needed to confirm correctness.
+Here, we extract the DAM data via the ERCOT API. More testing is needed to confirm correctness.
 """
 
 # Ignore warnings. Whatever.
@@ -42,6 +42,7 @@ content = r.content
 zip_data = BytesIO(content)
 
 with zipfile.ZipFile(zip_data, 'r') as zip_file:
+    # We intend for zip_file to hold exactly two ZIPs - one for today and one for tomorrow.
     today_zip = zip_file.namelist()[0]
     tomo_zip = zip_file.namelist()[1]
 

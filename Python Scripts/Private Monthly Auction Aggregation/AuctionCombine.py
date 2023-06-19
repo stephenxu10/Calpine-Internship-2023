@@ -4,7 +4,6 @@ import os
 from typing import Union
 import pandas as pd
 
-from utils import convert
 
 """
 This Python script performs an aggregation on the private monthly auction files while also
@@ -23,15 +22,13 @@ running this code will generate an updated output whenever new data is added.
 # Global parameters & variables
 start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
-path_base = "./../../../06 - CRR/Monthly"
+path_base = "./../../../../06 - CRR/Monthly"
 
 # Flag that groups together all matching Paths (within current year) by averaging ShadowPricePerMWH and BidPricePerMWH
 grouping_by = True
 
-
 # Relative file path of the outputted CSV., dependent on the flag
-output_path = "./../Data/Private_auction_grouped.csv" if grouping_by else "./../Data/Private_auction_combined.csv"
-
+output_path = "./../../Data/Private_auction_grouped.csv" if grouping_by else "./../../Data/Private_auction_combined.csv"
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2019
@@ -39,7 +36,14 @@ end_year = 2023
 
 # Begin by constructing a dictionary that maps each path to a tuple of its Plant and Size (MW).
 path_to_plant = {}
-nodeToPlantFile = "./../../../06 - CRR/01 - General/Extracts/NodePlantMapping.CSV"
+nodeToPlantFile = "./../../../../06 - CRR/01 - General/Extracts/NodePlantMapping.CSV"
+
+def convert(month: int) -> str:
+    if month <= 9:
+        return "0" + str(month)
+    else:
+        return str(month)
+
 
 """
 Helper method that locates the Private_(year).(month).Monthly.Auction_AUCTION.CSV file and creates

@@ -1,9 +1,7 @@
 from collections import defaultdict
 from typing import Dict, Tuple
-
 import pandas as pd
 import time
-from utils import convertDate
 
 """
 This Python script performs an aggregation of the grouped monthly auction data
@@ -25,10 +23,10 @@ If any updates need to be made to that file, run AuctionCombine.py first.
 
 # Global Parameters and Variables
 start_time = time.time()
-auction_grouped = "./../Data/Private_auction_grouped.CSV"
-historical = "./../Data/ERCOT Assets/ERCOT_historical_basis_assets.CSV"
+auction_grouped = "./../../Data/Private_auction_grouped.CSV"
+historical = "./../../Data/ERCOT Assets/ERCOT_historical_basis_assets.CSV"
 
-output_path = "./../Data/ERCOT_historical_married.csv"
+output_path = "./../../Data/ERCOT_historical_married.csv"
 
 df_auction = pd.read_csv(auction_grouped)
 df_historical = pd.read_csv(historical)
@@ -38,6 +36,14 @@ sizes = []
 shadowPrices = []
 bidPrices = []
 hedgeMapping = {"Option": "OPT", "Obligation": "OBL"}
+
+
+def convertDate(date: str):
+    year = date[:4]
+    month = date[5:7]
+    day = date[8:]
+
+    return month + "/" + day + "/" + year
 
 
 """
@@ -60,6 +66,7 @@ def process(df_auction) -> Dict[str, Dict[str, Dict[str, Tuple[str, str, str, st
         auction_summary[date][path][hedgeType] = (plant, size, shadowPrice, bidPrice)
     
     return auction_summary
+
 
 """
 Given a DataFrame row, this method grabs the plant, size, shadowPricePerMWH, and
