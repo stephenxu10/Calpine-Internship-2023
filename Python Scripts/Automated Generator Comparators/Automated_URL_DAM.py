@@ -14,9 +14,14 @@ This Python tool aims to automate the comparison between today and yesterday's D
 by sending an email through Outlook storing the CSV that summarizes the comparison. Will send every day
 at 7 AM.
 
-Here, we extract the DAM data via the ERCOT API. More testing is needed to confirm correctness.
+Here, we extract the DAM data via the ERCOT API. More testing is needed to confirm correctness. If an email
+does not send at 7 AM, here are some possible explanations.
+    - The data has been published yet on ERCOT. 
+    Check https://mis.ercot.com/secure/data-products/markets/day-ahead-market?id=NP4-500-SG to see if it is
+    there or not.
+    
+    - If the data is there on the ERCOT website, the script likely failed to grab the data.
 """
-
 # Ignore warnings. Whatever.
 warnings.simplefilter("ignore")
 
@@ -51,9 +56,9 @@ with zipfile.ZipFile(zip_data, 'r') as zip_file:
 
     # Locate the generator CSV for Hour 16 today
     with zipfile.ZipFile(today_data, 'r') as first_zip_file:
-        csv_tomorrow = [x for x in first_zip_file.namelist() if "_Gn_016" in x][0]
+        csv_now = [x for x in first_zip_file.namelist() if "_Gn_016" in x][0]
         
-        with first_zip_file.open(csv_tomorrow) as csv_today:
+        with first_zip_file.open(csv_now) as csv_today:
             df_today = pd.read_csv(csv_today)
 
     # Locate the generator CSV for Hour 16 tomorrow.
