@@ -14,11 +14,7 @@ This Python tool aims to automate the comparison between today and yesterday's D
 by sending an email through Outlook storing the CSV that summarizes the comparison. Will send every day
 at 7 AM.
 
-Currently, there are two versions of Python scripts that accomplish this task. In this newer version, some of
-the data is extracted from the ERCOT API, which is advantageous since we no longer require all data
-to already exist on the disk. 
-
-More testing still needed!
+Here, we extract the DAM data via our ERCOT API. More testing is needed to confirm correctness.
 """
 
 # Ignore warnings. Whatever.
@@ -27,17 +23,15 @@ warnings.simplefilter("ignore")
 # Build the request URL.
 url_header = "https://ercotapi.app.calpine.com/reports?reportId=13070&marketParticipantId=CRRAH&"
 
-lower = (date.today() - timedelta(days=2)).strftime('%m-%d-%Y')
-upper = (date.today() + timedelta(days=2)).strftime('%m-%d-%Y')
+lower = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+upper = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
 
 request_url = url_header + f"startTime={lower}T00:00:00&endTime={upper}T00:00:00&unzipFiles=false"
+print(request_url)
 
 # Get today and tomorrow's dates in MM/DD/YYYY
 today = date.today().strftime('%m/%d/%Y')
 tomorrow = (date.today() + timedelta(days=1)).strftime('%m/%d/%Y')
-
-# Assume that today's DAM data is already on the disk.
-df_today = DAM_Gn_Comparator.find_generator_data(today, 16)
 
 # Work on pulling tomorrow's data via the website.
 r = requests.get(request_url, verify=False)
@@ -46,16 +40,24 @@ content = r.content
 # zip_data is a nested zip file - it should contain a list of historical MIS ZIP files in [lower, upper]
 zip_data = BytesIO(content)
 with zipfile.ZipFile(zip_data, 'r') as zip_file:
+    today_zip = zip_file.namelist()[0]
+    tomo_zip = zip_file.namelist()[1]
 
-    # Hopefully, first_zip is the zip file for tomorrow's generator data. More testing is needed to confirm this.
-    first_zip = zip_file.namelist()[0]
-    first_data = BytesIO(zip_file.read(first_zip))
+    today_data = BytesIO(zip_file.read(today_zip))
+    tomo_data = BytesIO(zip_file.read(tomo_zip))
 
-    # Locate the generator CSV for Hour 16.
-    with zipfile.ZipFile(first_data, 'r') as first_zip_file:
+    # Locate the generator CSV for Hour 16 today
+    with zipfile.ZipFile(today_data, 'r') as first_zip_file:
         csv_tomorrow = [x for x in first_zip_file.namelist() if "_Gn_016" in x][0]
         
-        with first_zip_file.open(csv_tomorrow) as csv_tomo:
+        with first_zip_file.open(csv_tomorrow) as csv_today:
+            df_today = pd.read_csv(csv_today)
+
+    # Locate the generator CSV for Hour 16 tomorrow.
+    with zipfile.ZipFile(tomo_data, 'r') as second_zip_file:
+        csv_tomorrow = [x for x in second_zip_file.namelist() if "_Gn_016" in x][0]
+
+        with second_zip_file.open(csv_tomorrow) as csv_tomo:
             df_tomo = pd.read_csv(csv_tomo)
 
 # Use previous helper methods to compare the generator data between the two DataFrames
@@ -71,7 +73,7 @@ body += '<html><body>' + df_csv.to_html(index=False) + '</body></html>'
 msg = MIMEMultipart('alternative')
 msg['Subject'] = "Daily DAM Generator Comparison Results"
 sender = 'Transmission.Yesapi@calpine.com'
-receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
+receivers = ['Stephen.Xu@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
