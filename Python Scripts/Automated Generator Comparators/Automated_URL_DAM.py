@@ -26,6 +26,7 @@ url_header = "https://ercotapi.app.calpine.com/reports?reportId=13070&marketPart
 lower = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 upper = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
 
+# Should return the MIS DAM Data for today and tomorrow.
 request_url = url_header + f"startTime={lower}T00:00:00&endTime={upper}T00:00:00&unzipFiles=false"
 print(request_url)
 
@@ -39,6 +40,7 @@ content = r.content
 
 # zip_data is a nested zip file - it should contain a list of historical MIS ZIP files in [lower, upper]
 zip_data = BytesIO(content)
+
 with zipfile.ZipFile(zip_data, 'r') as zip_file:
     today_zip = zip_file.namelist()[0]
     tomo_zip = zip_file.namelist()[1]
@@ -73,7 +75,9 @@ body += '<html><body>' + df_csv.to_html(index=False) + '</body></html>'
 msg = MIMEMultipart('alternative')
 msg['Subject'] = "Daily DAM Generator Comparison Results"
 sender = 'Transmission.Yesapi@calpine.com'
-receivers = ['Stephen.Xu@calpine.com']
+
+# Edit this line to determine who receives the email.
+receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
