@@ -1,11 +1,13 @@
 from io import StringIO
 import zipfile
+import json
 import requests
 import warnings
 from typing import Dict, Tuple, List, Union
 import pandas as pd
 from collections import defaultdict
 import time
+from datetime import timedelta, datetime
 import os
 
 """
@@ -23,12 +25,12 @@ warnings.simplefilter("ignore")
 start_time = time.time()
 year = 2023
 
-yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
-output_path = "./Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
-auth = ('transmission.yesapi@calpine.com', 'texasave717')
-nodes = set()
+json_path = "./../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
+output_path = "./../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
 
+yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
+auth = ('transmission.yesapi@calpine.com', 'texasave717')
 
 # Extract the set of all nodes that we are interested in
 nodes_req = requests.get("https://services.yesenergy.com/PS/rest/collection/node/2697330", auth=auth)
@@ -39,7 +41,6 @@ if nodes_req.status_code == 200:
 
 else:
     print("Request to obtain node values failed. :(")
-
 
 """
 A helper method that queries Yes Energy to grab the ERCOT hourly constraint data in a certain date range.
@@ -98,13 +99,87 @@ Given a DataFrame of raw data taken from the drive, this helper method converts 
     3) Match each filtered row to the pre-processed data to accumulate the ShadowPrice and FacilityType
 
 Inputs:
-    - df: The original, raw DataFrame.
+    - df: The original, raw DataFrame. Assume the DataFrame only contains data from one day & hour-ending pair.
+    - mapping: The pre-processed mapping containing all 
 
 Output:
     - df_converted: The converted DataFrame after the above operations have been performed.
 """
-def convert_csv(df: pd.DataFrame) -> pd.DataFrame:
-    pass
+def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
+    filtered_df = df[df['Settlement_Point'].isin(nodes)]
+    
+    datetime_obj = datetime.strptime(filtered_df.iloc[0, 0], "%m/%d/%Y %H:%M:%S")
+    next_hour = (datetime_obj + timedelta(hours=1)).strftime("%H")
+    df_date = (datetime_obj + timedelta(hours=1)).strftime("%m/%d/%Y")
+    
+    if next_hour == "00":
+        next_hour = "24"
+
+    next_hour = next_hour.lstrip('0')
+    hourEnding = [next_hour] * len(filtered_df)
+
+    # Search for ShadowPrice and FacilityType
+    shadowPrices = []
+    facilityTypes = []
+
+    facilityMapping = mapping[df_date][next_hour]
+
+    for _, row in filtered_df.iterrows():
+        row_constraint = row['Constraint_Name']
+        row_contingency = row['Contingency_Name']
+
+        found = False
+        for facilityName in facilityMapping:
+            if row_constraint in facilityName:
+                for contingency, shadow, fac_type in facilityMapping[facilityName]:
+                    if row_contingency == contingency:
+                        shadowPrices.append(shadow)
+                        facilityTypes.append(fac_type)
+                        found = True
+                        break
+
+        if not found:
+            shadowPrices.append(" ")
+            facilityTypes.append(" ")
+
+    filtered_df.insert(1, 'Hour_Ending', hourEnding)
+    filtered_df['Shadow_Price'] = shadowPrices
+    filtered_df['Facility_Type'] = facilityTypes
+
+    print(df_date)
+    return filtered_df
+
+
+if not os.path.isfile(json_path):
+    mapping = dict(process_mapping("12/31/" + str(year - 1), "12/31/" + str(year)))
+
+    if year != datetime.now().year:
+        mapping["Latest Date Queried"] = "12/31"
+
+    else:
+        mapping["Latest Date Queried"] = datetime.now().strftime("%m/%d")
+
+    json_data = json.dumps(mapping)
+
+    with open(json_path, "w") as file:
+        file.write(json_data)
+
+elif year != datetime.now().year:
+    with open(json_path, "r") as file:
+        mapping = json.load(file)
+
+else:
+    with open(json_path, "r") as file:
+        mapping = json.load(file)
+
+    latest = mapping["Latest Date Queried"]
+
+    if latest != datetime.now().strftime("%m/%d"):
+        mapping.update(dict(process_mapping(latest + "/" + str(year - 1), "today")))
+        mapping["Latest Date Queried"] = datetime.now().strftime("%m/%d")
+
+        with open(json_path, "w") as file:
+            json.dump(mapping, file)
 
 
 # Grab the list of RT Hourly Zip Files for the year.
@@ -113,17 +188,15 @@ yearly_zip_files = os.listdir(zip_base)
 for zip_file in yearly_zip_files:
     with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
         df_csv = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
-        # merge.append(convert_csv(df_csv))
-        print(df_csv.head())
-        break
+        merge.append(convert_csv(df_csv, mapping))
 
-# merged_df = pd.DataFrame(pd.concat(merge, axis=0))
-# merged_df.to_csv(output_path, index=False)
+merged_df = pd.DataFrame(pd.concat(merge, axis=0))
+merged_df.to_csv(output_path, index=False)
 
-"""
-mapping = process_mapping("today-1", "today")
-for name in mapping:
-    print("")
-    for hour in mapping[name]:
-        print(mapping[name][hour])
-"""
+
+
+end_time = time.time()
+execution_time = (end_time - start_time)
+print("Generation Complete")
+print(f"The script took {execution_time:.2f} seconds to run.")
+
