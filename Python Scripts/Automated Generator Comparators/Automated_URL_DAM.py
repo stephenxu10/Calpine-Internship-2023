@@ -20,7 +20,8 @@ does not send at 7 AM, here are some possible explanations.
     Check https://mis.ercot.com/secure/data-products/markets/day-ahead-market?id=NP4-500-SG to see if it is
     there or not.
     
-    - If the data is there on the ERCOT website, the script likely failed to grab the data.
+    - If the data is there on the ERCOT website, the script either failed to grab the data, or
+      a runtime error occurred during the processing.
 """
 # Ignore warnings. Whatever.
 warnings.simplefilter("ignore")
