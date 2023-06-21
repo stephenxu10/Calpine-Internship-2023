@@ -90,8 +90,9 @@ final_merged_df = pd.DataFrame(final_merged_df)
 
 # Ignore the 'header' lines
 final_merged_df = final_merged_df.dropna(subset=['From Station', 'Voltage Level'], how='all')
-final_dropped = final_merged_df.drop_duplicates(subset=['Date', 'Contingency ID', 'Element Name'])
 
+final_dropped = final_merged_df.drop_duplicates(subset=['Contingency ID', 'Element Name'])
+final_dropped = final_dropped.drop(['Date'], axis=1)
 
 # Output to respective CSVs
 final_dropped.to_csv(output_drop, index=False)

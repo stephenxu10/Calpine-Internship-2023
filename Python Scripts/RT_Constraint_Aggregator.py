@@ -48,7 +48,7 @@ Inputs:
     - start_date: A string in the MM/DD/YYYY format giving the inclusive lower bound.
     - end_date: A string in the MM/DD/YYYY format giving the inclusive upper bound.
     
-    Assume that start_date and end_date are within six months of each other.
+    Assume that start_date and end_date are within 367 days of each other.
     
 Output:
     - res, the pre-processed data stored as a nested dictionary. For reference, res[a][b][c] gives a list of 
@@ -118,7 +118,7 @@ Given a DataFrame of raw data taken from the drive, this helper method converts 
 
 Inputs:
     - df: The original, raw DataFrame. Assume the DataFrame only contains data from one day & hour-ending pair.
-    - mapping: The pre-processed mapping containing all 
+    - mapping: The pre-processed mapping containing all relevant data
 
 Output:
     - df_converted: The converted DataFrame after the above operations have been performed.
@@ -192,13 +192,8 @@ if not os.path.isfile(json_path):
     with open(json_path, "w") as file:
         file.write(json_data)
 
-# Read the mapping from disk if it already exists and the year is not the current year.
-elif year != datetime.now().year:
-    with open(json_path, "r") as file:
-        mapping = json.load(file)
-
-# If current year, we query all data from the latest date queried to the current date.
-else:
+# Otherwise, if current year, we query all data from the latest date queried to the current date.
+elif year == datetime.now().year:
     with open(json_path, "r") as file:
         mapping = json.load(file)
 
@@ -207,7 +202,6 @@ else:
     mapping.update(new_data)
     mapping["Latest Date Queried"] = datetime.now().strftime("%m/%d")
     
-
     with open(json_path, "w") as file:
         json.dump(mapping, file)
 
@@ -232,7 +226,7 @@ elif year == datetime.now().year:
         zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")
         
         # Convert all newly added CSVs since the last aggregation
-        if zip_date >= datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y"):
+        if zip_date > datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y"):
             with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
                 df_csv = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
                 merge.append(convert_csv(df_csv, mapping))

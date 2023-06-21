@@ -20,6 +20,8 @@ pipeline_mapping = {row['Gas Pipeline Name']: row['Gas Pipeline ID'] for _, row 
                     pd.read_excel(mapping_path).iterrows()}
 
 # List of query items that we are interested in.
+# TODO: Add column-id mapping.
+
 columns = (27496, 2630, 27545, 27548, 27535, 27536, 13244, 17062, 4969, 10895, 4973, 4978, 17147, 17148, 17149,
            9566, 27498, 2629, 27546, 13245)
 
