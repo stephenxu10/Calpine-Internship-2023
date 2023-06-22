@@ -23,9 +23,12 @@ warnings.simplefilter("ignore")
 start_time = time.time()
 year = 2023
 
+# How many days we look back
+days_back = 3
+
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
-json_path = "./../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
-output_path = "./../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
+json_path = "./../../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
+output_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
 auth = ('transmission.yesapi@calpine.com', 'texasave717')
@@ -62,7 +65,7 @@ Output:
         - y: ShadowPrice
         - z: FacilityType
 """
-def process_mapping(start_date: str, end_date: str) -> Union[Dict[str, Dict[str, Dict[str, List[Tuple[str, str, str]]]]], None]:
+def process_mapping(start_date: str, end_date: str) -> Union[Dict[str, Dict[str, Dict[str, List[Tuple[str, str, str, str]]]]], None]:
     # Build the request URL.
     req_url = f"{yes_energy}startdate={start_date}&enddate={end_date}"
     yes_req = requests.get(req_url, auth=auth)
@@ -79,8 +82,9 @@ def process_mapping(start_date: str, end_date: str) -> Union[Dict[str, Dict[str,
         contingency = row['CONTINGENCY']
         shadowPrice = row['SHADOWPRICE']
         facility_type = row['FACILITYTYPE']
+        peak_type = row['PEAKTYPE']
 
-        res[date][hour][facility_name].append((contingency, shadowPrice, facility_type))
+        res[date][hour][facility_name].append((contingency, shadowPrice, facility_type, peak_type))
 
     return res
 
@@ -94,21 +98,25 @@ Inputs:
                shadowPrice and facilityType.
                
 Output:
-    - A tuple of shadowPrice and facilityType, if found. Blank strings otherwise.
+    - A tuple of shadowPrice, facilityType, and peak_type, if found. 
+      Blank strings otherwise.
 """
-def findDesired(mapping: Dict, row) -> Tuple[str, str]:
+
+
+def findDesired(mapping: Dict, row) -> Tuple[str, str, str]:
     row_constraint = row['Constraint_Name']
     row_contingency = row['Contingency_Name']
 
     for facilityName in mapping:
         # Parse the facilityName string, since row_constraint can be a substring.
         if row_constraint in facilityName:
-            for contingency, shadow, fac_type in mapping[facilityName]:
+            for contingency, shadow, fac_type, peak_type in mapping[facilityName]:
                 # Contingencies must match
                 if row_contingency == contingency:
-                    return shadow, fac_type
+                    return shadow, fac_type, peak_type
 
-    return "", ""
+    return "", "", ""
+
 
 """
 Given a DataFrame of raw data taken from the drive, this helper method converts it by doing the following:
@@ -126,12 +134,12 @@ Output:
 def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
     # Filter out the original DataFrame to only include desired settlement point nodes
     filtered_df = df[df['Settlement_Point'].isin(nodes)]
-    
+
     # Parse the date and determine the next hour
     datetime_obj = datetime.strptime(filtered_df.iloc[0, 0], "%m/%d/%Y %H:%M:%S")
     next_hour = (datetime_obj + timedelta(hours=1)).strftime("%H")
     df_date = (datetime_obj + timedelta(hours=1)).strftime("%m/%d/%Y")
-    
+
     if next_hour == "00":
         next_hour = "24"
 
@@ -141,23 +149,27 @@ def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
     # Build the shadowPrice and facilityType columns
     shadowPrices = []
     facilityTypes = []
-    
+    peakTypes = []
+
     if next_hour not in mapping[df_date]:
         shadowPrices = [""] * len(filtered_df)
         facilityTypes = [""] * len(filtered_df)
-    
+        peakTypes = [""] * len(filtered_df)
+
     else:
         facilityMapping = mapping[df_date][next_hour]
         for _, row in filtered_df.iterrows():
-            shadow, facType = findDesired(facilityMapping, row)
+            shadow, facType, peakType = findDesired(facilityMapping, row)
             shadowPrices.append(shadow)
             facilityTypes.append(facType)
-        
+            peakTypes.append(peakType)
+
     # Add in the new columns and return the resulting DataFrame
     filtered_df.insert(1, 'Hour_Ending', hourEnding)
+    filtered_df.insert(2, "PeakType", peakTypes)
     filtered_df['Shadow_Price'] = shadowPrices
     filtered_df['Facility_Type'] = facilityTypes
-    
+
     # Progress-checking print statement
     print(df_date + " " + next_hour)
     return filtered_df
@@ -178,11 +190,11 @@ latest_date = ""
 if not os.path.isfile(json_path):
     # Grab all available data from the year.
     mapping = dict(process_mapping("12/31/" + str(year - 1), "12/31/" + str(year)))
-    
+
     # If the year parameter is not the current year, we've grabbed everything
     if year != datetime.now().year:
         mapping["Latest Date Queried"] = "12/31"
-    
+
     # Otherwise, if we are working with current data, the latest date queried is today.
     else:
         mapping["Latest Date Queried"] = datetime.now().strftime("%m/%d")
@@ -198,13 +210,14 @@ elif year == datetime.now().year:
         mapping = json.load(file)
 
     latest_date = mapping["Latest Date Queried"]
-    new_data = dict(process_mapping(latest_date + "/" + str(year), "today"))
+    lower_bound = datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y") - timedelta(days=days_back)
+
+    new_data = dict(process_mapping(str(lower_bound.date()) + "/" + str(year), "today"))
     mapping.update(new_data)
     mapping["Latest Date Queried"] = datetime.now().strftime("%m/%d")
-    
+
     with open(json_path, "w") as file:
         json.dump(mapping, file)
-
 
 # Grab the list of RT Hourly Zip Files for the year.
 merge = []
@@ -218,26 +231,40 @@ if not os.path.isfile(output_path):
             merge.append(convert_csv(df_csv, mapping))
 
     merged_df = pd.DataFrame(pd.concat(merge, axis=0))
+    merged_df['Shadow_Price'] = pd.to_numeric(merged_df['Shadow_Price'], errors='coerce')
+    merged_df = merged_df[merged_df['Shadow_Price'] > 0]
+    merged_df = merged_df.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
+                                                          'Contingency_Name', 'Settlement_Point'], keep='last')
     merged_df.to_csv(output_path, index=False)
 
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
 elif year == datetime.now().year:
+    current_data = pd.read_csv(output_path)
+    latest_date = datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y")
+
     for zip_file in yearly_zip_files:
         zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")
-        
+
         # Convert all newly added CSVs since the last aggregation
-        if zip_date > datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y"):
+        if zip_date >= latest_date - timedelta(days=days_back):
             with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
                 df_csv = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
                 merge.append(convert_csv(df_csv, mapping))
-    
+
     # Append the new data to the existing data
     merged_df = pd.DataFrame(pd.concat(merge, axis=0))
-    merged_df.to_csv(output_path, mode='a', index=False, header=False)
+    combined_data = pd.concat([current_data, merged_df], axis=0)
+
+    # Post-processing of the data.
+    combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
+    combined_data = combined_data[combined_data['Shadow_Price'] > 0]
+    combined_data = combined_data.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
+                                                          'Contingency_Name', 'Settlement_Point'], keep='last')
+
+    combined_data.to_csv(output_path, index=False)
 
 # Output summary statistics
 end_time = time.time()
 execution_time = (end_time - start_time)
 print("Generation Complete")
 print(f"The script took {execution_time:.2f} seconds to run.")
-
