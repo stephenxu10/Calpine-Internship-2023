@@ -31,20 +31,20 @@ output_path = "./../Data/Common_BindingConstraint_Combined.csv"  # Relative file
 start_year = 2019
 end_year = 2023
 
-
-"""
-Given an input year and month, this helper method performs File I/O to return a tuple of two strings:
-the relative path to the Common_BindingConstraint document followed by the path to the Monthly Auction
-Mapping Document Excel sheet
-
-Inputs:
-    - year: An integer between start_year and end_year
-    - month: An integer in the interval [1, 12]
-    
-Output: A two-element tuple containing the file paths specified above. If any of the files are invalid,
-        we return an empty two-element tuple.
-"""
 def get_files(year: int, month: int) -> Tuple[str, str]:
+    """
+    Given an input year and month, this helper method performs File I/O to return a tuple of two strings:
+    the relative path to the Common_BindingConstraint document followed by the path to the Monthly Auction
+    Mapping Document Excel sheet
+
+    Inputs:
+        - year: An integer between start_year and end_year
+        - month: An integer in the interval [1, 12]
+
+    Output: A two-element tuple containing the file paths specified above. If any of the files are invalid,
+            we return an empty two-element tuple.
+    """
+
     c_month = convert(month)
     year = str(year)
 
@@ -63,53 +63,54 @@ def get_files(year: int, month: int) -> Tuple[str, str]:
 
     else:
         return "", ""
-    
-"""
-Performs a binary search on an input 2-dimensional list of strings. Searches the list for the unique
-index such that the first column equals to target and outputs the corresponding second column value.
 
-Inputs:
-    - input: A 2-dimensional list of strings. It is assumed that the first column is sorted in ASCII order.
-    - target: The target string
+def mod_binary_search(input_list: List[List[str]], target: str) -> str:
+    """
+    Performs a binary search on an input 2-dimensional list of strings. Searches the list for the unique
+    index such that the first column equals to target and outputs the corresponding second column value.
 
-Output:
-    - Performs a binary search to find the second column value corresponding to target.
-    
-     In practice, this helper method gives the corresponding operation name to a device name.
-"""
-def mod_binary_search(input: List[List[str]], target: str) -> str:
+    Inputs:
+        - input: A 2-dimensional list of strings. It is assumed that the first column is sorted in ASCII order.
+        - target: The target string
+
+    Output:
+        - Performs a binary search to find the second column value corresponding to target.
+
+         In practice, this helper method gives the corresponding operation name to a device name.
+    """
     low = 0
-    high = len(input) - 1
+    high = len(input_list) - 1
     
     while low != high:
         mid = (low + high) // 2
         
-        if input[mid][0] == target:
-            return input[mid][1]
+        if input_list[mid][0] == target:
+            return input_list[mid][1]
         
-        elif input[mid][0] < target:
+        elif input_list[mid][0] < target:
             low = mid + 1
     
         else:
             high = mid - 1
 
-    return input[low][1]
+    return input_list[low][1]
 
 
-"""
-Helper method that processes an input csv file and replaces the 'DeviceName' column with its
-corresponding operation name found in the mapping excel file. Returns a new Pandas DataFrame with
-the updated entries
-
-Inputs:
-    - csv_file: A string giving the path to the CSV file. It is guaranteed to be valid.
-    - excel_file: A string giving the path to the Excel file. It is also guaranteed to be valid.
-    
-Output:
-    This method outputs a Pandas DataFrame that contains the updated entry for each element in the 'DeviceName'
-    column of the CSV file, matched with their corresponding Operation Names found in the Excel file.
-"""
 def replace_csv(csv_file: str, excel_file: str) -> pd.DataFrame:
+    """
+    Helper method that processes an input csv file and replaces the 'DeviceName' column with its
+    corresponding operation name found in the mapping excel file. Returns a new Pandas DataFrame with
+    the updated entries
+
+    Inputs:
+        - csv_file: A string giving the path to the CSV file. It is guaranteed to be valid.
+        - excel_file: A string giving the path to the Excel file. It is also guaranteed to be valid.
+
+    Output:
+        This method outputs a Pandas DataFrame that contains the updated entry for each element in the 'DeviceName'
+        column of the CSV file, matched with their corresponding Operation Names found in the Excel file.
+    """
+
     # Read both sheets of the Excel file.
     df_lines = pd.read_excel(excel_file, sheet_name=0)
     df_autos = pd.read_excel(excel_file, sheet_name=1)

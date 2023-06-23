@@ -6,7 +6,7 @@ import warnings
 
 # Global parameters & variables
 start_time = time.time()
-year = 2023
+year = 2021
 
 path_base = "./../../../02 - Input/Transmission/Standard Ctgcs"
 output_raw = "./../Data/Lookup Tables/Lookup_Table_Combined_" + str(year) + "_raw.csv"  # Relative file path of the outputted raw CSV.

@@ -24,7 +24,7 @@ start_time = time.time()
 year = 2023
 
 # How many days we look back
-days_back = 3
+days_back = 174
 
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
 json_path = "./../../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
@@ -129,7 +129,7 @@ def post_process(raw_data: pd.DataFrame) -> Dict[str, Dict[str, List[Tuple[str, 
         contingency = row['Contingency_Name']
         shadowShift = float(row['Shadow_Price']) * float(row['Shift_Factor'])
 
-        res[settlement][full_date].append((contingency, constraint, peak_type, shadowShift))
+        res[settlement][full_date].append((contingency, constraint, peak_type, float(row['Shift_Factor']), shadowShift))
 
     return res
 
@@ -144,7 +144,7 @@ def findDesired(mapping: Dict, row) -> Tuple[str, str, str]:
                    shadowPrice and facilityType.
 
     Output:
-        - A tuple of shadowPrice, facilityType, and peak_type, if found.
+        - A tuple of shadowPrice, facilityType, peak_type, and facilityName, if found.
           Blank strings otherwise.
     """
 
@@ -157,9 +157,9 @@ def findDesired(mapping: Dict, row) -> Tuple[str, str, str]:
             for contingency, shadow, fac_type, peak_type in mapping[facilityName]:
                 # Contingencies must match
                 if row_contingency == contingency:
-                    return shadow, fac_type, peak_type
+                    return shadow, fac_type, peak_type, facilityName
 
-    return "", "", ""
+    return "", "", "", ""
 
 
 def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
@@ -195,6 +195,7 @@ def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
     shadowPrices = []
     facilityTypes = []
     peakTypes = []
+    facilityNames = []
 
     if next_hour not in mapping[df_date]:
         shadowPrices = [""] * len(filtered_df)
@@ -204,16 +205,18 @@ def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
     else:
         facilityMapping = mapping[df_date][next_hour]
         for _, row in filtered_df.iterrows():
-            shadow, facType, peakType = findDesired(facilityMapping, row)
+            shadow, facType, peakType, facName = findDesired(facilityMapping, row)
             shadowPrices.append(shadow)
             facilityTypes.append(facType)
             peakTypes.append(peakType)
+            facilityNames.append(facName)
 
     # Add in the new columns and return the resulting DataFrame
     filtered_df.insert(1, 'Hour_Ending', hourEnding)
     filtered_df.insert(2, "PeakType", peakTypes)
     filtered_df['Shadow_Price'] = shadowPrices
     filtered_df['Facility_Type'] = facilityTypes
+    filtered_df['Constraint_Name'] = facilityNames
 
     # Progress-checking print statement
     print(df_date + " " + next_hour)
@@ -304,16 +307,23 @@ elif year == datetime.now().year:
     combined_data = pd.concat([current_data, merged_df], axis=0)
 
     # Update the current summary 2023 JSON
-    with open(json_summary) as js_sum:
-        existing_sum = json.load(js_sum)
+    try:
+        with open(json_summary) as js_sum:
+            existing_sum = json.load(js_sum)
+        
+    except json.JSONDecodeError:
+        existing_sum = {}
 
     new_processed = post_process(merged_df)
 
-    for node in existing_sum:
-        if node in merged_df:
-            for date in merged_df[node]:
+    for node in new_processed:
+        if node not in existing_sum:
+            existing_sum[node] = new_procesed[node]
+        
+        else:
+            for date in new_processed[node]:
                 if date not in existing_sum[node]:
-                    existing_sum[node][date] = merged_df[node][date]
+                    existing_sum[node][date] = new_processed[node][date]
 
     with open(json_summary, "w") as json_sum:
         json_sum.write(json.dumps(existing_sum))

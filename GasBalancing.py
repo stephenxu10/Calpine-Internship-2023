@@ -1,12 +1,10 @@
 import warnings
 from datetime import date, timedelta
 import pandas as pd
-import numpy as np
 import urllib.parse
-from typing import Union
+from typing import Union, Tuple, List
 import requests
 from io import StringIO
-
 
 # Ignore warnings. Whatever.
 warnings.simplefilter("ignore")
@@ -33,7 +31,9 @@ api_key = "ba71a029-a6fd-40cc-b0b7-6e4eb905dc57"
 # Dataset Number
 dataset = 2359
 
-def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dataset, columns=columns) -> Union[pd.DataFrame, None]:
+
+def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dataset, columns=columns) -> Union[
+        pd.DataFrame, None]:
     """
     Given an input Gas Pipeline Name, Flow Point Name, and a specified date range, this helper method performs
     a query on the velocity suite API in order to extract the desired raw data.
@@ -85,5 +85,35 @@ def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dat
             print("not found!")
             return
 
+def extract_paths(excel_path: str) -> List[Tuple[str, str]]:
+    """
+    Given an absolute path to an Excel sheet, this helper method reads through the tabs and extracts
+    a list of "paths" consisting of a (Gas Pipeline Name, Flow Point Name) tuple.
 
-print(fetch_gas_data("Enable Gas Transmission LLC", "Rockcliff Ic St-1 Panol", 90))
+    Inputs:
+        - excel_path: The absolute path to an Excel sheet.
+
+    Output:
+        - A list of tuples giving the set of all paths in that particular Excel sheet.
+    """
+    excel_file = pd.ExcelFile(excel_path)
+    sheet_names = excel_file.sheet_names
+
+    paths = []
+    for sheet_name in sheet_names:
+        df = pd.read_excel(excel_file, sheet_name=sheet_name, nrows=5)
+        df = pd.read_excel(excel_file, sheet_name=sheet_name, nrows=5, header=1)
+        columns = df.columns.tolist()
+
+        if not df.empty:
+            if 'Gas_x0020_Pipeline_x0020_Name' in columns:
+                paths.append((df.loc[0, 'Gas_x0020_Pipeline_x0020_Name'], df.loc[0, 'Flow_x0020_Point_x0020_Name']))
+
+            elif 'Gas_x0020_Pipeline_x0020_Name' in df.values.tolist()[0]:
+                paths.append(df.loc[0, 'Gas_x0020_Pipeline_x0020_Name'], df.loc[0, 'Flow_x0020_Point_x0020_Name'])
+
+    return paths
+
+
+print(extract_paths(south_central))
+# print(fetch_gas_data("Enable Gas Transmission LLC", "Rockcliff Ic St-1 Panol", 90))

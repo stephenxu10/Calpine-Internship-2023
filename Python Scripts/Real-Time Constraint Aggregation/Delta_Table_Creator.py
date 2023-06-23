@@ -72,10 +72,10 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
 
             # Iterate over each combination of source and sink items
             for source_item, sink_item in product(source_list, sink_list):
-                contin, constr, peak, ss = source_item
-                sink_contin, sink_constr, sink_peak, sink_ss = sink_item
+                contin, constr, peak, sf, ss = source_item
+                sink_contin, sink_constr, sink_peak, sink_sf, sink_ss = sink_item
 
-                # Check if the values match for continuation, constraint, and peak type
+                # Check if the values match for contingency, constraint, and peak type
                 if contin == sink_contin and constr == sink_constr and peak == sink_peak:
                     # Append the data to the respective columns
                     data[0].append(date)
@@ -83,8 +83,8 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
                     data[2].append(constr)
                     data[3].append(contin)
                     data[4].append(f"{source}+{sink}")
-                    data[5].append(source)
-                    data[6].append(sink)
+                    data[5].append(sf)
+                    data[6].append(sink_sf)
                     data[7].append(ss - sink_ss)
 
     # Create a DataFrame from the accumulated data
@@ -114,6 +114,7 @@ df_merged = pd.concat(final_merge, axis=0)
 # Do some post-processing of the data
 df_merged = df_merged.drop_duplicates(subset=['Date', 'PeakType', 'Constraint', 'Contingency', 'Path'])
 df_merged = df_merged.sort_values(by='Date')
+df_merged['Hour'] = df['Date'].apply(lambda x: int(x[11:13]))
 df_merged.to_csv(output_path, index=False)
     
 # Output summary statistics
