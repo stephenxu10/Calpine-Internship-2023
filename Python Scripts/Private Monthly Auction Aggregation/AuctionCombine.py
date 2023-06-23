@@ -45,23 +45,23 @@ def convert(month: int) -> str:
     else:
         return str(month)
 
-
-"""
-Helper method that locates the Private_(year).(month).Monthly.Auction_AUCTION.CSV file and creates
-a Pandas DataFrame that adds three additional columns to the original CSV:
-    - Path: Gives the source + sink path
-    - Plant: Gives the corresponding Power Plant
-    - Size: Gives the capacity of that plant in MW
-
-Inputs:
-    - year: An integer between start_year and end_year
-    - month: An integer in the interval [1, 12]
-
-Output:
-    - Returns this newly created DataFrame, or None if the CSV file was not located. No data appears to be
-      available for 2016 and 2017.
-"""
 def modifyCSV(year: int, month: int) -> Union[None, pd.DataFrame]:
+    """
+    Helper method that locates the Private_(year).(month).Monthly.Auction_AUCTION.CSV file and creates
+    a Pandas DataFrame that adds three additional columns to the original CSV:
+        - Path: Gives the source + sink path
+        - Plant: Gives the corresponding Power Plant
+        - Size: Gives the capacity of that plant in MW
+
+    Inputs:
+        - year: An integer between start_year and end_year
+        - month: An integer in the interval [1, 12]
+
+    Output:
+        - Returns this newly created DataFrame, or None if the CSV file was not located. No data appears to be
+          available for 2016 and 2017.
+    """
+
     # Initialize and convert all necessary variables
     c_month = convert(month)
     year = str(year)

@@ -29,18 +29,19 @@ output_path = "./../Data/MIS Aggregates/MIS_DAM_" + str(year) + ".csv"
 # Grab the zip files across each year
 yearly_zip_files = os.listdir(path_base)
 
-"""
-Given the full file path to a zip file, this helper method unzips the contents and 
-aggregates all relevant CSV files (contains _Gn_) into one large Pandas DataFrame while also
-adding a new Date column.
-
-Inputs:
-    - zip_path: The valid file path to a specific zip file
-
-Output:
-    - A Pandas DataFrame containing the merged CSVs with the new column.
-"""
 def aggregate_zip(zip_path: str) -> pd.DataFrame:
+    """
+    Given the full file path to a zip file, this helper method unzips the contents and
+    aggregates all relevant CSV files (contains _Gn_) into one large Pandas DataFrame while also
+    adding a new Date column.
+
+    Inputs:
+        - zip_path: The valid file path to a specific zip file
+
+    Output:
+        - A Pandas DataFrame containing the merged CSVs with the new column.
+    """
+
     merge = []
     try:
         # Open the relevant CSV files and aggregate them through Pandas

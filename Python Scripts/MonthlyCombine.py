@@ -32,15 +32,16 @@ end_year = 2050
 output_path = "./../Data/Commercial_CreditCoefficient_Combined.csv"  # Relative file path of the outputted CSV.
 sourceSinks = getSourceSinks()
 
-"""
-Helper method that performs File I/O to append the list of all valid Commercial_CreditCoefficient
-CSV file paths to the existing csv_files list. Returns nothing. 
-
-Inputs:
-    - yr: The year to perform the search on
-    - csv_files: The existing list of CSV (relative) file paths
-"""
 def collect_csv(yr: int, csv_files: List[str]):
+    """
+    Helper method that performs File I/O to append the list of all valid Commercial_CreditCoefficient
+    CSV file paths to the existing csv_files list. Returns nothing.
+
+    Inputs:
+        - yr: The year to perform the search on
+        - csv_files: The existing list of CSV (relative) file paths
+    """
+
     # Perform some File I/O to access the CSV files.
     new_base = path_base + "/" + str(yr) if yr != 2019 else path_base + "/" + str(yr) + "/999 - Month"
 

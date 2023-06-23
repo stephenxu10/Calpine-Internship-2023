@@ -11,7 +11,7 @@ from typing import Dict, Union
 This Python task aims to utilize the summary of the real-time constraint data of 2023 to generate
 a table that contains the progression of Delta data for a certain set of paths. 
 
-Be sure to run Delta_Table_Creator.py first before running this script in order to 
+Be sure to run RT_Constraint_Aggregator.py first before running this script in order to 
 collect the most-recent data.
 
 The outputted table is located in the Data subfolder.
@@ -35,19 +35,20 @@ df['Path'] = df['SOURCE'] + '+' + df['SINK']
 df = df[['Path', 'SOURCE', 'SINK']]
 df = df.drop_duplicates()
 
-"""
-Accumulates data from the given mapping dictionary based on the specified source and sink.
-
-Args:
-    mapping (Dict): Mapping dictionary containing the data.
-    source (str): Key representing the source in the mapping.
-    sink (str): Key representing the sink in the mapping.
-
-Returns:
-    Union[pd.DataFrame, None]: A DataFrame containing the accumulated data, 
-                or None if either source or sink is not found in the mapping.
-"""
 def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame, None]:
+    """
+    Accumulates data from the given mapping dictionary based on the specified source and sink.
+
+    Args:
+        mapping (Dict): Mapping dictionary containing the data.
+        source (str): Key representing the source in the mapping.
+        sink (str): Key representing the sink in the mapping.
+
+    Returns:
+        Union[pd.DataFrame, None]: A DataFrame containing the accumulated data,
+                    or None if either source or sink is not found in the mapping.
+    """
+
     # Check if source and sink exist in the mapping
     if source not in mapping or sink not in mapping:
         return None
@@ -92,9 +93,11 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
     return res
 
 
+# Load the mapping file that contains a JSON of summarized data for the year
 with open(json_processed, "r") as map_file:
     mapping = json.load(map_file)
 
+# Grab and merge together the data
 final_merge = []
 for _, row in df.iterrows():
     source = row['SOURCE']
@@ -104,7 +107,7 @@ for _, row in df.iterrows():
     
     if df_path is not None:
         final_merge.append(df_path)
-        print("yay!")
+        print(f"{source} to {sink} completed.")
     
 df_merged = pd.concat(final_merge, axis=0)
 

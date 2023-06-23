@@ -44,29 +44,32 @@ if nodes_req.status_code == 200:
 else:
     print("Request to obtain node values failed.")
 
-"""
-A helper method that queries Yes Energy to grab the ERCOT hourly constraint data in a certain date range.
-Pre-processes the data into a large dictionary in order to speed up future search times.
 
-Inputs:
-    - start_date: A string in the MM/DD/YYYY format giving the inclusive lower bound.
-    - end_date: A string in the MM/DD/YYYY format giving the inclusive upper bound.
-    
-    Assume that start_date and end_date are within 367 days of each other.
-    
-Output:
-    - res, the pre-processed data stored as a nested dictionary. For reference, res[a][b][c] gives a list of 
-      3-element tuples corresponding to:
-        - a: The Date in MM/DD/YYYY format.
-        - b: The hour ending, ranging from 1 to 24.
-        - c: The full FacilityName.
-    
-    Each tuple (x, y, z) in res[a][b][c] gives
-        - x: Contingency
-        - y: ShadowPrice
-        - z: FacilityType
-"""
-def process_mapping(start_date: str, end_date: str) -> Union[Dict[str, Dict[str, Dict[str, List[Tuple[str, str, str, str]]]]], None]:
+def process_mapping(start_date: str, end_date: str) -> Union[
+        Dict[str, Dict[str, Dict[str, List[Tuple[str, str, str, str]]]]], None]:
+    """
+    A helper method that queries Yes Energy to grab the ERCOT hourly constraint data in a certain date range.
+    Pre-processes the data into a large dictionary in order to speed up future search times.
+
+    Inputs:
+        - start_date: A string in the MM/DD/YYYY format giving the inclusive lower bound.
+        - end_date: A string in the MM/DD/YYYY format giving the inclusive upper bound.
+
+        Assume that start_date and end_date are within 367 days of each other.
+
+    Output:
+        - res, the pre-processed data stored as a nested dictionary. For reference, res[a][b][c] gives a list of
+          3-element tuples corresponding to:
+            - a: The Date in MM/DD/YYYY format.
+            - b: The hour ending, ranging from 1 to 24.
+            - c: The full FacilityName.
+
+        Each tuple (x, y, z) in res[a][b][c] gives
+            - x: Contingency
+            - y: ShadowPrice
+            - z: FacilityType
+    """
+
     # Build the request URL.
     req_url = f"{yes_energy}startdate={start_date}&enddate={end_date}"
     yes_req = requests.get(req_url, auth=auth)
@@ -90,20 +93,29 @@ def process_mapping(start_date: str, end_date: str) -> Union[Dict[str, Dict[str,
     return res
 
 
-"""
-Post-processes the summary dataFrame data into a nested dictionary in order to accelerate the 
-searching & aggregation process for future tasks.
-
-Input:
-    - raw_data: A DataFrame storing the data desired to be summarized.
-
-Output:
-    - A post-processed dictionary with shadowPrice * shiftFactor column.
-"""
 def post_process(raw_data: pd.DataFrame) -> Dict[str, Dict[str, List[Tuple[str, str, str, float]]]]:
-    unique_nodes = {'GUADG_CCU2', 'CCEC_ST1', 'BVE_UNIT1', 'PSG_PSG_GT3', 'SAN_SANMIGG1', 'CCEC_GT1', 'DDPEC_GT4', 'BOSQ_BSQSU_5', 'CTL_GT_104', 'BTE_BTE_G3', 'MIL_MILG345', 'BTE_BTE_G4', 'DUKE_GST1CCU', 'CAL_PUN2', 'DDPEC_GT6', 'HB_WEST', 'BOSQ_BSQS_12', 'BTE_BTE_G1', 'TXCTY_CTA', 'JACKCNTY_STG', 'LZ_WEST', 'DDPEC_GT2', 'STELLA_RN', 'BOSQ_BSQS_34', 'DC_E', 'CTL_GT_103', 'NED_NEDIN_G2', 'FREC_2_CCU', 'TXCTY_CTB', 'HB_SOUTH', 'HB_NORTH', 'GUADG_CCU1', 'NED_NEDIN_G3', 'LZ_SOUTH', 'NED_NEDIN_G1', 'JCKCNTY2_ST2', 'BTE_BTE_G2', 'DUKE_GT2_CCU', 'CAL_PUN1', 'PSG_PSG_GT2', 'DDPEC_GT3', 'DDPEC_ST1', 'BVE_UNIT2', 'FREC_1_CCU', 'BTE_PUN1', 'LZ_LCRA', 'BVE_UNIT3', 'BTE_PUN2', 'TEN_CT1_STG', 'CHE_LYD2', 'PSG_PSG_ST1', 'CHE_LYD', 'TXCTY_CTC', 'TXCTY_ST', 'CTL_ST_101', 'WND_WHITNEY', 'LZ_HOUSTON', 'LZ_NORTH', 'CTL_GT_102', 'HB_HOUSTON', 'CHEDPW_GT2', 'CCEC_GT2', 'DDPEC_GT1'}
+    """
+    Post-processes the summary dataFrame data into a nested dictionary in order to accelerate the
+    searching & aggregation process for future tasks.
+
+    Input:
+        - raw_data: A DataFrame storing the data desired to be summarized.
+
+    Output:
+        - A post-processed dictionary with shadowPrice * shiftFactor column.
+    """
+
+    unique_nodes = {'GUADG_CCU2', 'CCEC_ST1', 'BVE_UNIT1', 'PSG_PSG_GT3', 'SAN_SANMIGG1', 'CCEC_GT1', 'DDPEC_GT4',
+                    'BOSQ_BSQSU_5', 'CTL_GT_104', 'BTE_BTE_G3', 'MIL_MILG345', 'BTE_BTE_G4', 'DUKE_GST1CCU', 'CAL_PUN2',
+                    'DDPEC_GT6', 'HB_WEST', 'BOSQ_BSQS_12', 'BTE_BTE_G1', 'TXCTY_CTA', 'JACKCNTY_STG', 'LZ_WEST',
+                    'DDPEC_GT2', 'STELLA_RN', 'BOSQ_BSQS_34', 'DC_E', 'CTL_GT_103', 'NED_NEDIN_G2', 'FREC_2_CCU',
+                    'TXCTY_CTB', 'HB_SOUTH', 'HB_NORTH', 'GUADG_CCU1', 'NED_NEDIN_G3', 'LZ_SOUTH', 'NED_NEDIN_G1',
+                    'JCKCNTY2_ST2', 'BTE_BTE_G2', 'DUKE_GT2_CCU', 'CAL_PUN1', 'PSG_PSG_GT2', 'DDPEC_GT3', 'DDPEC_ST1',
+                    'BVE_UNIT2', 'FREC_1_CCU', 'BTE_PUN1', 'LZ_LCRA', 'BVE_UNIT3', 'BTE_PUN2', 'TEN_CT1_STG',
+                    'CHE_LYD2', 'PSG_PSG_ST1', 'CHE_LYD', 'TXCTY_CTC', 'TXCTY_ST', 'CTL_ST_101', 'WND_WHITNEY',
+                    'LZ_HOUSTON', 'LZ_NORTH', 'CTL_GT_102', 'HB_HOUSTON', 'CHEDPW_GT2', 'CCEC_GT2', 'DDPEC_GT1'}
     raw_data = raw_data[raw_data['Settlement_Point'].isin(unique_nodes)]
-    
+
     raw_data['Shadow_Price'] = pd.to_numeric(raw_data['Shadow_Price'], errors='coerce')
     raw_data['Shift_Factor'] = pd.to_numeric(raw_data['Shift_Factor'], errors='coerce')
 
@@ -118,23 +130,24 @@ def post_process(raw_data: pd.DataFrame) -> Dict[str, Dict[str, List[Tuple[str, 
         shadowShift = float(row['Shadow_Price']) * float(row['Shift_Factor'])
 
         res[settlement][full_date].append((contingency, constraint, peak_type, shadowShift))
-    
+
     return res
 
-"""
-Given a DataFrame row, this helper method searches a mapping for the shadowPrice
-and facilityType corresponding to certain entries in the row.
-
-Inputs:
-    - mapping: A dictionary mapping facilityNames to a tuple of contingency,
-               shadowPrice and facilityType.
-               
-Output:
-    - A tuple of shadowPrice, facilityType, and peak_type, if found. 
-      Blank strings otherwise.
-"""
 
 def findDesired(mapping: Dict, row) -> Tuple[str, str, str]:
+    """
+    Given a DataFrame row, this helper method searches a mapping for the shadowPrice
+    and facilityType corresponding to certain entries in the row.
+
+    Inputs:
+        - mapping: A dictionary mapping facilityNames to a tuple of contingency,
+                   shadowPrice and facilityType.
+
+    Output:
+        - A tuple of shadowPrice, facilityType, and peak_type, if found.
+          Blank strings otherwise.
+    """
+
     row_constraint = row['Constraint_Name']
     row_contingency = row['Contingency_Name']
 
@@ -149,23 +162,23 @@ def findDesired(mapping: Dict, row) -> Tuple[str, str, str]:
     return "", "", ""
 
 
-"""
-Given a DataFrame of raw data taken from the drive, this helper method converts it by doing the following:
-    1) Filter out the rows to only include Calpine ERCOT nodes.
-    2) Add a column for the HourEnding
-    3) Match each filtered row to the pre-processed data to accumulate the ShadowPrice and FacilityType
-
-Inputs:
-    - df: The original, raw DataFrame. Assume the DataFrame only contains data from one day & hour-ending pair.
-    - mapping: The pre-processed mapping containing all relevant data
-
-Output:
-    - df_converted: The converted DataFrame after the above operations have been performed.
-"""
 def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
+    """
+    Given a DataFrame of raw data taken from the drive, this helper method converts it by doing the following:
+        1) Filter out the rows to only include Calpine ERCOT nodes.
+        2) Add a column for the HourEnding
+        3) Match each filtered row to the pre-processed data to accumulate the ShadowPrice and FacilityType
+
+    Inputs:
+        - df: The original, raw DataFrame. Assume the DataFrame only contains data from one day & hour-ending pair.
+        - mapping: The pre-processed mapping containing all relevant data
+
+    Output:
+        - df_converted: The converted DataFrame after the above operations have been performed.
+    """
+
     # Filter out the original DataFrame to only include desired settlement point nodes
     filtered_df = df[df['Settlement_Point'].isin(nodes)]
-
 
     # Parse the date and determine the next hour
     datetime_obj = datetime.strptime(filtered_df.iloc[0, 0], "%m/%d/%Y %H:%M:%S")
@@ -250,8 +263,7 @@ elif year == datetime.now().year:
 
     with open(json_path, "w") as file:
         json.dump(mapping, file)
-        
-        
+
 """
 Now that we have the mapping, we can begin converting and aggregating the data.
 """
@@ -270,7 +282,7 @@ if not os.path.isfile(output_path):
     merged_df['Shadow_Price'] = pd.to_numeric(merged_df['Shadow_Price'], errors='coerce')
     merged_df = merged_df[merged_df['Shadow_Price'] > 0]
     merged_df = merged_df.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
-                                                          'Contingency_Name', 'Settlement_Point'], keep='last')
+                                                  'Contingency_Name', 'Settlement_Point'], keep='last')
     merged_df.to_csv(output_path, index=False)
 
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
@@ -290,7 +302,7 @@ elif year == datetime.now().year:
     # Append the new data to the existing data
     merged_df = pd.DataFrame(pd.concat(merge, axis=0))
     combined_data = pd.concat([current_data, merged_df], axis=0)
-    
+
     # Update the current summary 2023 JSON
     with open(json_summary) as js_sum:
         existing_sum = json.load(js_sum)
@@ -303,18 +315,15 @@ elif year == datetime.now().year:
                 if date not in existing_sum[node]:
                     existing_sum[node][date] = merged_df[node][date]
 
-
     with open(json_summary, "w") as json_sum:
         json_sum.write(json.dumps(existing_sum))
-
 
     # Post-processing of the data.
     combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
     combined_data = combined_data[combined_data['Shadow_Price'] > 0]
     combined_data = combined_data.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
                                                           'Contingency_Name', 'Settlement_Point'], keep='last')
-    
-    
+
     combined_data.to_csv(output_path, index=False)
 
 # Output summary statistics

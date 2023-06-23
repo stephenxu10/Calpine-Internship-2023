@@ -1,7 +1,6 @@
 import os
 import time
-from typing import Dict, List, Tuple
-from utils import convert
+from typing import List
 import pandas as pd
 import warnings
 
@@ -17,18 +16,19 @@ warnings.simplefilter("ignore")
 yearly_excel = [x for x in os.listdir(path_base) if str(year) in x]
 
 
-"""
-Fills in missing NaN gaps in a list of strings as follows:
-    [2, NaN, NaN, NaN, 3, NaN, NaN, Nan, 4] -> [2, 2, 2, 2, 3, 3, 3, 3, 4]
-Useful helper method for later.
-
-Inputs:
-    - names: A list of strings.
-    
-Output:
-    - res: The "filled-in" list as demonstrated above.
-"""
 def fill_gaps(names: List[str]) -> List[str]:
+    """
+    Fills in missing NaN gaps in a list of strings as follows:
+        [2, NaN, NaN, NaN, 3, NaN, NaN, Nan, 4] -> [2, 2, 2, 2, 3, 3, 3, 3, 4]
+    Useful helper method for later.
+
+    Inputs:
+        - names: A list of strings.
+
+    Output:
+        - res: The "filled-in" list as demonstrated above.
+    """
+
     # Assume the first element is not NaN.
     res = [names[0]]
 
@@ -41,20 +41,20 @@ def fill_gaps(names: List[str]) -> List[str]:
 
     return res
 
-
-"""
-Locates and reads a given Excel sheet name and converts it by filling in gaps
-and filtering out unnecessary data.
-
-Input:
-    sheet_name: The name of the Excel File, 
-        e.g. CIM_Apr_ML1_1_04112023_Complete_StandardContingencyReport.xlsx
-
-Output:
-    A Pandas DataFrame with the converted information.
-"""
 def convert_sheet(sheet_name: str) -> pd.DataFrame:
-    # Extract the full date and read the excel sheet.
+    """
+    Locates and reads a given Excel sheet name and converts it by filling in gaps
+    and filtering out unnecessary data.
+
+    Input:
+        sheet_name: The name of the Excel File,
+            e.g. CIM_Apr_ML1_1_04112023_Complete_StandardContingencyReport.xlsx
+
+    Output:
+        A Pandas DataFrame with the converted information.
+    """
+
+    # Extract the full date and read the Excel sheet.
     idx = sheet_name.index(str(year))
     date = sheet_name[idx - 4: idx + 4]
 
@@ -102,4 +102,3 @@ end_time = time.time()
 execution_time = (end_time - start_time)
 print("Generation Complete")
 print(f"The script took {execution_time:.2f} seconds to run.")
-

@@ -45,13 +45,12 @@ def convertDate(date: str):
 
     return month + "/" + day + "/" + year
 
-
-"""
-Helper method to accumulate the data inside df_auction into a
-large dictionary. This helps to reduce search time for each query in the historical ERCOT
-data to O(1) time, which dramatically speeds up the program.
-"""
 def process(df_auction) -> Dict[str, Dict[str, Dict[str, Tuple[str, str, str, str]]]]:
+    """
+    Helper method to accumulate the data inside df_auction into a
+    large dictionary. This helps to reduce search time for each query in the historical ERCOT
+    data to O(1) time, which dramatically speeds up the program.
+    """
     auction_summary = defaultdict(lambda: defaultdict(dict))
 
     for _, row in df_auction.iterrows():
@@ -67,21 +66,21 @@ def process(df_auction) -> Dict[str, Dict[str, Dict[str, Tuple[str, str, str, st
     
     return auction_summary
 
-
-"""
-Given a DataFrame row, this method grabs the plant, size, shadowPricePerMWH, and
-bidPricePerMWH from the auction_grouped CSV. Performs a simple linear search to 
-find these values.
-
-Input:
-    - rw: The DataFrame row from the ERCOT historical basis data
-    - data: The pre-processed monthly auction grouped data.
-
-Output:
-    - A four-element tuple storing the plant, size (MW), shadowPricePerMWH,
-    and bidPricePerMWH
-"""
 def grab_data(rw, data):
+    """
+    Given a DataFrame row, this method grabs the plant, size, shadowPricePerMWH, and
+    bidPricePerMWH from the auction_grouped CSV. Performs a simple linear search to
+    find these values.
+
+    Input:
+        - rw: The DataFrame row from the ERCOT historical basis data
+        - data: The pre-processed monthly auction grouped data.
+
+    Output:
+        - A four-element tuple storing the plant, size (MW), shadowPricePerMWH,
+        and bidPricePerMWH
+    """
+
     row_path = rw['Path']
     row_hedge = rw['HEDGETYPE']
     row_period = str(convertDate(rw['Period']))

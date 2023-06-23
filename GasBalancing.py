@@ -33,21 +33,22 @@ api_key = "ba71a029-a6fd-40cc-b0b7-6e4eb905dc57"
 # Dataset Number
 dataset = 2359
 
-"""
-Given an input Gas Pipeline Name, Flow Point Name, and a specified date range, this helper method performs
-a query on the velocity suite API in order to extract the desired raw data.
-
-Inputs:
-    - pipeline: A string storing the Gas Pipeline Name. Assumed to be a key in the pipeline mapping.
-    - flow_point: A string storing the Flow Point Name. 
-    - days_behind: An integer giving the number of days to look behind.
-    - dataset: The dataset number to query from. By default, this is 2359.
-    - columns: The columns to include in the output DataFrame. The column numbers are stored by default above
-                as a global parameter.
-Output:
-    A Pandas DataFrame storing the requested data. An error message will print if an invalid argument is given.
-"""
 def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dataset, columns=columns) -> Union[pd.DataFrame, None]:
+    """
+    Given an input Gas Pipeline Name, Flow Point Name, and a specified date range, this helper method performs
+    a query on the velocity suite API in order to extract the desired raw data.
+
+    Inputs:
+        - pipeline: A string storing the Gas Pipeline Name. Assumed to be a key in the pipeline mapping.
+        - flow_point: A string storing the Flow Point Name.
+        - days_behind: An integer giving the number of days to look behind.
+        - dataset: The dataset number to query from. By default, this is 2359.
+        - columns: The columns to include in the output DataFrame. The column numbers are stored by default above
+                    as a global parameter.
+    Output:
+        A Pandas DataFrame storing the requested data. An error message will print if an invalid argument is given.
+    """
+
     if pipeline not in pipeline_mapping:
         print("Invalid argument. The requested pipeline does not appear to be in the mapping. Check for typos.")
         return

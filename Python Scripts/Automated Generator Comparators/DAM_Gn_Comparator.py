@@ -35,11 +35,11 @@ output_csv = f"./../Data/MIS Gen_CIM Comparisons/" \
 
 success = True
 
-"""
-Simple helper method to find and return the entry in a list of strings that contains a
-certain pattern.
-"""
 def findMatch(names: List[str], pattern: str):
+    """
+    Simple helper method to find and return the entry in a list of strings that contains a
+    certain pattern.
+    """
     for entry in names:
         if pattern in entry:
             return entry
@@ -47,18 +47,19 @@ def findMatch(names: List[str], pattern: str):
     return None
 
 
-"""
-Finds and returns the Pandas DataFrame giving the generator mapping data at a specific date and time. Returns nothing
-and outputs an error message if the input parameters are invalid, or if the desired file could not be located.
-
-Inputs:
-    - date: A string in the "MM/DD/YYYY" format.
-    - hour: An integer from 1 to 24, inclusive.
-
-Output:
-    - The Pandas DataFrame of the CIM generator data at this specific time.
-"""
 def find_generator_data(date: str, hour: int) -> Union[pd.DataFrame, None]:
+    """
+    Finds and returns the Pandas DataFrame giving the generator mapping data at a specific date and time. Returns nothing
+    and outputs an error message if the input parameters are invalid, or if the desired file could not be located.
+
+    Inputs:
+        - date: A string in the "MM/DD/YYYY" format.
+        - hour: An integer from 1 to 24, inclusive.
+
+    Output:
+        - The Pandas DataFrame of the CIM generator data at this specific time.
+    """
+
     pattern = r"\d{2}/\d{2}/\d{4}"
 
     if re.match(pattern, date):
@@ -106,24 +107,25 @@ def find_generator_data(date: str, hour: int) -> Union[pd.DataFrame, None]:
         return
 
 
-"""
-Given two DataFrames of generator data, this method compares the generator names and 
-service status and outputs a tuple of four sets that give the following information:
-    - which (name, status) pairs are the same from the first date to second date.
-    - which generator statuses have changed from first date to second date.
-    - which generators are unique to the first & second DataFrames
-
-Inputs:
-    - df1, df2: The two Pandas DataFrames that give generator data.
-                
-Output:
-    - sharedPairs - the set that gives (name, status) pairs that are the same from date1 to date2
-    - uniqueFirst, uniqueSecond - the generators unique to the first, second DataFrames
-    - changed - (name, int) pairs that indicate change from date1 to date2.
-        - 0: changed from In-Service to Out-Of-Service
-        - 1: changed from Out-Of-Service to In-Service
-"""
 def compare_data(df1: pd.DataFrame, df2: pd.DataFrame):
+    """
+    Given two DataFrames of generator data, this method compares the generator names and
+    service status and outputs a tuple of four sets that give the following information:
+        - which (name, status) pairs are the same from the first date to second date.
+        - which generator statuses have changed from first date to second date.
+        - which generators are unique to the first & second DataFrames
+
+    Inputs:
+        - df1, df2: The two Pandas DataFrames that give generator data.
+
+    Output:
+        - sharedPairs - the set that gives (name, status) pairs that are the same from date1 to date2
+        - uniqueFirst, uniqueSecond - the generators unique to the first, second DataFrames
+        - changed - (name, int) pairs that indicate change from date1 to date2.
+            - 0: changed from In-Service to Out-Of-Service
+            - 1: changed from Out-Of-Service to In-Service
+    """
+
     first_statuses = dict(zip(df1[df1.columns[5]], df1[df1.columns[6]]))
     second_statuses = dict(zip(df2[df2.columns[5]], df2[df2.columns[6]]))
 

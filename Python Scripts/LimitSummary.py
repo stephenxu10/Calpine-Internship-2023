@@ -32,21 +32,20 @@ filter_missing_entries = False  # Flag bit that filters out missing entries if s
 start_year = 2018
 end_year = 2050
 
-"""
-Given the currently aggregated company_data dictionary, this helper method adds to that dictionary by 
-including the data from the requested month.
-
-Inputs:
-    csv_file: The file path to the CSV file to be analyzed. It is guaranteed to be valid.
-    company_data: A dictionary mapping each unique company name to it's limits across all twelve months.
-    month: The requested month to analyze (e.g. 2019-02).
-    
-Output:
-    Returns nothing, but inputs the input company_data parameter to add data from the month.
-"""
-
-
 def add_month_data(csv_file: str, company_data: Dict[str, List[str]], month: int):
+    """
+    Given the currently aggregated company_data dictionary, this helper method adds to that dictionary by
+    including the data from the requested month.
+
+    Inputs:
+        csv_file: The file path to the CSV file to be analyzed. It is guaranteed to be valid.
+        company_data: A dictionary mapping each unique company name to it's limits across all twelve months.
+        month: The requested month to analyze (e.g. 2019-02).
+
+    Output:
+        Returns nothing, but inputs the input company_data parameter to add data from the month.
+    """
+
     with open(csv_file, 'r') as csv_file:
         # Open and read the CSV file
         reader = csv.reader(csv_file)
@@ -66,18 +65,19 @@ def add_month_data(csv_file: str, company_data: Dict[str, List[str]], month: int
             company_data[key][month - 1] = row[1]
 
 
-"""
-Main method of the script. Given an input year, this method accumulates all data across all twelve months 
-and returns the result in a dictionary.
-
-Input:
-    - year: An integer representing the year to query. It is guaranteed to be between start_year and end_year.
-    
-Output:
-    Collects the data into a dictionary that maps each unique company across the entire year to a list of 
-    twelve entries representing the limit in each month. Utilizes the above helper methods along the way.
-"""
 def accumulate_year(year: int) -> Dict[str, List[str]]:
+    """
+    Main method of the script. Given an input year, this method accumulates all data across all twelve months
+    and returns the result in a dictionary.
+
+    Input:
+        - year: An integer representing the year to query. It is guaranteed to be between start_year and end_year.
+
+    Output:
+        Collects the data into a dictionary that maps each unique company across the entire year to a list of
+        twelve entries representing the limit in each month. Utilizes the above helper methods along the way.
+    """
+
     # Perform some File I/O to access the CSV files.
     new_base = path_base + "/" + str(year) if year != 2019 else path_base + "/" + str(year) + "/999 - Month"
     company_data = {}
