@@ -19,6 +19,8 @@ mapping_path = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural G
 pipeline_mapping = {row['Gas Pipeline Name']: row['Gas Pipeline ID'] for _, row in
                     pd.read_excel(mapping_path).iterrows()}
 
+south_central = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Copy Of SouthCentral Balance.xlsx"
+
 # List of query items that we are interested in.
 # TODO: Add column-id mapping.
 

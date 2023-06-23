@@ -14,7 +14,7 @@ import os
 This Python script aims to aggregate the real-time ERCOT market constraints across an entire year. Additionally,
 it grabs additional data from yesenergy and matches it to each entry in the raw data. Furthermore, we are only interested
 in ERCOT Calpine settlement points, stored in:
-
+¡
 https://services.yesenergy.com/PS/rest/collection/node/2697330
 """
 warnings.simplefilter("ignore")
@@ -28,6 +28,7 @@ days_back = 3
 
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
 json_path = "./../../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
+json_summary = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
 output_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
@@ -90,6 +91,37 @@ def process_mapping(start_date: str, end_date: str) -> Union[Dict[str, Dict[str,
 
 
 """
+Post-processes the summary dataFrame data into a nested dictionary in order to accelerate the 
+searching & aggregation process for future tasks.
+
+Input:
+    - raw_data: A DataFrame storing the data desired to be summarized.
+
+Output:
+    - A post-processed dictionary with shadowPrice * shiftFactor column.
+"""
+def post_process(raw_data: pd.DataFrame) -> Dict[str, Dict[str, List[Tuple[str, str, str, float]]]]:
+    unique_nodes = {'GUADG_CCU2', 'CCEC_ST1', 'BVE_UNIT1', 'PSG_PSG_GT3', 'SAN_SANMIGG1', 'CCEC_GT1', 'DDPEC_GT4', 'BOSQ_BSQSU_5', 'CTL_GT_104', 'BTE_BTE_G3', 'MIL_MILG345', 'BTE_BTE_G4', 'DUKE_GST1CCU', 'CAL_PUN2', 'DDPEC_GT6', 'HB_WEST', 'BOSQ_BSQS_12', 'BTE_BTE_G1', 'TXCTY_CTA', 'JACKCNTY_STG', 'LZ_WEST', 'DDPEC_GT2', 'STELLA_RN', 'BOSQ_BSQS_34', 'DC_E', 'CTL_GT_103', 'NED_NEDIN_G2', 'FREC_2_CCU', 'TXCTY_CTB', 'HB_SOUTH', 'HB_NORTH', 'GUADG_CCU1', 'NED_NEDIN_G3', 'LZ_SOUTH', 'NED_NEDIN_G1', 'JCKCNTY2_ST2', 'BTE_BTE_G2', 'DUKE_GT2_CCU', 'CAL_PUN1', 'PSG_PSG_GT2', 'DDPEC_GT3', 'DDPEC_ST1', 'BVE_UNIT2', 'FREC_1_CCU', 'BTE_PUN1', 'LZ_LCRA', 'BVE_UNIT3', 'BTE_PUN2', 'TEN_CT1_STG', 'CHE_LYD2', 'PSG_PSG_ST1', 'CHE_LYD', 'TXCTY_CTC', 'TXCTY_ST', 'CTL_ST_101', 'WND_WHITNEY', 'LZ_HOUSTON', 'LZ_NORTH', 'CTL_GT_102', 'HB_HOUSTON', 'CHEDPW_GT2', 'CCEC_GT2', 'DDPEC_GT1'}
+    raw_data = raw_data[raw_data['Settlement_Point'].isin(unique_nodes)]
+    
+    raw_data['Shadow_Price'] = pd.to_numeric(raw_data['Shadow_Price'], errors='coerce')
+    raw_data['Shift_Factor'] = pd.to_numeric(raw_data['Shift_Factor'], errors='coerce')
+
+    res = defaultdict(lambda: defaultdict(list))
+
+    for _, row in raw_data.iterrows():
+        settlement = row['Settlement_Point']
+        full_date = row['SCED_Time_Stamp']
+        peak_type = row['PeakType']
+        constraint = row['Constraint_Name']
+        contingency = row['Contingency_Name']
+        shadowShift = float(row['Shadow_Price']) * float(row['Shift_Factor'])
+
+        res[settlement][full_date].append((contingency, constraint, peak_type, shadowShift))
+    
+    return res
+
+"""
 Given a DataFrame row, this helper method searches a mapping for the shadowPrice
 and facilityType corresponding to certain entries in the row.
 
@@ -101,7 +133,6 @@ Output:
     - A tuple of shadowPrice, facilityType, and peak_type, if found. 
       Blank strings otherwise.
 """
-
 
 def findDesired(mapping: Dict, row) -> Tuple[str, str, str]:
     row_constraint = row['Constraint_Name']
@@ -134,6 +165,7 @@ Output:
 def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
     # Filter out the original DataFrame to only include desired settlement point nodes
     filtered_df = df[df['Settlement_Point'].isin(nodes)]
+
 
     # Parse the date and determine the next hour
     datetime_obj = datetime.strptime(filtered_df.iloc[0, 0], "%m/%d/%Y %H:%M:%S")
@@ -218,7 +250,11 @@ elif year == datetime.now().year:
 
     with open(json_path, "w") as file:
         json.dump(mapping, file)
-
+        
+        
+"""
+Now that we have the mapping, we can begin converting and aggregating the data.
+"""
 # Grab the list of RT Hourly Zip Files for the year.
 merge = []
 yearly_zip_files = os.listdir(zip_base)
@@ -254,13 +290,31 @@ elif year == datetime.now().year:
     # Append the new data to the existing data
     merged_df = pd.DataFrame(pd.concat(merge, axis=0))
     combined_data = pd.concat([current_data, merged_df], axis=0)
+    
+    # Update the current summary 2023 JSON
+    with open(json_summary) as js_sum:
+        existing_sum = json.load(js_sum)
+
+    new_processed = post_process(merged_df)
+
+    for node in existing_sum:
+        if node in merged_df:
+            for date in merged_df[node]:
+                if date not in existing_sum[node]:
+                    existing_sum[node][date] = merged_df[node][date]
+
+
+    with open(json_summary, "w") as json_sum:
+        json_sum.write(json.dumps(existing_sum))
+
 
     # Post-processing of the data.
     combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
     combined_data = combined_data[combined_data['Shadow_Price'] > 0]
     combined_data = combined_data.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
                                                           'Contingency_Name', 'Settlement_Point'], keep='last')
-
+    
+    
     combined_data.to_csv(output_path, index=False)
 
 # Output summary statistics
