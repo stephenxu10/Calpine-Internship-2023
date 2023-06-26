@@ -6,6 +6,11 @@ from typing import Union, Tuple, List
 import requests
 from io import StringIO
 
+
+"""
+Blaine's original code: Y:\5_Trans Analysis\Models\Development\Python\Scripts\SouthCentralGasBalancePython.py
+"""
+
 # Ignore warnings. Whatever.
 warnings.simplefilter("ignore")
 
@@ -16,6 +21,8 @@ Global Parameters and Values. Tweak as necessary.
 mapping_path = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Pipeline_FilterValues.xlsx"
 pipeline_mapping = {row['Gas Pipeline Name']: row['Gas Pipeline ID'] for _, row in
                     pd.read_excel(mapping_path).iterrows()}
+
+output_path = "./Aggregated_BalanceSheets.csv"
 
 south_central = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Copy Of SouthCentral Balance.xlsx"
 
@@ -30,6 +37,9 @@ api_key = "ba71a029-a6fd-40cc-b0b7-6e4eb905dc57"
 
 # Dataset Number
 dataset = 2359
+
+# Days we want the historical data
+days_back = 90
 
 
 def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dataset, columns=columns) -> Union[
@@ -79,7 +89,7 @@ def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dat
         r = requests.get(final_url, verify=False)
 
         if r.status_code == 200:
-            return pd.read_csv(StringIO(r.text)).head()
+            return pd.read_csv(StringIO(r.text))
 
         else:
             print("not found!")
@@ -99,21 +109,32 @@ def extract_paths(excel_path: str) -> List[Tuple[str, str]]:
     excel_file = pd.ExcelFile(excel_path)
     sheet_names = excel_file.sheet_names
 
-    paths = []
-    for sheet_name in sheet_names:
-        df = pd.read_excel(excel_file, sheet_name=sheet_name, nrows=5)
-        df = pd.read_excel(excel_file, sheet_name=sheet_name, nrows=5, header=1)
-        columns = df.columns.tolist()
+    filtered_sheet_names = [x for x in sheet_names if 'inflow' in x.lower() or 'outflow' in x.lower() or 'to' in x.lower()]
+    print(filtered_sheet_names)
 
-        if not df.empty:
+    paths = []
+    for sheet_name in filtered_sheet_names:
+        df = pd.read_excel(excel_file, sheet_name=sheet_name, nrows=5)
+        df_alt = pd.read_excel(excel_file, sheet_name=sheet_name, nrows=5, header=1)
+
+        columns = [col for col in df.columns.tolist() if not str(col).startswith('Unnamed')]
+        columns_alt = [col for col in df_alt.columns.tolist() if not str(col).startswith('Unnamed')]
+
+        if len(columns) > 0:
             if 'Gas_x0020_Pipeline_x0020_Name' in columns:
                 paths.append((df.loc[0, 'Gas_x0020_Pipeline_x0020_Name'], df.loc[0, 'Flow_x0020_Point_x0020_Name']))
 
-            elif 'Gas_x0020_Pipeline_x0020_Name' in df.values.tolist()[0]:
-                paths.append(df.loc[0, 'Gas_x0020_Pipeline_x0020_Name'], df.loc[0, 'Flow_x0020_Point_x0020_Name'])
+        elif len(columns_alt) > 0:
+            if 'Gas_x0020_Pipeline_x0020_Name' in columns_alt:
+                paths.append((df_alt.loc[0, 'Gas_x0020_Pipeline_x0020_Name'], df_alt.loc[0, 'Flow_x0020_Point_x0020_Name']))
 
     return paths
 
 
-print(extract_paths(south_central))
-# print(fetch_gas_data("Enable Gas Transmission LLC", "Rockcliff Ic St-1 Panol", 90))
+merge = []
+for path in extract_paths(south_central):
+    merge.append(fetch_gas_data(path[0], path[1], days_back))
+
+merged_df = pd.concat(merge, axis=0)
+merged_df.to_csv(output_path, index=False)
+
