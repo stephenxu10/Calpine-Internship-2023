@@ -24,15 +24,18 @@ start_time = time.time()
 year = 2023
 
 # How many days we look back
-days_back = 174
+days_back = 2
 
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
 json_path = "./../../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
 json_summary = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
 output_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
+credential_path = "./../../credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
-auth = ('transmission.yesapi@calpine.com', 'texasave717')
+
+with open(credential_path, "r") as credentials:
+    auth = tuple(credentials.read().split())
 
 # Extract the set of all nodes that we are interested in
 nodes_req = requests.get("https://services.yesenergy.com/PS/rest/collection/node/2697330", auth=auth)
@@ -73,6 +76,7 @@ def process_mapping(start_date: str, end_date: str) -> Union[
     # Build the request URL.
     req_url = f"{yes_energy}startdate={start_date}&enddate={end_date}"
     yes_req = requests.get(req_url, auth=auth)
+    print(req_url)
 
     # Build the result dictionary if the website was successfully queried.
     yes_table = pd.read_html(StringIO(yes_req.text))[0]
@@ -89,7 +93,7 @@ def process_mapping(start_date: str, end_date: str) -> Union[
         peak_type = row['PEAKTYPE']
 
         res[date][hour][facility_name].append((contingency, shadowPrice, facility_type, peak_type))
-
+    
     return res
 
 
@@ -134,7 +138,7 @@ def post_process(raw_data: pd.DataFrame) -> Dict[str, Dict[str, List[Tuple[str, 
     return res
 
 
-def findDesired(mapping: Dict, row) -> Tuple[str, str, str]:
+def findDesired(mapping: Dict, row) -> Tuple[str, str, str, str]:
     """
     Given a DataFrame row, this helper method searches a mapping for the shadowPrice
     and facilityType corresponding to certain entries in the row.
@@ -201,6 +205,7 @@ def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
         shadowPrices = [""] * len(filtered_df)
         facilityTypes = [""] * len(filtered_df)
         peakTypes = [""] * len(filtered_df)
+        facilityNames = [""] * len(filtered_df)
 
     else:
         facilityMapping = mapping[df_date][next_hour]
@@ -259,8 +264,7 @@ elif year == datetime.now().year:
 
     latest_date = mapping["Latest Date Queried"]
     lower_bound = datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y") - timedelta(days=days_back)
-
-    new_data = dict(process_mapping(str(lower_bound.date()) + "/" + str(year), "today"))
+    new_data = dict(process_mapping(str(lower_bound.date()), "today"))
     mapping.update(new_data)
     mapping["Latest Date Queried"] = datetime.now().strftime("%m/%d")
 
@@ -286,6 +290,29 @@ if not os.path.isfile(output_path):
     merged_df = merged_df[merged_df['Shadow_Price'] > 0]
     merged_df = merged_df.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
                                                   'Contingency_Name', 'Settlement_Point'], keep='last')
+        
+    # Update the current summary JSON
+    try:
+        with open(json_summary) as js_sum:
+            existing_sum = json.load(js_sum)
+        
+    except json.JSONDecodeError:
+        existing_sum = {}
+
+    new_processed = post_process(merged_df)
+
+    for node in new_processed:
+        if node not in existing_sum:
+            existing_sum[node] = new_processed[node]
+        
+        else:
+            for date in new_processed[node]:
+                if date not in existing_sum[node]:
+                    existing_sum[node][date] = new_processed[node][date]
+
+    with open(json_summary, "w") as json_sum:
+        json_sum.write(json.dumps(existing_sum))
+        
     merged_df.to_csv(output_path, index=False)
 
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
@@ -305,7 +332,7 @@ elif year == datetime.now().year:
     # Append the new data to the existing data
     merged_df = pd.DataFrame(pd.concat(merge, axis=0))
     combined_data = pd.concat([current_data, merged_df], axis=0)
-
+    
     # Update the current summary 2023 JSON
     try:
         with open(json_summary) as js_sum:
@@ -318,7 +345,7 @@ elif year == datetime.now().year:
 
     for node in new_processed:
         if node not in existing_sum:
-            existing_sum[node] = new_procesed[node]
+            existing_sum[node] = new_processed[node]
         
         else:
             for date in new_processed[node]:
@@ -327,7 +354,7 @@ elif year == datetime.now().year:
 
     with open(json_summary, "w") as json_sum:
         json_sum.write(json.dumps(existing_sum))
-
+    
     # Post-processing of the data.
     combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
     combined_data = combined_data[combined_data['Shadow_Price'] > 0]

@@ -24,10 +24,12 @@ year = 2023
 summary_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
 json_processed = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
 output_path = "./../../Data/Aggregated RT Constraint Data/Delta_Table_" + str(year) + ".csv"
+credential_path = "./../../credentials.txt"
 
-# Grab the set of all paths that we are interested in
-auth = ('transmission.yesapi@calpine.com', 'texasave717')
-
+# Grab the set of all paths that we are interested in - first grab credentials
+with open(credential_path, "r") as credentials:
+    auth = tuple(credentials.read().split())
+    
 call1 = "https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/paths.csv?"
 r = requests.get(call1, auth=auth)
 df = pd.read_csv(StringIO(r.text))
@@ -54,7 +56,7 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
         return None
 
     # Define column names
-    columns = ['Date', 'PeakType', 'Constraint', 'Contingency', 'Path', 'Source SF', 'Sink SF', 'Delta']
+    columns = ['Date', 'Hour', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path', 'Source SF', 'Sink SF', 'Delta']
 
     # Initialize empty lists for each column
     data = [[] for _ in columns]
@@ -67,6 +69,7 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
     for date, source_list in source_map.items():
         # Check if the date exists in the sink mapping
         if date in sink_map:
+            
             # Get the sink list for the corresponding date
             sink_list = sink_map[date]
 
@@ -78,14 +81,16 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
                 # Check if the values match for contingency, constraint, and peak type
                 if contin == sink_contin and constr == sink_constr and peak == sink_peak:
                     # Append the data to the respective columns
-                    data[0].append(date)
-                    data[1].append(peak)
-                    data[2].append(constr)
-                    data[3].append(contin)
-                    data[4].append(f"{source}+{sink}")
-                    data[5].append(sf)
-                    data[6].append(sink_sf)
-                    data[7].append(ss - sink_ss)
+                    data[0].append(date[:10])
+                    data[1].append(date[11:13])
+                    data[2].append(int(date[14:16]) // 5 + 1)
+                    data[3].append(peak)
+                    data[4].append(constr)
+                    data[5].append(contin)
+                    data[6].append(f"{source}+{sink}")
+                    data[7].append(sf)
+                    data[8].append(sink_sf)
+                    data[9].append(ss - sink_ss)
 
     # Create a DataFrame from the accumulated data
     res = pd.DataFrame(dict(zip(columns, data)))
@@ -112,9 +117,8 @@ for _, row in df.iterrows():
 df_merged = pd.concat(final_merge, axis=0)
 
 # Do some post-processing of the data
-df_merged = df_merged.drop_duplicates(subset=['Date', 'PeakType', 'Constraint', 'Contingency', 'Path'])
+df_merged = df_merged.drop_duplicates(subset=['Date', 'Hour', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path'])
 df_merged = df_merged.sort_values(by='Date')
-df_merged['Hour'] = df['Date'].apply(lambda x: int(x[11:13]))
 df_merged.to_csv(output_path, index=False)
     
 # Output summary statistics

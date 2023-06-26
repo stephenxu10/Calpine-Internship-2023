@@ -33,11 +33,15 @@ def convertDate(input: str):
     return month + "/" + day + "/" + year
 
 def getSourceSinks():
-    my_auth = ('transmission.yesapi@calpine.com', 'texasave717')
+    credential_path = "./../credentials.txt"
+    
+    with open(credential_path, "r") as credentials:
+        auth = tuple(credentials.read().split())
+    
     PortfolioID = '759847'
 
     call1 = "https://services.yesenergy.com/PS/rest/ftr/portfolio/" + PortfolioID + "/paths.csv?"
-    call_one = requests.get(call1, auth=my_auth)
+    call_one = requests.get(call1, auth=auth)
     df = pd.read_csv(StringIO(call_one.text))
     df['Path'] = df['SOURCE'] + '+' + df['SINK']
     df = df[['Path', 'SOURCE', 'SINK']]
