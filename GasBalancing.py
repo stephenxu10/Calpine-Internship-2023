@@ -1,15 +1,13 @@
+import ast
+import itertools
 import warnings
 from datetime import date, timedelta
+from itertools import product
 import pandas as pd
 import urllib.parse
-from typing import Union, Tuple, List
+from typing import Union, Tuple, List, Set
 import requests
 from io import StringIO
-
-
-"""
-Blaine's original code: Y:\5_Trans Analysis\Models\Development\Python\Scripts\SouthCentralGasBalancePython.py
-"""
 
 # Ignore warnings. Whatever.
 warnings.simplefilter("ignore")
@@ -24,11 +22,9 @@ pipeline_mapping = {row['Gas Pipeline Name']: row['Gas Pipeline ID'] for _, row 
 
 output_path = "./Aggregated_BalanceSheets.csv"
 
-south_central = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Copy Of SouthCentral Balance.xlsx"
+south_central = "\\\\pzpwcmfs01\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Copy Of SouthCentral Balance.xlsx"
 
 # List of query items that we are interested in.
-# TODO: Add column-id mapping.
-
 columns = (27496, 2630, 27545, 27548, 27535, 27536, 13244, 17062, 4969, 10895, 4973, 4978, 17147, 17148, 17149,
            9566, 27498, 2629, 27546, 13245)
 
@@ -38,19 +34,19 @@ api_key = "ba71a029-a6fd-40cc-b0b7-6e4eb905dc57"
 # Dataset Number
 dataset = 2359
 
-# Days we want the historical data
+# The number of days we look back
 days_back = 90
 
 
-def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dataset, columns=columns) -> Union[
-        pd.DataFrame, None]:
+def fetch_gas_data(pipeline: str, flow_point: Set[str], days_behind: int, dataset=dataset, columns=columns) -> Union[
+    pd.DataFrame, None]:
     """
-    Given an input Gas Pipeline Name, Flow Point Name, and a specified date range, this helper method performs
+    Given an input Gas Pipeline Name, Flow Point Names, and a specified date range, this helper method performs
     a query on the velocity suite API in order to extract the desired raw data.
 
     Inputs:
         - pipeline: A string storing the Gas Pipeline Name. Assumed to be a key in the pipeline mapping.
-        - flow_point: A string storing the Flow Point Name.
+        - flow_point: A set of strings storing all possible flow point names.
         - days_behind: An integer giving the number of days to look behind.
         - dataset: The dataset number to query from. By default, this is 2359.
         - columns: The columns to include in the output DataFrame. The column numbers are stored by default above
@@ -65,7 +61,11 @@ def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dat
 
     else:
         pipeline_id = pipeline_mapping[pipeline]
-        parsed_flow_point = urllib.parse.quote_plus(flow_point)
+        parsed_flow_points = ""
+
+        for fp in flow_point:
+            parsed_flow_points += urllib.parse.quote_plus(fp) + "|"
+
         lower_date = (date.today() - timedelta(days=days_behind)).strftime('%m-%d-%Y')
 
         # Build the URL - start with the base and the column numbers.
@@ -78,12 +78,13 @@ def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dat
         filter_endOfDay = "filter=W|10895||In|Yes&"
         filter_lowerDate = "filter=W|4969||gte|" + urllib.parse.quote_plus(lower_date) + "&"
         filter_pipeline = "filter=W|27496||In|" + str(pipeline_id) + "&"
-        filter_flow = "filter=W|27535||In|" + parsed_flow_point + "&"
+        filter_flow = "filter=W|27535||In|" + parsed_flow_points + "&"
 
         filtered_url = f"{url_base}{filter_endOfDay}{filter_lowerDate}{filter_pipeline}{filter_flow}"
 
         # Add the API-key.
         final_url = f"{filtered_url}api_key={api_key}"
+        print(final_url)
 
         # Make a request to the API using the final URL.
         r = requests.get(final_url, verify=False)
@@ -94,6 +95,7 @@ def fetch_gas_data(pipeline: str, flow_point: str, days_behind: int, dataset=dat
         else:
             print("not found!")
             return
+
 
 def extract_paths(excel_path: str) -> List[Tuple[str, str]]:
     """
@@ -109,32 +111,42 @@ def extract_paths(excel_path: str) -> List[Tuple[str, str]]:
     excel_file = pd.ExcelFile(excel_path)
     sheet_names = excel_file.sheet_names
 
-    filtered_sheet_names = [x for x in sheet_names if 'inflow' in x.lower() or 'outflow' in x.lower() or 'to' in x.lower()]
-    print(filtered_sheet_names)
-
     paths = []
-    for sheet_name in filtered_sheet_names:
-        df = pd.read_excel(excel_file, sheet_name=sheet_name, nrows=5)
-        df_alt = pd.read_excel(excel_file, sheet_name=sheet_name, nrows=5, header=1)
+    for sheet_name in sheet_names:
+        try:
+            df = pd.read_excel(excel_file, sheet_name=sheet_name,
+                               usecols=['Gas_x0020_Pipeline_x0020_Name', 'Flow_x0020_Point_x0020_Name'])
+            paths.extend(list(df[['Gas_x0020_Pipeline_x0020_Name',
+                                  'Flow_x0020_Point_x0020_Name']].dropna().drop_duplicates().to_records(index=False)))
+        except (KeyError, ValueError):
+            pass
 
-        columns = [col for col in df.columns.tolist() if not str(col).startswith('Unnamed')]
-        columns_alt = [col for col in df_alt.columns.tolist() if not str(col).startswith('Unnamed')]
+        try:
+            df_alt = pd.read_excel(excel_file, sheet_name=sheet_name, header=1,
+                                   usecols=['Gas_x0020_Pipeline_x0020_Name', 'Flow_x0020_Point_x0020_Name'])
+            paths.extend(list(df_alt[['Gas_x0020_Pipeline_x0020_Name',
+                                      'Flow_x0020_Point_x0020_Name']].dropna().drop_duplicates().to_records(
+                index=False)))
 
-        if len(columns) > 0:
-            if 'Gas_x0020_Pipeline_x0020_Name' in columns:
-                paths.append((df.loc[0, 'Gas_x0020_Pipeline_x0020_Name'], df.loc[0, 'Flow_x0020_Point_x0020_Name']))
-
-        elif len(columns_alt) > 0:
-            if 'Gas_x0020_Pipeline_x0020_Name' in columns_alt:
-                paths.append((df_alt.loc[0, 'Gas_x0020_Pipeline_x0020_Name'], df_alt.loc[0, 'Flow_x0020_Point_x0020_Name']))
+        except (KeyError, ValueError):
+            pass
 
     return paths
 
 
+# paths = extract_paths(south_central)
+
+with open("./pathNames.txt", 'r') as pth_file:
+    paths = ast.literal_eval(pth_file.read())
+
+
+print(paths)
+
 merge = []
-for path in extract_paths(south_central):
-    merge.append(fetch_gas_data(path[0], path[1], days_back))
+processed_paths = {key: set(val for _, val in group) for key, group in itertools.groupby(paths, key=lambda x: x[0])}
+
+for key in processed_paths:
+    merge.append(fetch_gas_data(key, processed_paths[key], days_back))
 
 merged_df = pd.concat(merge, axis=0)
 merged_df.to_csv(output_path, index=False)
-

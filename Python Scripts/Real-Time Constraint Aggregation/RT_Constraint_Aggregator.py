@@ -85,7 +85,7 @@ def process_mapping(start_date: str, end_date: str) -> Union[
     for _, row in yes_table.iterrows():
         date = row['DATETIME'][:10]
         hour = str(row['HOURENDING'])
-        facility_name = row['FACILITYNAME']
+        facility_name = row['REPORTED_NAME']
 
         contingency = row['CONTINGENCY']
         shadowPrice = row['SHADOWPRICE']
@@ -141,8 +141,7 @@ def post_process(existing_dict: Dict, raw_data: pd.DataFrame):
 
         else:
             for date in res[node]:
-                if date not in existing_dict[node]:
-                    existing_dict[node][date] = res[node][date]
+                existing_dict[node][date] = res[node][date]
 
     with open(json_summary, "w") as json_sum:
         json_sum.write(json.dumps(existing_sum))

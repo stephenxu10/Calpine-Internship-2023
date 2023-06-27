@@ -55,7 +55,7 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
         return None
 
     # Define column names
-    columns = ['Date', 'Hour', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path', 'Source SF', 'Sink SF', 'Delta']
+    columns = ['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path', 'Source SF', 'Sink SF', 'Delta']
 
     # Initialize empty lists for each column
     data = [[] for _ in columns]
@@ -82,7 +82,7 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
                     if abs(sf) > 0.01 and abs(sink_sf) > 0.01:
                         # Append the data to the respective columns
                         data[0].append(date[:10])
-                        data[1].append(int(date[11:13]))
+                        data[1].append(int(date[11:13]) + 1)
                         data[2].append(int(date[14:16]) // 5 + 1)
                         data[3].append(peak)
                         data[4].append(constr)
@@ -117,8 +117,8 @@ for _, row in df.iterrows():
 df_merged = pd.concat(final_merge, axis=0)
 
 # Do some post-processing of the data
-df_merged = df_merged.drop_duplicates(subset=['Date', 'Hour', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path'])
-df_merged = df_merged.sort_values(by=['Date', 'Hour', 'Interval'])
+df_merged = df_merged.drop_duplicates(subset=['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path'])
+df_merged = df_merged.sort_values(by=['Date', 'HourEnding', 'Interval'])
 df_merged.to_csv(output_path, index=False)
     
 # Output summary statistics
