@@ -123,19 +123,19 @@ def extract_paths(excel_path: str) -> List[Tuple[str, str]]:
     # Iterate through each sheet in the Excel file
     for sheet_name in sheet_names:
         try:
-            # Read the specified columns from the sheet
+            # Read the Gas Pipeline and Flow Point Name columns from the Excel sheet
             df = pd.read_excel(excel_file, sheet_name=sheet_name,
                                usecols=['Gas_x0020_Pipeline_x0020_Name', 'Flow_x0020_Point_x0020_Name'])
 
-            # Extract the non-null and unique records as tuples
+            # Extract the non-null and unique pairs as tuples
             paths.extend(list(df[['Gas_x0020_Pipeline_x0020_Name',
                                   'Flow_x0020_Point_x0020_Name']].dropna().drop_duplicates().to_records(index=False)))
         except (KeyError, ValueError):
-            # Handle any exceptions raised due to missing or invalid columns
+            # Ignore any exceptions raised due to missing or invalid columns
             pass
 
         try:
-            # Read the specified columns from the sheet with a different header row
+            # Some of the Excel sheets have the columns on the second row - try again with this approach.
             df_alt = pd.read_excel(excel_file, sheet_name=sheet_name, header=1,
                                    usecols=['Gas_x0020_Pipeline_x0020_Name', 'Flow_x0020_Point_x0020_Name'])
 
@@ -144,7 +144,7 @@ def extract_paths(excel_path: str) -> List[Tuple[str, str]]:
                                       'Flow_x0020_Point_x0020_Name']].dropna().drop_duplicates().to_records(index=False)))
 
         except (KeyError, ValueError):
-            # Handle any exceptions raised due to missing or invalid columns
+            # Ignore any exceptions raised due to missing or invalid columns
             pass
 
     # Return the list of extracted paths
