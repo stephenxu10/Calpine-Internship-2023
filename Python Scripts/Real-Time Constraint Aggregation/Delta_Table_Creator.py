@@ -1,6 +1,5 @@
 import json
 from itertools import product
-
 import requests
 import pandas as pd
 import time
@@ -80,17 +79,18 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
 
                 # Check if the values match for contingency, constraint, and peak type
                 if contin == sink_contin and constr == sink_constr and peak == sink_peak:
-                    # Append the data to the respective columns
-                    data[0].append(date[:10])
-                    data[1].append(int(date[11:13]))
-                    data[2].append(int(date[14:16]) // 5 + 1)
-                    data[3].append(peak)
-                    data[4].append(constr)
-                    data[5].append(contin)
-                    data[6].append(f"{source}+{sink}")
-                    data[7].append(sf)
-                    data[8].append(sink_sf)
-                    data[9].append(ss - sink_ss)
+                    if abs(sf) > 0.01 and abs(sink_sf) > 0.01:
+                        # Append the data to the respective columns
+                        data[0].append(date[:10])
+                        data[1].append(int(date[11:13]))
+                        data[2].append(int(date[14:16]) // 5 + 1)
+                        data[3].append(peak)
+                        data[4].append(constr)
+                        data[5].append(contin)
+                        data[6].append(f"{source}+{sink}")
+                        data[7].append(sf)
+                        data[8].append(sink_sf)
+                        data[9].append(ss - sink_ss)
 
     # Create a DataFrame from the accumulated data
     res = pd.DataFrame(dict(zip(columns, data)))

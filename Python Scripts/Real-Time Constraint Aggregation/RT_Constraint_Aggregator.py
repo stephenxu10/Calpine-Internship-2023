@@ -97,7 +97,7 @@ def process_mapping(start_date: str, end_date: str) -> Union[
     return res
 
 
-def post_process(raw_data: pd.DataFrame) -> Dict[str, Dict[str, List[Tuple[str, str, str, float]]]]:
+def post_process(existing_dict: Dict, raw_data: pd.DataFrame):
     """
     Post-processes the summary dataFrame data into a nested dictionary in order to accelerate the
     searching & aggregation process for future tasks.
@@ -135,8 +135,17 @@ def post_process(raw_data: pd.DataFrame) -> Dict[str, Dict[str, List[Tuple[str, 
 
         res[settlement][full_date].append((contingency, constraint, peak_type, float(row['Shift_Factor']), shadowShift))
 
-    return res
+    for node in res:
+        if node not in existing_dict:
+            existing_dict[node] = res[node]
 
+        else:
+            for date in res[node]:
+                if date not in existing_dict[node]:
+                    existing_dict[node][date] = res[node][date]
+
+    with open(json_summary, "w") as json_sum:
+        json_sum.write(json.dumps(existing_sum))
 
 def findDesired(mapping: Dict, row) -> Tuple[str, str, str, str]:
     """
@@ -299,20 +308,7 @@ if not os.path.isfile(output_path):
     except json.JSONDecodeError:
         existing_sum = {}
 
-    new_processed = post_process(merged_df)
-
-    for node in new_processed:
-        if node not in existing_sum:
-            existing_sum[node] = new_processed[node]
-        
-        else:
-            for date in new_processed[node]:
-                if date not in existing_sum[node]:
-                    existing_sum[node][date] = new_processed[node][date]
-
-    with open(json_summary, "w") as json_sum:
-        json_sum.write(json.dumps(existing_sum))
-        
+    post_process(existing_sum, merged_df)
     merged_df.to_csv(output_path, index=False)
 
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
@@ -341,26 +337,14 @@ elif year == datetime.now().year:
     except json.JSONDecodeError:
         existing_sum = {}
 
-    new_processed = post_process(merged_df)
-
-    for node in new_processed:
-        if node not in existing_sum:
-            existing_sum[node] = new_processed[node]
-        
-        else:
-            for date in new_processed[node]:
-                if date not in existing_sum[node]:
-                    existing_sum[node][date] = new_processed[node][date]
-
-    with open(json_summary, "w") as json_sum:
-        json_sum.write(json.dumps(existing_sum))
-    
+    post_process(existing_sum, merged_df)
     # Post-processing of the data.
     combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
     combined_data = combined_data[combined_data['Shadow_Price'] > 0]
     combined_data = combined_data.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
                                                           'Contingency_Name', 'Settlement_Point'], keep='last')
-
+    
+    combined_data = combined_data.sort_values(by=['SCED_Time_Stamp', 'Hour_Ending'])
     combined_data.to_csv(output_path, index=False)
 
 # Output summary statistics
