@@ -7,7 +7,7 @@ from typing import List
 # Global parameters & variables
 start_time = time.time()
 
-lower_year = 2020
+lower_year = 2019
 upper_year = 2023
 
 # Relative file path of the outputted CSV.
@@ -35,8 +35,8 @@ def aggregate_zip(zip_path: str) -> pd.DataFrame:
         # Open the relevant CSV files and aggregate them through Pandas
         with zipfile.ZipFile(zip_path, "r") as zip_ref:
             zip_contents = zip_ref.namelist()
-            csv_files = [f for f in zip_contents if "60d_Load_Resource_Data_in_" in f]
-
+            csv_files = [f for f in zip_contents if "60d_Load" in f]
+            
             # Add the date column into each DataFrame
             for csv_file in csv_files:
                 with zip_ref.open(csv_file) as csv:

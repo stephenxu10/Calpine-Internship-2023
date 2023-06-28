@@ -21,7 +21,7 @@ warnings.simplefilter("ignore")
 
 # Global Variables and Parameters.
 start_time = time.time()
-year = 2023
+year = 2022
 
 # How many days we look back
 days_back = 2
@@ -67,10 +67,11 @@ def process_mapping(start_date: str, end_date: str) -> Union[
             - b: The hour ending, ranging from 1 to 24.
             - c: The full FacilityName.
 
-        Each tuple (x, y, z) in res[a][b][c] gives
-            - x: Contingency
-            - y: ShadowPrice
-            - z: FacilityType
+        Each tuple (w, x, y, z) in res[a][b][c] gives
+            - w: Contingency
+            - x: ShadowPrice
+            - y: FacilityType
+            - z: PeakType
     """
 
     # Build the request URL.
@@ -99,14 +100,27 @@ def process_mapping(start_date: str, end_date: str) -> Union[
 
 def post_process(existing_dict: Dict, raw_data: pd.DataFrame):
     """
-    Post-processes the summary dataFrame data into a nested dictionary in order to accelerate the
-    searching & aggregation process for future tasks.
+    Post-processes some summary dataFrame data into a nested dictionary and updates
+    a pre-existing dictionary with those entries. Returns the new updated dictionary.
 
-    Input:
+    Inputs:
+        - existing_dict: The existing dictionary of summary data. For reference, existing_dict[a][b]
+        gives a list of 5-element tuples corresponding to 
+            - a: The Settlement Point (such as HB_North)
+            - b: The full date in MM/DD/YYYY HH:MM:SS format
+        
+        Each tuple (v, w, x, y, z) in existing_dict[a][b] gives
+            - v: The Contingency Name
+            - w: The Constraint Name
+            - x: The Peak Type
+            - y: The Shift Factor
+            - z: The 'ShadowShift' - the Shift Factor multiplied by the Shadow Price
+        
         - raw_data: A DataFrame storing the data desired to be summarized.
 
     Output:
-        - A post-processed dictionary with shadowPrice * shiftFactor column.
+        - Nothing, but updates the existing dictionary with new entries in the raw data. Writes the
+        updated dictionary as a JSON to json_summary.
     """
 
     unique_nodes = {'GUADG_CCU2', 'CCEC_ST1', 'BVE_UNIT1', 'PSG_PSG_GT3', 'SAN_SANMIGG1', 'CCEC_GT1', 'DDPEC_GT4',
@@ -118,13 +132,15 @@ def post_process(existing_dict: Dict, raw_data: pd.DataFrame):
                     'BVE_UNIT2', 'FREC_1_CCU', 'BTE_PUN1', 'LZ_LCRA', 'BVE_UNIT3', 'BTE_PUN2', 'TEN_CT1_STG',
                     'CHE_LYD2', 'PSG_PSG_ST1', 'CHE_LYD', 'TXCTY_CTC', 'TXCTY_ST', 'CTL_ST_101', 'WND_WHITNEY',
                     'LZ_HOUSTON', 'LZ_NORTH', 'CTL_GT_102', 'HB_HOUSTON', 'CHEDPW_GT2', 'CCEC_GT2', 'DDPEC_GT1'}
+    
     raw_data = raw_data[raw_data['Settlement_Point'].isin(unique_nodes)]
 
     raw_data['Shadow_Price'] = pd.to_numeric(raw_data['Shadow_Price'], errors='coerce')
     raw_data['Shift_Factor'] = pd.to_numeric(raw_data['Shift_Factor'], errors='coerce')
 
     res = defaultdict(lambda: defaultdict(list))
-
+    
+    # Convert the data in the DataFrame to the same format as existing_dict
     for _, row in raw_data.iterrows():
         settlement = row['Settlement_Point']
         full_date = row['SCED_Time_Stamp']
@@ -279,6 +295,12 @@ elif year == datetime.now().year:
     with open(json_path, "w") as file:
         json.dump(mapping, file)
 
+# Read in the existing, complete JSON if not current year.
+else:
+    with open(json_path, "r") as file:
+        mapping = json.load(file)
+
+
 """
 Now that we have the mapping, we can begin converting and aggregating the data.
 """
@@ -300,17 +322,15 @@ if not os.path.isfile(output_path):
                                                   'Contingency_Name', 'Settlement_Point'], keep='last')
         
     # Update the current summary JSON
-    """
     try:
         with open(json_summary) as js_sum:
             existing_sum = json.load(js_sum)
         
-    except json.JSONDecodeError:
+    except (json.JSONDecodeError, FileNotFoundError):
         existing_sum = {}
-    """
 
-    # post_process(existing_sum, merged_df)
-    merged_df.to_csv(output_path, index=False)
+    post_process(existing_sum, merged_df)
+    # merged_df.to_csv(output_path, index=False)
 
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
 elif year == datetime.now().year:

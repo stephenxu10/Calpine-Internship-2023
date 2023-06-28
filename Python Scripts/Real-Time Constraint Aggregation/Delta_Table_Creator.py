@@ -22,7 +22,7 @@ year = 2023
 
 summary_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
 json_processed = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
-output_path = "./../../Data/Aggregated RT Constraint Data/Delta_Table_" + str(year) + ".csv"
+output_path = "./../../Data/Aggregated RT Constraint Data/Exposure_SCED_" + str(year) + ".csv"
 credential_path = "./../../credentials.txt"
 
 # Grab the set of all paths that we are interested in - first grab credentials
@@ -55,7 +55,7 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
         return None
 
     # Define column names
-    columns = ['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path', 'Source SF', 'Sink SF', 'Delta']
+    columns = ['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path', 'Source SF', 'Sink SF', '$ Cong MWH']
 
     # Initialize empty lists for each column
     data = [[] for _ in columns]
