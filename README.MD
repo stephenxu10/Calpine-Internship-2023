@@ -3,7 +3,7 @@
 ## Description
 
 A large repository storing the code I have written for my various tasks & projects during my 2023 Summer Internship at Calpine. For security purposes, most input & output data
-files are not included in this repository. However, the code is largely unchanged.
+files are not included in this repository. However, the code and reports are largely unchanged.
 
 ## Usage
 
