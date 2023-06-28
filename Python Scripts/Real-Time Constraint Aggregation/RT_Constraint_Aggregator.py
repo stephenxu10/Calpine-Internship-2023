@@ -300,14 +300,16 @@ if not os.path.isfile(output_path):
                                                   'Contingency_Name', 'Settlement_Point'], keep='last')
         
     # Update the current summary JSON
+    """
     try:
         with open(json_summary) as js_sum:
             existing_sum = json.load(js_sum)
         
     except json.JSONDecodeError:
         existing_sum = {}
+    """
 
-    post_process(existing_sum, merged_df)
+    # post_process(existing_sum, merged_df)
     merged_df.to_csv(output_path, index=False)
 
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
