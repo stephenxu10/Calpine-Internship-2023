@@ -21,10 +21,13 @@ warnings.simplefilter("ignore")
 
 # Global Variables and Parameters.
 start_time = time.time()
-year = 2022
+year = 2023
 
 # How many days we look back
 days_back = 2
+
+# Flag that determines if we would like to update the RT_Constraint table as well.
+table_flag = False
 
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
 json_path = "./../../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
@@ -254,7 +257,7 @@ def convert_csv(df: pd.DataFrame, mapping: Dict) -> pd.DataFrame:
 
 """
 Procedure to store the pre-processed data as JSONs in the parent directory's
-Data subfolder. Querying Yes Energy every single time can be costly, so
+Data subfolder. Querying a entire year of data from Yes Energy every single time can be costly, so
 this improves performance a tad. 
 
 Each JSON data file also contains a "Latest Date Queried" field, which stores
@@ -360,13 +363,14 @@ elif year == datetime.now().year:
 
     post_process(existing_sum, merged_df)
     # Post-processing of the data.
-    combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
-    combined_data = combined_data[combined_data['Shadow_Price'] > 0]
-    combined_data = combined_data.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
-                                                          'Contingency_Name', 'Settlement_Point'], keep='last')
-    
-    combined_data = combined_data.sort_values(by=['SCED_Time_Stamp', 'Hour_Ending'])
-    combined_data.to_csv(output_path, index=False)
+    if table_flag:
+        combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
+        combined_data = combined_data[combined_data['Shadow_Price'] > 0]
+        combined_data = combined_data.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
+                                                              'Contingency_Name', 'Settlement_Point'], keep='last')
+
+        combined_data = combined_data.sort_values(by=['SCED_Time_Stamp', 'Hour_Ending'])
+        combined_data.to_csv(output_path, index=False)
 
 # Output summary statistics
 end_time = time.time()

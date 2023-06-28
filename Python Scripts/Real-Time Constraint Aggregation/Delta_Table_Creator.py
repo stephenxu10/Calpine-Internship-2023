@@ -22,7 +22,10 @@ year = 2023
 
 summary_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
 json_processed = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
-output_path = "./../../Data/Aggregated RT Constraint Data/Exposure_SCED_" + str(year) + ".csv"
+output_path = (
+    "./../../Data/Aggregated RT Constraint Data/Exposure_SCED_" + str(year) + ".csv"
+) if year != 2023 else "\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_2023.csv"
+                
 credential_path = "./../../credentials.txt"
 
 # Grab the set of all paths that we are interested in - first grab credentials
