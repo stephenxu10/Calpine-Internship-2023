@@ -36,7 +36,9 @@ output_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(yea
 credential_path = "./../../credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
-auth = ('transmission.yesapi@calpine.com', 'texasave717')
+
+with open(credential_path, "r") as credentials:
+    auth = tuple(credentials.read().split())
 
 # Extract the set of all nodes that we are interested in
 nodes_req = requests.get("https://services.yesenergy.com/PS/rest/collection/node/2697330", auth=auth)
