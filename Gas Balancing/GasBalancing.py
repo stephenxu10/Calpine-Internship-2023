@@ -10,6 +10,10 @@ from typing import Union, Tuple, List, Set
 import requests
 from io import StringIO
 
+"""
+Blaine's original code: Y:\5_Trans Analysis\Models\Development\Python\Scripts\SouthCentralGasBalancePython.py
+"""
+
 # Ignore warnings.
 warnings.simplefilter("ignore")
 
@@ -20,7 +24,7 @@ Global Parameters and Values. Tweak as necessary.
 mapping_path = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Pipeline_FilterValues.xlsx"
 pipeline_mapping = {row['Gas Pipeline Name']: row['Gas Pipeline ID'] for _, row in
                     pd.read_excel(mapping_path).iterrows()}
-output_path = "./Aggregated_BalanceSheets.csv"
+output_path = "./Aggregated_BalanceSheets.xlsx"
 south_central = "\\\\pzpwcmfs01\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Copy Of SouthCentral Balance.xlsx"
 
 # Dataset Number
@@ -37,6 +41,59 @@ columns = (27496, 2630, 27545, 27548, 27535, 27536, 13244, 17062, 4969, 10895, 4
 
 # Florence's API key.
 api_key = "ba71a029-a6fd-40cc-b0b7-6e4eb905dc57"
+
+
+def extract_paths(excel_path: str) -> List[Tuple[str, str]]:
+    """
+    Given an absolute path to an Excel sheet, this helper method reads through the tabs and extracts
+    a list of "paths" consisting of a (Gas Pipeline Name, Flow Point Name) ordered pair. If the Excel sheet
+    is very large, this method may take a while to extract all the paths.
+
+    Inputs:
+        - excel_path: The absolute path to an Excel sheet.
+
+    Output:
+        - A list of tuples giving the set of all paths in that particular Excel sheet.
+    """
+
+    # Load the Excel file
+    excel_file = pd.ExcelFile(excel_path)
+
+    # Get the names of all the sheets in the Excel file
+    sheet_names = excel_file.sheet_names
+
+    # Create an empty list to store the extracted paths
+    paths = []
+
+    # Iterate through each sheet in the Excel file
+    for sheet_name in sheet_names:
+        try:
+            # Read the Gas Pipeline and Flow Point Name columns from the Excel sheet
+            df = pd.read_excel(excel_file, sheet_name=sheet_name,
+                               usecols=['Gas_x0020_Pipeline_x0020_Name', 'Flow_x0020_Point_x0020_Name'])
+
+            # Extract the non-null and unique pairs as tuples
+            paths.extend(list(df[['Gas_x0020_Pipeline_x0020_Name',
+                                  'Flow_x0020_Point_x0020_Name']].dropna().drop_duplicates().to_records(index=False)))
+        except (KeyError, ValueError):
+            # Ignore any exceptions raised due to missing or invalid columns
+            pass
+
+        try:
+            # Some of the Excel sheets have the columns on the second row - try again with this approach.
+            df_alt = pd.read_excel(excel_file, sheet_name=sheet_name, header=1,
+                                   usecols=['Gas_x0020_Pipeline_x0020_Name', 'Flow_x0020_Point_x0020_Name'])
+
+            # Extract the non-null and unique records as tuples
+            paths.extend(list(df_alt[['Gas_x0020_Pipeline_x0020_Name',
+                                      'Flow_x0020_Point_x0020_Name']].dropna().drop_duplicates().to_records(index=False)))
+
+        except (KeyError, ValueError):
+            # Ignore any exceptions raised due to missing or invalid columns
+            pass
+
+    # Return the list of extracted paths
+    return paths
 
 
 def fetch_gas_data(pipeline: str, flow_point: Set[str], days_behind: int, dataset=dataset, columns=columns) -> Union[
@@ -97,58 +154,21 @@ def fetch_gas_data(pipeline: str, flow_point: Set[str], days_behind: int, datase
             print("not found!")
             return
 
-
-def extract_paths(excel_path: str) -> List[Tuple[str, str]]:
+def find_recent_capacities(overall_df: pd.DataFrame) -> pd.DataFrame:
     """
-    Given an absolute path to an Excel sheet, this helper method reads through the tabs and extracts
-    a list of "paths" consisting of a (Gas Pipeline Name, Flow Point Name) ordered pair. If the Excel sheet
-    is very large, this method may take a while to extract all the paths.
+    Given the overall merged DataFrame, this method computes the most recent capacity
+    for each unique flow point name in the DataFrame.
 
-    Inputs:
-        - excel_path: The absolute path to an Excel sheet.
+    Currently a rather lazy (but concise!) approach.
+
+    Input:
+        - overall_df: The aggregated DataFrame storing all the Gas Balance data from velocity suite.
 
     Output:
-        - A list of tuples giving the set of all paths in that particular Excel sheet.
+        - res: A DataFrame mapping each flow point name to its most recent capacity.
     """
-
-    # Load the Excel file
-    excel_file = pd.ExcelFile(excel_path)
-
-    # Get the names of all the sheets in the Excel file
-    sheet_names = excel_file.sheet_names
-
-    # Create an empty list to store the extracted paths
-    paths = []
-
-    # Iterate through each sheet in the Excel file
-    for sheet_name in sheet_names:
-        try:
-            # Read the Gas Pipeline and Flow Point Name columns from the Excel sheet
-            df = pd.read_excel(excel_file, sheet_name=sheet_name,
-                               usecols=['Gas_x0020_Pipeline_x0020_Name', 'Flow_x0020_Point_x0020_Name'])
-
-            # Extract the non-null and unique pairs as tuples
-            paths.extend(list(df[['Gas_x0020_Pipeline_x0020_Name',
-                                  'Flow_x0020_Point_x0020_Name']].dropna().drop_duplicates().to_records(index=False)))
-        except (KeyError, ValueError):
-            # Ignore any exceptions raised due to missing or invalid columns
-            pass
-
-        try:
-            # Some of the Excel sheets have the columns on the second row - try again with this approach.
-            df_alt = pd.read_excel(excel_file, sheet_name=sheet_name, header=1,
-                                   usecols=['Gas_x0020_Pipeline_x0020_Name', 'Flow_x0020_Point_x0020_Name'])
-
-            # Extract the non-null and unique records as tuples
-            paths.extend(list(df_alt[['Gas_x0020_Pipeline_x0020_Name',
-                                      'Flow_x0020_Point_x0020_Name']].dropna().drop_duplicates().to_records(index=False)))
-
-        except (KeyError, ValueError):
-            # Ignore any exceptions raised due to missing or invalid columns
-            pass
-
-    # Return the list of extracted paths
-    return paths
+    filtered_df = overall_df.drop_duplicates(subset=['Gas Pipeline Name', 'Flow Point Name', 'Flow Direction'], keep="first")
+    return filtered_df[['Flow Point Name', 'Flow Direction', 'Sum Scheduled Quantity Dth']]
 
 
 # Extract the (pipeline, flow-point) paths from the path text file, or create it if it does not already exist.
@@ -176,4 +196,6 @@ for key in processed_paths:
 
 # Merge together the queried data and output it to a CSV
 merged_df = pd.concat(merge, axis=0)
-merged_df.to_csv(output_path, index=False)
+merged_df.to_csv(output_path, sheet_name = "Raw Data", index=False)
+find_recent_capacities(merged_df).to_excel(output_path, sheet_name="Capacity", index=False)
+

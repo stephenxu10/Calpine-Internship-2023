@@ -18,7 +18,7 @@ The outputted table is located in the Data subfolder.
 
 # Global Variables and Parameters
 start_time = time.time()
-year = 2023
+year = 2021
 
 summary_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
 json_processed = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"

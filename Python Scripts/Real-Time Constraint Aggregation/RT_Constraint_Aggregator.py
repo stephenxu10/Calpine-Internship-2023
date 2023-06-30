@@ -21,7 +21,7 @@ warnings.simplefilter("ignore")
 
 # Global Variables and Parameters.
 start_time = time.time()
-year = 2023
+year = 2021
 
 # How many days we look back
 days_back = 2
@@ -333,7 +333,9 @@ if not os.path.isfile(output_path):
         existing_sum = {}
 
     post_process(existing_sum, merged_df)
-    # merged_df.to_csv(output_path, index=False)
+
+    if table_flag:
+        merged_df.to_csv(output_path, index=False)
 
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
 elif year == datetime.now().year:
@@ -362,7 +364,7 @@ elif year == datetime.now().year:
         existing_sum = {}
 
     post_process(existing_sum, merged_df)
-    # Post-processing of the data.
+    # Post-processing of the data
     if table_flag:
         combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
         combined_data = combined_data[combined_data['Shadow_Price'] > 0]
