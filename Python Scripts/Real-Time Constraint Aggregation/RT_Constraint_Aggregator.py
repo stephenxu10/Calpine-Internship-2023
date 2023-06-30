@@ -14,14 +14,14 @@ import os
 This Python script aims to aggregate the real-time ERCOT market constraints across an entire year. Additionally,
 it grabs additional data from yesenergy and matches it to each entry in the raw data. Furthermore, we are only interested
 in ERCOT Calpine settlement points, stored in:
-¡
+
 https://services.yesenergy.com/PS/rest/collection/node/2697330
 """
 warnings.simplefilter("ignore")
 
 # Global Variables and Parameters.
 start_time = time.time()
-year = 2021
+year = 2023
 
 # How many days we look back
 days_back = 2
@@ -36,9 +36,7 @@ output_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(yea
 credential_path = "./../../credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
-
-with open(credential_path, "r") as credentials:
-    auth = tuple(credentials.read().split())
+auth = ('transmission.yesapi@calpine.com', 'texasave717')
 
 # Extract the set of all nodes that we are interested in
 nodes_req = requests.get("https://services.yesenergy.com/PS/rest/collection/node/2697330", auth=auth)
@@ -97,7 +95,7 @@ def process_mapping(start_date: str, end_date: str) -> Union[
         peak_type = row['PEAKTYPE']
 
         res[date][hour][facility_name].append((contingency, shadowPrice, facility_type, peak_type))
-    
+
     return res
 
 
@@ -108,17 +106,17 @@ def post_process(existing_dict: Dict, raw_data: pd.DataFrame):
 
     Inputs:
         - existing_dict: The existing dictionary of summary data. For reference, existing_dict[a][b]
-        gives a list of 5-element tuples corresponding to 
+        gives a list of 5-element tuples corresponding to
             - a: The Settlement Point (such as HB_North)
             - b: The full date in MM/DD/YYYY HH:MM:SS format
-        
+
         Each tuple (v, w, x, y, z) in existing_dict[a][b] gives
             - v: The Contingency Name
             - w: The Constraint Name
             - x: The Peak Type
             - y: The Shift Factor
             - z: The 'ShadowShift' - the Shift Factor multiplied by the Shadow Price
-        
+
         - raw_data: A DataFrame storing the data desired to be summarized.
 
     Output:
@@ -135,14 +133,14 @@ def post_process(existing_dict: Dict, raw_data: pd.DataFrame):
                     'BVE_UNIT2', 'FREC_1_CCU', 'BTE_PUN1', 'LZ_LCRA', 'BVE_UNIT3', 'BTE_PUN2', 'TEN_CT1_STG',
                     'CHE_LYD2', 'PSG_PSG_ST1', 'CHE_LYD', 'TXCTY_CTC', 'TXCTY_ST', 'CTL_ST_101', 'WND_WHITNEY',
                     'LZ_HOUSTON', 'LZ_NORTH', 'CTL_GT_102', 'HB_HOUSTON', 'CHEDPW_GT2', 'CCEC_GT2', 'DDPEC_GT1'}
-    
+
     raw_data = raw_data[raw_data['Settlement_Point'].isin(unique_nodes)]
 
     raw_data['Shadow_Price'] = pd.to_numeric(raw_data['Shadow_Price'], errors='coerce')
     raw_data['Shift_Factor'] = pd.to_numeric(raw_data['Shift_Factor'], errors='coerce')
 
     res = defaultdict(lambda: defaultdict(list))
-    
+
     # Convert the data in the DataFrame to the same format as existing_dict
     for _, row in raw_data.iterrows():
         settlement = row['Settlement_Point']
@@ -164,6 +162,7 @@ def post_process(existing_dict: Dict, raw_data: pd.DataFrame):
 
     with open(json_summary, "w") as json_sum:
         json_sum.write(json.dumps(existing_sum))
+
 
 def findDesired(mapping: Dict, row) -> Tuple[str, str, str, str]:
     """
@@ -303,7 +302,6 @@ else:
     with open(json_path, "r") as file:
         mapping = json.load(file)
 
-
 """
 Now that we have the mapping, we can begin converting and aggregating the data.
 """
@@ -323,12 +321,12 @@ if not os.path.isfile(output_path):
     merged_df = merged_df[merged_df['Shadow_Price'] > 0]
     merged_df = merged_df.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
                                                   'Contingency_Name', 'Settlement_Point'], keep='last')
-        
+
     # Update the current summary JSON
     try:
         with open(json_summary) as js_sum:
             existing_sum = json.load(js_sum)
-        
+
     except (json.JSONDecodeError, FileNotFoundError):
         existing_sum = {}
 
@@ -339,9 +337,7 @@ if not os.path.isfile(output_path):
 
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
 elif year == datetime.now().year:
-    current_data = pd.read_csv(output_path)
     latest_date = datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y")
-
     for zip_file in yearly_zip_files:
         zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")
 
@@ -353,19 +349,20 @@ elif year == datetime.now().year:
 
     # Append the new data to the existing data
     merged_df = pd.DataFrame(pd.concat(merge, axis=0))
-    combined_data = pd.concat([current_data, merged_df], axis=0)
-    
+
     # Update the current summary 2023 JSON
     try:
         with open(json_summary) as js_sum:
             existing_sum = json.load(js_sum)
-        
+
     except json.JSONDecodeError:
         existing_sum = {}
 
     post_process(existing_sum, merged_df)
     # Post-processing of the data
     if table_flag:
+        current_data = pd.read_csv(output_path)
+        combined_data = pd.concat([current_data, merged_df], axis=0)
         combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
         combined_data = combined_data[combined_data['Shadow_Price'] > 0]
         combined_data = combined_data.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',

@@ -18,26 +18,26 @@ The outputted table is located in the Data subfolder.
 
 # Global Variables and Parameters
 start_time = time.time()
-year = 2021
+year = 2023
 
-summary_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
 json_processed = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
 output_path = (
-    "./../../Data/Aggregated RT Constraint Data/Exposure_SCED_" + str(year) + ".csv"
+        "./../../Data/Aggregated RT Constraint Data/Exposure_SCED_" + str(year) + ".csv"
 ) if year != 2023 else "\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_2023.csv"
-                
+
 credential_path = "./../../credentials.txt"
 
 # Grab the set of all paths that we are interested in - first grab credentials
 with open(credential_path, "r") as credentials:
     auth = tuple(credentials.read().split())
-    
+
 call1 = "https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/paths.csv?"
 r = requests.get(call1, auth=auth)
 df = pd.read_csv(StringIO(r.text))
 df['Path'] = df['SOURCE'] + '+' + df['SINK']
 df = df[['Path', 'SOURCE', 'SINK']]
 df = df.drop_duplicates()
+
 
 def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame, None]:
     """
@@ -58,7 +58,8 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
         return None
 
     # Define column names
-    columns = ['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path', 'Source SF', 'Sink SF', '$ Cong MWH']
+    columns = ['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path', 'Source SF',
+               'Sink SF', '$ Cong MWH']
 
     # Initialize empty lists for each column
     data = [[] for _ in columns]
@@ -71,7 +72,7 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
     for date, source_list in source_map.items():
         # Check if the date exists in the sink mapping
         if date in sink_map:
-            
+
             # Get the sink list for the corresponding date
             sink_list = sink_map[date]
 
@@ -110,20 +111,21 @@ final_merge = []
 for _, row in df.iterrows():
     source = row['SOURCE']
     sink = row['SINK']
-    
+
     df_path = accumulate_data(mapping, source, sink)
-    
+
     if df_path is not None:
         final_merge.append(df_path)
         print(f"{source} to {sink} completed.")
-    
+
 df_merged = pd.concat(final_merge, axis=0)
 
 # Do some post-processing of the data
-df_merged = df_merged.drop_duplicates(subset=['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path'])
+df_merged = df_merged.drop_duplicates(
+    subset=['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path'])
 df_merged = df_merged.sort_values(by=['Date', 'HourEnding', 'Interval'])
 df_merged.to_csv(output_path, index=False)
-    
+
 # Output summary statistics
 end_time = time.time()
 execution_time = (end_time - start_time)
