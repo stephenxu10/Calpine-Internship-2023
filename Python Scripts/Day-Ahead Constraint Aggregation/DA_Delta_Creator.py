@@ -35,7 +35,7 @@ year = 2023
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\55_DSF"
 json_path = "./../../Data/Aggregated DA Constraint Data/" + str(year) + "_web_data.json"
 json_summary = "./../../Data/Aggregated DA Constraint Data/processed_" + str(year) + "_summary.json"
-delta_path = "./../../Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv"
+delta_path = "./../../Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv" if year != 2023 else "\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_2023.csv"
 credential_path = "./../../credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/DA/ERCOT?"
@@ -315,7 +315,7 @@ except (json.JSONDecodeError, FileNotFoundError):
     existing_sum = {}
 
 for zip_file in yearly_zip_files:
-    zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")D
+    zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")
     
     if zip_date >= lower_bound:
         with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
