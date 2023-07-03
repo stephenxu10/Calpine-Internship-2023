@@ -3,6 +3,7 @@ from itertools import product
 import requests
 import pandas as pd
 import time
+import sys
 from io import StringIO
 from typing import Dict, Union
 
@@ -16,21 +17,17 @@ collect the most-recent data.
 The outputted table is located in the Data subfolder.
 """
 
-# Global Variables and Parameters
+# Global Variables and Paramete
 start_time = time.time()
 year = 2023
 
-json_processed = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
+json_processed = "E:\\Task Scheduler\\Calpine-Internship-2023\\Data\\Aggregated RT Constraint Data\\processed_" + str(
+    year) + "_summary.json"
 output_path = (
         "./../../Data/Aggregated RT Constraint Data/Exposure_SCED_" + str(year) + ".csv"
 ) if year != 2023 else "\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_2023.csv"
 
-credential_path = "./../../credentials.txt"
-
-# Grab the set of all paths that we are interested in - first grab credentials
-with open(credential_path, "r") as credentials:
-    auth = tuple(credentials.read().split())
-
+auth = ('transmission.yesapi@calpine.com', 'texasave717')
 call1 = "https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/paths.csv?"
 r = requests.get(call1, auth=auth)
 df = pd.read_csv(StringIO(r.text))

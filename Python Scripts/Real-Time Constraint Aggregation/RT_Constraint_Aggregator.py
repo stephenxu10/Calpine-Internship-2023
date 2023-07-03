@@ -14,7 +14,7 @@ import os
 This Python script aims to aggregate the real-time ERCOT market constraints across an entire year. Additionally,
 it grabs additional data from yesenergy and matches it to each entry in the raw data. Furthermore, we are only interested
 in ERCOT Calpine settlement points, stored in:
-
+¡
 https://services.yesenergy.com/PS/rest/collection/node/2697330
 """
 warnings.simplefilter("ignore")
@@ -30,16 +30,16 @@ days_back = 2
 table_flag = False
 
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
-json_path = "./../../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
-json_summary = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
-output_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
-credential_path = "./../../credentials.txt"
+json_path = "E:\\Task Scheduler\\Calpine-Internship-2023\\Data\\Aggregated RT Constraint Data\\current_" + str(
+    year) + "_web_data.json"
+json_summary = "E:\\Task Scheduler\\Calpine-Internship-2023\Data\\Aggregated RT Constraint Data\\processed_" + str(
+    year) + "_summary.json"
+output_path = "E:\\Task Scheduler\\Calpine-Internship-2023\Data\\Aggregated RT Constraint Data\\RT_Summary_" + str(
+    year) + ".csv"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
 
-with open(credential_path, "r") as credentials:
-    auth = tuple(credentials.read().split())
-
+auth = ('transmission.yesapi@calpine.com', 'texasave717')
 # Extract the set of all nodes that we are interested in
 nodes_req = requests.get("https://services.yesenergy.com/PS/rest/collection/node/2697330", auth=auth)
 
@@ -52,7 +52,7 @@ else:
 
 
 def process_mapping(start_date: str, end_date: str) -> Union[
-        Dict[str, Dict[str, Dict[str, List[Tuple[str, str, str, str]]]]], None]:
+    Dict[str, Dict[str, Dict[str, List[Tuple[str, str, str, str]]]]], None]:
     """
     A helper method that queries Yes Energy to grab the ERCOT hourly constraint data in a certain date range.
     Pre-processes the data into a large dictionary in order to speed up future search times.
@@ -340,6 +340,8 @@ if not os.path.isfile(output_path):
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
 elif year == datetime.now().year:
     latest_date = datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y")
+    print(latest_date)
+
     for zip_file in yearly_zip_files:
         zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")
 
