@@ -25,6 +25,8 @@ it generates the summary JSON like before. The overall workflow is as follows:
     3) Convert and aggregate all unread data from the CA drive using the pre-processed mapping.
     4) Post-process the aggregated data into a summary JSON.
     5) Use this summarized JSON to generate the Delta Table and output it to a CSV.
+
+Current output path: \\pzpwtabapp01\Ercot
 """
 warnings.simplefilter("ignore")
 
@@ -33,10 +35,10 @@ start_time = time.time()
 year = 2023
 
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\55_DSF"
-json_path = "./../../Data/Aggregated DA Constraint Data/" + str(year) + "_web_data.json"
-json_summary = "./../../Data/Aggregated DA Constraint Data/processed_" + str(year) + "_summary.json"
-delta_path = "./../../Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv" if year != 2023 else "\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_2023.csv"
-credential_path = "./../../credentials.txt"
+json_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/" + str(year) + "_web_data.json"
+json_summary = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/processed_" + str(year) + "_summary.json"
+delta_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv" if year != 2023 else "\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_2023.csv"
+credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/DA/ERCOT?"
 days_back = 2

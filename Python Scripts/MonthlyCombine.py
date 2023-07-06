@@ -2,7 +2,8 @@ import os
 import time
 from typing import *
 import pandas as pd
-from utils import convert, getSourceSinks
+import requests
+from io import StringIO
 
 
 """
@@ -13,24 +14,63 @@ do some filtering to only include entries with paths from
 
 https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/paths.csv?
 
-Note: This script will only work properly if it is ran from
-\\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
-due to the File I/O.
-
 The final output file is located in the Data subfolder. It should take about 2 minutes to produce.
 """
 
 # Global parameters & variables
 start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
-path_base = "./../../../06 - CRR/Monthly"
+path_base = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/Monthly"
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2018
 end_year = 2050
 
-output_path = "./../Data/Commercial_CreditCoefficient_Combined.csv"  # Relative file path of the outputted CSV.
-sourceSinks = getSourceSinks()
+# Absolute file path of the outputted CSV.
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Commercial_CreditCoefficient_Combined.csv" 
+
+def convert(month: int) -> str:
+    """
+    Simple helper method that appends a leading zero to an integer if it is single-digit and casts it to
+    a string.
+
+    Inputs:
+    - month: An integer in the interval [1, 12].
+    """
+    if month <= 9:
+        return "0" + str(month)
+    else: 
+        return str(month)
+    
+
+def getSourceSinks():
+    credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
+    
+    with open(credential_path, "r") as credentials:
+        auth = tuple(credentials.read().split())
+    
+    PortfolioID = '759847'
+
+    call1 = "https://services.yesenergy.com/PS/rest/ftr/portfolio/" + PortfolioID + "/paths.csv?"
+    call_one = requests.get(call1, auth=auth)
+    df = pd.read_csv(StringIO(call_one.text))
+    df['Path'] = df['SOURCE'] + '+' + df['SINK']
+    df = df[['Path', 'SOURCE', 'SINK']]
+    df = df.drop_duplicates(subset=['Path'], ignore_index=True)
+
+    # Pre-processing to convert to dictionary mapping each source to a set of sinks
+    sourceSinks = {}
+
+    for index, row in df.iterrows():
+        source = row['SOURCE']
+        sink = row['SINK']
+
+        if source not in sourceSinks:
+            sourceSinks[source] = set()
+
+        sourceSinks[source].add(sink)
+
+    return sourceSinks
 
 def collect_csv(yr: int, csv_files: List[str]):
     """
@@ -54,6 +94,7 @@ def collect_csv(yr: int, csv_files: List[str]):
             csv_files.append(csv_file)
 
 
+sourceSinks = getSourceSinks()
 # Build the list of all CSV file paths across all years
 CSV_list = []
 for year in range(start_year, end_year + 1):

@@ -30,11 +30,10 @@ days_back = 2
 table_flag = False
 
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
-json_path = "./../../Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
-json_summary = "./../../Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
-output_path = "./../../Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
-credential_path = "./../../credentials.txt"
-
+json_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
+json_summary = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/RT_Summary_" + str(year) + ".csv"
+credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
 
 with open(credential_path, "r") as credentials:

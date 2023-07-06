@@ -8,9 +8,13 @@ import warnings
 start_time = time.time()
 year = 2021
 
-path_base = "./../../../02 - Input/Transmission/Standard Ctgcs"
-output_raw = "./../Data/Lookup Tables/Lookup_Table_Combined_" + str(year) + "_raw.csv"  # Relative file path of the outputted raw CSV.
-output_drop = "./../Data/Lookup Tables/Lookup_Table_Combined_" + str(year) + "_dropped.csv"  # Relative file path of the outputted filtered CSV.
+path_base = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/02 - Input/Transmission/Standard Ctgcs"
+
+# Absolute file path of the outputted raw CSV.
+output_raw = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Lookup Tables/Lookup_Table_Combined_" + str(year) + "_raw.csv"
+
+# Absolute file path of the outputted dropped CSV
+output_drop = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Lookup Tables/Lookup_Table_Combined_" + str(year) + "_dropped.csv"  
 
 warnings.simplefilter("ignore")
 yearly_excel = [x for x in os.listdir(path_base) if str(year) in x]

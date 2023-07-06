@@ -1,7 +1,6 @@
 import os
 import time
 from typing import Dict, List, Tuple
-from utils import convert
 import pandas as pd
 
 """
@@ -9,11 +8,6 @@ In this Python script, two separate tasks are accomplished. First, for all histo
 Constraint Monthly Auction records, the entries in the leftmost (DeviceName) column are replaced with
 their operation name in the corresponding Monthly Auction Mapping Document. Next, all of the modified
 records are aggregated into a large CSV file, stored in the data subfolder.
-
-Note:
-This script will only work properly if it is ran from
-\\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
-due to the File I/O.
 
 The searching and file-building process takes a while, expect to wait around 3 minutes for the script to
 finish generating. As usual, assuming a consistent file structure, running this script will generate
@@ -23,13 +17,28 @@ an updated output whenever future data is added.
 # Global parameters & variables
 start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
-path_base = "./../../../06 - CRR/Monthly"
-output_path = "./../Data/Common_BindingConstraint_Combined.csv"  # Relative file path of the outputted CSV.
+path_base = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/Monthly"
 
+# Absolute file path of the outputted CSV.
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Common_BindingConstraint_Combined.csv"  
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2019
 end_year = 2023
+
+def convert(month: int) -> str:
+    """
+    Simple helper method that appends a leading zero to an integer if it is single-digit and casts it to
+    a string.
+
+    Inputs:
+    - month: An integer in the interval [1, 12].
+    """
+    if month <= 9:
+        return "0" + str(month)
+    else: 
+        return str(month)
+
 
 def get_files(year: int, month: int) -> Tuple[str, str]:
     """

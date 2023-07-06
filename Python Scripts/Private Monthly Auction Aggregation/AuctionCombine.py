@@ -10,11 +10,6 @@ This Python script performs an aggregation on the private monthly auction files 
 appending the Path, Plant, and Size (MW) information from the NodeToPlant mapping as
 separate columns.
 
-Note:
-This script will only work properly if it is ran from
-\\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
-due to the File I/O.
-
 The resultant output is stored as a CSV file in the data subfolder. As usual, assuming a consistent file structure, 
 running this code will generate an updated output whenever new data is added.
 """
@@ -22,14 +17,14 @@ running this code will generate an updated output whenever new data is added.
 # Global parameters & variables
 start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
-path_base = "./../../../../06 - CRR/Monthly"
+path_base = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/Monthly"
 
 # Flag that groups together all matching Paths (within current year) by averaging ShadowPricePerMWH and BidPricePerMWH
 grouping_by = True
 
 # Relative file path of the outputted CSV., dependent on the flag
-output_path = "./../../Data/Aggregated Auction Data/Private_auction_grouped.csv" if grouping_by \
-    else "./../../Data/Aggregated Auction Data/Private_auction_combined.csv"
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated Auction Data/Private_auction_grouped.csv" if grouping_by \
+    else "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated Auction Data/Private_auction_combined.csv"
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2019
@@ -37,7 +32,7 @@ end_year = 2023
 
 # Begin by constructing a dictionary that maps each path to a tuple of its Plant and Size (MW).
 path_to_plant = {}
-nodeToPlantFile = "./../../../../06 - CRR/01 - General/Extracts/NodePlantMapping.CSV"
+nodeToPlantFile = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/01 - General/Extracts/NodePlantMapping.CSV"
 
 def convert(month: int) -> str:
     if month <= 9:

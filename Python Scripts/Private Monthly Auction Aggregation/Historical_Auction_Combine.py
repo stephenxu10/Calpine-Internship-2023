@@ -23,10 +23,10 @@ If any updates need to be made to that file, run AuctionCombine.py first.
 
 # Global Parameters and Variables
 start_time = time.time()
-auction_grouped = "./../../Data/Private_auction_grouped.CSV"
-historical = "./../../Data/ERCOT Assets/ERCOT_historical_basis_assets.CSV"
+auction_grouped = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated Auction Data/Private_auction_grouped.CSV"
+historical = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/ERCOT Assets/ERCOT_historical_basis_assets.CSV"
 
-output_path = "./../../Data/Aggregated Auction Data/ERCOT_historical_married.csv"
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated Auction Data/ERCOT_historical_married.csv"
 
 df_auction = pd.read_csv(auction_grouped)
 df_historical = pd.read_csv(historical)

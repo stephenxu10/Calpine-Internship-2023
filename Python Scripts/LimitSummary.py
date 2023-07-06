@@ -2,7 +2,6 @@ import csv
 import time
 import os
 from typing import *
-from utils import convert
 
 """
 This Python script aims to summarize the limits from monthly CRR models of the non-thermal constraints across all years. 
@@ -13,24 +12,37 @@ At a high level, the code uses File I/O and the built-in CSV reader to generate 
 its aggregate company data. This company data, also represented as a dictionary, maps each unique company from the 
 current calendar year to its limits across all twelve months. Missing entries are represented as blanks. 
 
-Note: This script will only work properly if it is ran from
-\\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates
-due to the File I/O.
-
 The output should generate after about ten seconds. File IO takes a bit of time.
 """
 
 # Global parameters & variables
 start_time = time.time()
 months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"]
-path_base = "./../../../06 - CRR/Monthly"
-output_path = "./../Data/CRR_NonThermalConstraints_Combined.csv"  # Relative file path of the outputted CSV.
+path_base = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/Monthly"
+
+# Absolute file path of the outputted CSV.
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/CRR_NonThermalConstraints_Combined.csv"  
 
 filter_missing_entries = False  # Flag bit that filters out missing entries if set to true.
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2018
 end_year = 2050
+
+
+def convert(month: int) -> str:
+    """
+    Simple helper method that appends a leading zero to an integer if it is single-digit and casts it to
+    a string.
+
+    Inputs:
+    - month: An integer in the interval [1, 12].
+    """
+    if month <= 9:
+        return "0" + str(month)
+    else: 
+        return str(month)
+
 
 def add_month_data(csv_file: str, company_data: Dict[str, List[str]], month: int):
     """

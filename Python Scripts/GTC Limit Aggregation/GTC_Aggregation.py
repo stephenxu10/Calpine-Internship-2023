@@ -36,8 +36,8 @@ desired_names = [
 
 ercot_root = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\"
 mapping_root = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\06 - CRR\\02 - Summary\\MappingDocument\\"
-credential_path = "./../../credentials.txt"
-final_output_path = "./../../Data/GTC Aggregates/GTC_Aggregator.csv"
+credential_path = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\credentials.txt"
+final_output_path = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\GTC Aggregates\\GTC_Aggregator.csv"
 
 with open(credential_path, "r") as credentials:
     my_auth = tuple(credentials.read().split())
