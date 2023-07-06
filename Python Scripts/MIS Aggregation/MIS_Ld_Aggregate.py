@@ -19,17 +19,16 @@ to finish running.
 
 # Global parameters & variables
 start_time = time.time()
-year = 2021  # Aggregates the DAM data for this particular year
-path_base = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS " + str(year) + "\\56_DPNOMASF"
+min_year = 2021
+max_year = 2023
 
 # Relative file path of the outputted CSV.
-output_path = "./../../Data/MIS Aggregates/MIS_DAM_Ld_" + str(year) + ".csv"
-
-# Grab the zip files across each year
-yearly_zip_files = os.listdir(path_base)
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Aggregates/DAM_Reported_Load.csv"
+load_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Aggregation/load_names.txt"
 
 # List of load names that we care about
-load_names = ['SDSES_UXFMR6', 'SNDSW_XFMR1']
+with open(load_path, "r") as load_file:
+    load_names = load_file.read().split("\n")
 
 def aggregate_zip(zip_path: str) -> pd.DataFrame:
     """
@@ -69,15 +68,29 @@ def aggregate_zip(zip_path: str) -> pd.DataFrame:
     return pd.DataFrame(pd.concat(merge, axis=0))
 
 
-final_merge = []
-for zip_file in yearly_zip_files:
-    full_path = os.path.join(path_base, zip_file)
-    final_merge.append(aggregate_zip(full_path))
-    print("Finished " + zip_file)
+def aggregate_year(year: int) -> pd.DataFrame:
+    """
+    Helper method that filters and aggregates all of the Ld CSV files 
+    for a given input year.
 
-final_merged_df = pd.concat(final_merge, axis=0)
-final_merged_df = pd.DataFrame(final_merged_df)
-final_merged_df.to_csv(output_path, index=False)
+    Input:
+        - year: A given calendar year.
+    
+    Output:
+        - A Pandas DataFrame that contains the aggregated and filtered
+        data for the input year.
+    """
+    path_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\56_DPNOMASF"
+    yearly_zip_files = os.listdir(path_base)
+    final_merge = [aggregate_zip(os.path.join(path_base, zip_file)) for zip_file in yearly_zip_files]
+    final_merged_df = pd.concat(final_merge, axis=0)
+
+    return final_merged_df
+
+merged = [aggregate_year(yr) for yr in range(min_year, max_year + 1)]
+final_merged = pd.concat(merged, axis=0)
+final_merged.rename(columns={"Hour": "HourEnding"}, inplace=True)
+final_merged.to_csv(output_path, index=False)
 
 end_time = time.time()
 execution_time = (end_time - start_time)

@@ -24,7 +24,7 @@ year = 2019  # Aggregates the DAM data for this particular year
 path_base = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS " + str(year) + "\\56_DPNOMASF"
 
 # Relative file path of the outputted CSV.
-output_path = "./../../Data/MIS Aggregates/MIS_DAM_Gn_" + str(year) + ".csv"
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Aggregates/MIS_DAM_Gn_" + str(year) + ".csv"
 
 # Grab the zip files across each year
 yearly_zip_files = os.listdir(path_base)

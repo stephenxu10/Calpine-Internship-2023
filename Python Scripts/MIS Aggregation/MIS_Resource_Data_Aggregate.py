@@ -11,11 +11,11 @@ lower_year = 2019
 upper_year = 2023
 
 # Relative file path of the outputted CSV.
-output_path = "./../../Data/MIS Aggregates/MIS_DAM_Resource.csv"
+output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Aggregates/SCED_Reported_Load.csv"
+resource_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Aggregation/resources_SCED.txt"
 
-# List of load names that we care about
-resource_names = ["SNDOW_LD1", "SNDSW_LD1", "SNDSW_LD2", "SNDSW_LD3",
-                  "SNDSW_LD5", "SNDSW_LD6", "SNDSW_LD7", "SNDSW_LD8", "SNDOW_LD1"]
+with open(resource_path, "r") as resource_file:
+    resource_names = resource_file.read().split("\n")
 
 def aggregate_zip(zip_path: str) -> pd.DataFrame:
     """
@@ -42,6 +42,10 @@ def aggregate_zip(zip_path: str) -> pd.DataFrame:
                 with zip_ref.open(csv_file) as csv:
                     df_csv = pd.read_csv(csv)
                     df_csv = df_csv[df_csv['Resource Name'].isin(resource_names)]
+                    df_csv.insert(0, 'Interval', pd.to_datetime(df_csv['SCED Time Stamp']).dt.minute // 5 + 1)
+                    df_csv.insert(0, 'HourEnding', pd.to_datetime(df_csv['SCED Time Stamp']).dt.hour + 1)
+                    df_csv.insert(0, 'Date', pd.to_datetime(df_csv['SCED Time Stamp']).dt.strftime('%m/%d/%Y'))
+                    df_csv.drop("SCED Time Stamp", axis=1)
                     merge.append(df_csv)
 
     # Ignore any invalid zip files, log the exception to the console.
