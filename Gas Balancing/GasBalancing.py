@@ -165,7 +165,7 @@ def find_recent_capacities(overall_df: pd.DataFrame) -> pd.DataFrame:
         - overall_df: The aggregated DataFrame storing all the Gas Balance data from velocity suite.
 
     Output:
-        - res: A DataFrame mapping each flow point name to its most recent capacity.
+        - filtered_df: A DataFrame mapping each flow point name to its most recent capacity.
     """
     filtered_df = overall_df.drop_duplicates(subset=['Gas Pipeline Name', 'Flow Point Name', 'Flow Direction'], keep="first")
     return filtered_df[['Flow Point Name', 'Flow Direction', 'Sum Scheduled Quantity Dth']]
