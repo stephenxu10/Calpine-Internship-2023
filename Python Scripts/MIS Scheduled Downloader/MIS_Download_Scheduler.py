@@ -10,7 +10,7 @@ import pandas as pd
 from io import BytesIO
 
 """
-This script aims to automate the MIS downloading process from the ERCOT API.
+This script aims to automate the MIS downloading process via the ERCOT API.
 
 Currently, the process is sped up through futures and thread-lock synchronization. Running
 the script will extract all new files for the current day into the targeted directory
@@ -26,6 +26,7 @@ start_time = time.time()
 # Maximum number of concurrent operations.
 max_workers = 10
 
+# Write lock on the destination folder.
 file_lock = threading.Lock()
 
 # End goal for all downloaded files to be. Redirect here once testing complete.
@@ -34,8 +35,15 @@ file_lock = threading.Lock()
 # Current temporary storage for downloaded files
 destination_folder = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Scheduled Downloads/"
 
+# Text file for invalid request numbers
+invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/invalid_requests.txt"
+
 # Reference Excel Sheet for all the web data and requirements
 excel_path = "\\\\Pzpwuplancli01\\APP-DATA\\Task Scheduler\\MIS_Download_210125a_v3_via_API.xlsm"
+
+# Grab the set of invalid request ID numbers
+with open(invalid_rid, "r") as invalids:
+    invalid_requests = set(invalids.read().split("\n"))
 
 def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date: str):
     """
@@ -73,7 +81,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date:
                     print(filename + " " + folder_name)
         
     else:
-        print("Invalid query to ERCOT. Check the validity of the request URL.")
+        print("Invalid query to ERCOT. Check the validity of the request URL for report ID " + str(reportID))
     
     print("")
 
@@ -106,6 +114,14 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
 
     # Wait for all futures to complete
     concurrent.futures.wait(futures)
+
+# Check any stragglers.
+print("Concurrent Downloads Complete. Checking for stragglers....")
+print("===========================================================")
+
+for folder_name in os.listdir(destination_folder):
+    if len(os.listdir(os.path.join(destination_folder, folder_name))) == 0 and str(full_mapping[folder_name][0]) not in invalid_requests:
+        download_folder(full_mapping, folder_name, "today")
 
 # Output Summary Statistics
 end_time = time.time()
