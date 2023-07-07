@@ -58,4 +58,6 @@ def build_graph(sheet_path: str) -> Network:
 CRR_Network = build_graph(CRR_sheet)
 WECC_Network = build_graph(WECC_sheet)
 
-CRR_Network.display_neighbors("MIDWAY10")
+CRR_Network.display_neighbors("DIABLO 4")
+print("")
+WECC_Network.display_neighbors("SBK 500")
