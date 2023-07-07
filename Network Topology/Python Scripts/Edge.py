@@ -18,6 +18,7 @@ base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
 
 from Node import Node
+from utils import num_proximity
 
 class Edge:
     def __init__(self, node1: Node, node2: Node, device_type, circuit_number, r, x, b, lim_a, lim_b, lim_c):
@@ -53,3 +54,23 @@ class Edge:
 
     def get_attributes(self):
         return self.device_type, self.circuit_number, self.r, self.x, self.b, self.lim_a, self.lim_b, self.lim_c
+    
+    def simple_compare(self, other, ratios = [0.125] * 8):
+        # Circuit Number comparison
+        circuit = 1 if self.circuit_number == other.circuit_number else 0.5
+
+        # Device Type comparison
+        device = 1 if self.device_type == other.device_type else 0.5
+
+        # R, X, B comparisons
+        r, x, b = num_proximity(self.r, other.r), num_proximity(self.x, other.x), num_proximity(self.b, other.b)
+
+        if self.lim_a == "99999" or other.lim_a == "99999":
+            ratios = [0.2] * 5
+            comps = [circuit, device, r, x, b]
+
+        else:
+            lim_a, lim_b, lim_c = num_proximity(self.lim_a, other.lim_a), num_proximity(self.lim_b, other.lim_b), num_proximity(self.lim_b, other.lim_c)
+            comps = [circuit, device, r, x, b, lim_a, lim_b, lim_c]
+
+        return sum(a * b for a, b in zip(comps, ratios))

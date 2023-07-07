@@ -12,6 +12,7 @@ sys.path.append("/Python Scripts")
 
 from Node import Node
 from Edge import Edge
+from typing import List
 
 class Network:
     def __init__(self):
@@ -35,14 +36,20 @@ class Network:
             self.graph[from_node].append(edge)
             self.graph[to_node].append(edge)
     
-    def get_neighbors(self, name: str):
+    def get_node(self, name: str) -> Node:
+        for node in self.graph:
+            if node.name == name:
+                return node
+        return ""
+    
+    def get_neighbors(self, name: str) -> List[Edge]:
         for node in self.graph:
             if node.name == name:
                 return self.graph[node]
         
         return ""
     
-    def display_neighbors(self, name: str):
+    def display_neighbors(self, name: str) -> None:
         neighbors = self.get_neighbors(name)
 
         if neighbors != "":
