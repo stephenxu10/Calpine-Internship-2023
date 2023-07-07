@@ -41,8 +41,7 @@ def levenshtein(x: str, y: str, c_i: float = 1.0, c_d: float = 1.0, c_s: float =
     for arr in dp:
         print(arr)
 
-    return dp[m][n] / max(m, n)
+    return 1 - dp[m][n] / max(m, n)
 
 
-print(levenshtein("Diablo10", "Diablo10", 0.5, 1, 1))
 
