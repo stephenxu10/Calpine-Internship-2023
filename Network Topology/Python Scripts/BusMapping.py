@@ -33,6 +33,26 @@ start_time = time.time()
 CRR_sheet = "./Network Topology/Input Data/CRR Buses and Branches.xlsx"
 WECC_sheet = "./Network Topology/Input Data/WECC Buses and Branches.xlsx"
 
+
+def extract_nodes(sheet_path: str, from_name: str, to_name: str, zone: str) -> List[str]:
+    """
+    Basic helper method that extracts all buses from an Excel branch
+    data sheet that are within a certain zone.
+
+    Inputs:
+        - sheet_path: Path to the Excel sheet.
+        - zone: The name of the desired zone, i.e. PGAE-30.
+    
+    Output:
+        - The list of Node names within that zone.
+    """
+    df_branch = pd.read_excel(sheet_path, sheet_name="Branch")
+    filtered_df = df_branch.loc[(df_branch[from_name] == zone) & (df_branch[to_name] == zone)]
+    nodes =  filtered_df[['From Name', 'To Name']].values.flatten().tolist()
+
+    return list(set(nodes))
+
+
 def build_graph(sheet_path: str) -> Network:
     """
     Helper method that builds a Network given the mapping data from an Excel sheet path.
@@ -132,7 +152,8 @@ def topology_comp(net1: Network, node1: str, net2: Network, node2: str, depth: i
 
     return compare_sets(net1_nodes, net2_nodes) * n_w + compare_sets(net1_edges, net2_edges) * e_w
 
-def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int, weights = [0.25, 0.35, 0.4]) -> float:
+
+def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int, weights = [0.35, 0.35, 0.3]) -> float:
     """
     Overall function that evaluates the similarity between any two nodes
     from two different networks. Computes a weighted average between
@@ -176,7 +197,31 @@ WECC_Network = build_graph(WECC_sheet)
 
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 
-print(similiarity(CRR_Network, "MOSSLD13", WECC_Network, "MIDWAY", 2))
+print(similiarity(CRR_Network, "MIDWAY10", WECC_Network, "MIDWAY", 4))
+
+#pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", "PGAE-30")
+#pge_wecc = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", "PG AND E")
+
+
+"""
+output_df = pd.DataFrame()
+crr_nodes = []
+wecc_nodes = []
+similarities = []
+
+for crr in pge_crr:
+    for wecc in pge_wecc:   
+        crr_nodes.append(crr)
+        wecc_nodes.append(wecc)
+        similarities.append(similiarity(CRR_Network, crr, WECC_Network, wecc, depth=3))
+
+output_df['CRR Buses'] = crr_nodes
+output_df['WECC Buses'] = wecc_nodes
+output_df['Similarity'] = similarities
+
+output_df.to_csv("./Network Topology/Input Data/Similiarity Table.csv", index=False)
+"""
+
 
 # Output Summary Statistics
 end_time = time.time()
