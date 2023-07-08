@@ -5,10 +5,12 @@ import sys
 Basic representation of the Network Topology as an undirected graph. The basic form
 is an adjacency list - each node is mapped to its immediate neighbors.
 """
+"""
 os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
 
 base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
+"""
 
 from Node import Node
 from Edge import Edge
@@ -49,6 +51,13 @@ class Network:
         
         return ""
     
+    def remove_edge(self, from_name: str, neighbor_name: str):
+        for node in self.graph:
+            if node.name == from_name:
+                for edge in self.graph[node]:
+                    if edge.node1.name == neighbor_name or edge.node2.name == neighbor_name:
+                        self.graph[node].remove(edge)
+        
     def display_neighbors(self, name: str) -> None:
         neighbors = self.get_neighbors(name)
 

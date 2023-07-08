@@ -11,11 +11,12 @@ Stores the following attributes:
     - Circuit Number
     - R, X, B, LimA, LimB, LimC
 """
-
+"""
 os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
 
 base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
+"""
 
 from Node import Node
 from utils import num_proximity
@@ -72,5 +73,4 @@ class Edge:
         else:
             lim_a, lim_b, lim_c = num_proximity(self.lim_a, other.lim_a), num_proximity(self.lim_b, other.lim_b), num_proximity(self.lim_b, other.lim_c)
             comps = [circuit, device, r, x, b, lim_a, lim_b, lim_c]
-
         return sum(a * b for a, b in zip(comps, ratios))

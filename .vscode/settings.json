@@ -1,5 +1,7 @@
 {
     "python.pythonPath": "C:\\ProgramData\\Anaconda3\\python.exe",
     "python.terminal.activateEnvironment": true,
-    "git.ignoreLimitWarning": true
+    "git.ignoreLimitWarning": true,
+    "editor.fontSize": 13,
+    "editor.rulers": [150]
 }

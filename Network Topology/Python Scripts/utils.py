@@ -5,7 +5,7 @@ import numpy as np
 from scipy.optimize import linear_sum_assignment
 from typing import List, Dict, Tuple
 
-def num_proximity(num1: float, num2: float):
+def num_proximity(num1: float, num2: float) -> float:
     """
     Provides a basic metric to compare the closeness of two numbers.
     """
@@ -14,7 +14,10 @@ def num_proximity(num1: float, num2: float):
     elif num1 == 0 or num2 == 0:
         return 0.5
     else:
-        return min(num1, num2) / max(num1, num2)
+        abs_diff = abs(num1 - num2)
+        max_diff = max(abs(num1), abs(num2))
+        similarity = 1 - (abs_diff / max_diff)
+        return similarity
 
 def levenshtein(x: str, y: str, c_i: float = 1.0, c_d: float = 1.0, c_s: float = 1.0) -> float:
     """
@@ -90,12 +93,12 @@ def optimal_matching(set1: List, set2: List, similarity_scores) -> Tuple[float, 
     for row, col in zip(row_indices, col_indices):
         if row < len(set1) and col < len(set2):
             similarity_score = similarity_matrix[row, col]
-            print(f"1: {set1[row]}, 2: {set2[col]}, Similarity Score: {similarity_score}")
+            # print(f"1: {set1[row]}, 2: {set2[col]}, Similarity Score: {similarity_score}")
 
     # Adjust the similarity score for size differences
     overall_similarity *= (min(len(set1), len(set2)) / max_size)
 
-    print(f"Overall Similarity Score: {overall_similarity}")
+    # print(f"Overall Similarity Score: {overall_similarity}")
     return overall_similarity, row_indices, col_indices
 
 if __name__ == "__main__":

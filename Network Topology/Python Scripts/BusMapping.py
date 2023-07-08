@@ -1,5 +1,3 @@
-# type: ignore
-
 """
 This Python Script aims to create a mapping between buses in two different electrical systems. Buses
 are compared and scored based on three criteria:
@@ -19,7 +17,7 @@ import numpy as np
 import time
 from collections import deque
 
-os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
+# os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
 
 base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
@@ -32,8 +30,8 @@ from typing import *
 
 # Global parameters & variables
 start_time = time.time()
-CRR_sheet = "./Input Data/CRR Buses and Branches.xlsx"
-WECC_sheet = "./Input Data/WECC Buses and Branches.xlsx"
+CRR_sheet = "./Network Topology/Input Data/CRR Buses and Branches.xlsx"
+WECC_sheet = "./Network Topology/Input Data/WECC Buses and Branches.xlsx"
 
 def build_graph(sheet_path: str) -> Network:
     """
@@ -41,7 +39,7 @@ def build_graph(sheet_path: str) -> Network:
 
     Input:
         - sheet_path: A relative path to an Excel Sheet that gives Bus and Branch data
-    
+
     Output:
         - A Network object storing all of the data.
     """
@@ -59,7 +57,10 @@ def build_graph(sheet_path: str) -> Network:
 
     return base_graph
 
-def search_depth(graph: Network, start_node: str, depth: int) -> Tuple[Set[Node], Set[Edge]]:
+
+def search_depth(
+    graph: Network, start_node: str, depth: int
+) -> Tuple[Set[Node], Set[Edge]]:
     """
     Helper method that performs a Breadth-first search on an input Network graph from
     a starting node in order to accumulate the set of nodes and edges within
@@ -69,7 +70,7 @@ def search_depth(graph: Network, start_node: str, depth: int) -> Tuple[Set[Node]
         - graph: An input Network
         - start_node: The name of the to start from, i.e. "MIDWAY10"
         - depth: The maximum depth to search. Should be at least 1.
-    
+
     Outputs:
         - nodes: The set of all visited Nodes within the depth
         - edges: The set of all traversed Edges within the depth
@@ -89,24 +90,16 @@ def search_depth(graph: Network, start_node: str, depth: int) -> Tuple[Set[Node]
                     edges.append(edge)
                     neighbor = edge.node1 if edge.node1 != node else edge.node2
                     queue.append((neighbor, curr_depth - 1))
-    
+
     nodes.remove(start_node)
-
-    # Display the Nodes and Edges for Debugging purposes
-    for node in nodes:
-        print(node)
-    
-    print("======================================")
-    for edge in edges:
-        print(edge)
-
     return nodes, edges
+
 
 def compare_sets(list1: List, list2: List) -> float:
     """
     Compares the proximity of two sets of elements utilizing the optimal matching
-    algorithm in utils. 
-    
+    algorithm in utils.
+
     Assume list1 and list2 are of the same time (either both Nodes or both Edges)
     """
     similarity_matrix = np.zeros((len(list1), len(list2)))
@@ -114,23 +107,80 @@ def compare_sets(list1: List, list2: List) -> float:
     for i in range(0, len(list1)):
         for j in range(0, len(list2)):
             similarity_matrix[i][j] = list1[i].simple_compare(list2[j])
-    
-    return optimal_matching(list1, list2, similarity_matrix)
 
+    return optimal_matching(list1, list2, similarity_matrix)[0]
+
+
+def topology_comp(net1: Network, node1: str, net2: Network, node2: str, depth: int, n_w=0.4, e_w=0.6) -> float:
+    """
+    Function that compares the topologies between two nodes in two distinct networks
+    by computing a weighted average between the similarity of the nodes
+    and edges a certain depth away from each input node.
+
+    Inputs:
+        - net1, net2: The two input networks.
+        - node1, node2: The corresponding node names from the two input networks.
+        - depth: How deep to search in each graph.
+        - n_w, e_w: The weights of the node and edge similarities, 
+                    (0.4, 0.6) by default.
+
+    Output:
+        - A float in [0, 1] giving the similarity of the topologies.
+    """
+    net1_nodes, net1_edges = search_depth(net1, node1, depth)
+    net2_nodes, net2_edges = search_depth(net2, node2, depth)
+
+    return compare_sets(net1_nodes, net2_nodes) * n_w + compare_sets(net1_edges, net2_edges) * e_w
+
+def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int, weights = [0.25, 0.35, 0.4]) -> float:
+    """
+    Overall function that evaluates the similarity between any two nodes
+    from two different networks. Computes a weighted average between
+    the loseness of the nodes' names, bus IDs, and topologies. 
+
+    Inputs:
+        - net1, net2: The two input networks.
+        - node1, node2: The corresponding node names from the two input networks.
+        - depth: How deep to search in each graph.
+    
+    Output:
+        - The similiarity score from [0, 1].
+    """
+    name_score = levenshtein(node1, node2)
+    n_1 = net1.get_node(node1)
+    n_2 = net2.get_node(node2)
+
+    if n_1.number == n_2.number:
+        number_score = 1
+        
+    else:
+        self_num = str(n_1.number)
+        other_num = str(n_2.number)
+
+        if self_num[0] == other_num[0]:
+            penalty = 0.8
+        
+        else:
+            penalty = 0.5
+        
+        number_score = max(levenshtein(self_num, other_num), levenshtein(other_num, self_num)) * penalty
+    
+    top_score = topology_comp(net1, node1, net2, node2, depth)
+
+    scores = [name_score, number_score, top_score]
+    return sum(a * b for a, b in zip(scores, weights))
 
 
 CRR_Network = build_graph(CRR_sheet)
 WECC_Network = build_graph(WECC_sheet)
 
-crr_nodes, crr_edges = search_depth(CRR_Network, "MIDWAY10", 4)
-# crr_nodes.remove(Node("ZP26SL 1", 90003))
-print("=======================================================")
-wecc_nodes, wecc_edges = search_depth(WECC_Network, "MIDWAY", 4)
+CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 
-print(compare_sets(crr_nodes, wecc_nodes))
+print(similiarity(CRR_Network, "MOSSLD13", WECC_Network, "MIDWAY", 2))
 
 # Output Summary Statistics
 end_time = time.time()
-execution_time = (end_time - start_time)
+execution_time = end_time - start_time
+
 print("Generation Complete")
 print(f"The script took {execution_time:.2f} seconds to run.")
