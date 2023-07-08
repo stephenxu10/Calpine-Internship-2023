@@ -3,14 +3,21 @@
 ## Description
 
 A large repository storing the code I have written for my various tasks & projects during my 2023 Summer Internship at Calpine. For security purposes, most input & output data
-files are not included in this repository. However, the code and reports are largely unchanged.
+files are not included in this repository. However, the code and reports are essentially unchanged.
 
 ## Usage
 
 This code is intended to run on the Calpine Network's CA drive. Currently, all of the scripts, output data, and reports should be located at 
 Y:\11_Transmission Analysis\ERCOT\101 - Misc\CRR Limit Aggregates. If, for some reason, this folder no longer exists, clone the contents into
-a new repository and run from there. Please note that some scripts only work properly when ran from the intended folder - change the File I/O 
+a new repository and run from there. Please note that some scripts only work correctly when run from the intended folder - change the File I/O 
 if necessary.
+
+## Projects
+
+A brief description of all the major projects in the repository:
+  - Network Topology
+  - Gas Balancing
+  - Automation Tasks
 
 ## Contact
 
