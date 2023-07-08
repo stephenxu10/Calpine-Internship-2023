@@ -14,7 +14,7 @@ if necessary.
 
 ## Projects
 
-A brief description of all the major projects in the repository:
+A brief description of all the major projects and tasks in this repository:
   - Network Topology
   - Gas Balancing
   - Automation Tasks
