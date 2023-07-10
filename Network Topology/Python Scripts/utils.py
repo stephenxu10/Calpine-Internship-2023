@@ -4,6 +4,7 @@ Some utility methods for the project
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from typing import List, Dict, Tuple
+import re
 
 def num_proximity(num1: float, num2: float) -> float:
     """
@@ -57,8 +58,63 @@ def levenshtein(x: str, y: str, c_i: float = 1.0, c_d: float = 1.0, c_s: float =
     return 1 - dp[m][n] / max(m, n)
 
 
+def isSubsequence(substring: str, string: str) -> bool:
+    """
+    Simple recursive algorithm to determine if one string is a subsequence of the other.
+    For example,
+        "foo" is a subsequence of "goodfood"
+        "test" is not a subsequence of "ttes12345"
+    """
+    if len(substring) > len(string):
+        return False
 
-def optimal_matching(set1: List, set2: List, similarity_scores) -> Tuple[float, List[int], List[int]]:
+    if len(substring) == 0:
+        return True
+
+    if substring[-1] == string[-1]:
+        return isSubsequence(substring[:-1], string[:-1])
+    
+    else:
+        return isSubsequence(substring, string[:-1])
+
+def name_compare(x: str, y: str) -> float:
+    """
+    Helper method to compare two input Bus Names. Returns a float in [0, 1] that represents
+    their similiarity.
+    
+    Strips numbers from each string and compares them through their Edit Distance. Also
+    accounts for a special case when a string is in the format XX_YY_##
+    """
+    x = re.sub(r'\d+', '', x)
+    y = re.sub(r'\d+', '', y)
+    x = re.sub(r'[aeiouAEIOU]', '', x)
+    y = re.sub(r'[aeiouAEIOU]', '', y)
+
+    x = x.replace(' ', '')
+    y = y.replace(' ', '')
+    if "_" in x:
+        x_components = x.split("_")[:2]
+
+        for loc in x_components:
+            if isSubsequence(loc, y):
+                return 1
+        
+        return 0.5
+    
+    elif "_" in y:
+        y_components = y.split("_")[:2]
+
+        for loc in y_components:
+            if isSubsequence(loc, x):
+                return 1
+        
+        return 0.5
+    
+    # Otherwise, neither string has any underscores - use the edit distance
+    return max(levenshtein(x, y), levenshtein(y, x))
+
+
+def optimal_matching(set1: List, set2: List, similarity_scores, verbose=False) -> Tuple[float, List[int], List[int]]:
     """
     A Helper method that implements the Hungarian Algorithm for the Assignment Problem. 
     Given two sets of elements and a similarity score mapping, this algorithm returns the optimal Bipartite matching 
@@ -71,6 +127,7 @@ def optimal_matching(set1: List, set2: List, similarity_scores) -> Tuple[float, 
         - set1: A List of elements in the first set
         - set2: A List of elements in the second set
         - similarity_scores: A mapping that yields the similarity score between every pair of elements.
+        - verbose: Flag that determines if the output matching should be printed
     
     Output:
     Returns a tuple of three elements
@@ -90,10 +147,12 @@ def optimal_matching(set1: List, set2: List, similarity_scores) -> Tuple[float, 
     row_indices, col_indices = linear_sum_assignment(-similarity_matrix)
     overall_similarity = similarity_matrix[row_indices, col_indices].sum() / min_size
 
-    for row, col in zip(row_indices, col_indices):
-        if row < len(set1) and col < len(set2):
-            similarity_score = similarity_matrix[row, col]
-            # print(f"1: {set1[row]}, 2: {set2[col]}, Similarity Score: {similarity_score}")
+    if verbose:
+        for row, col in zip(row_indices, col_indices):
+            if row < len(set1) and col < len(set2):
+                similarity_score = similarity_matrix[row, col]
+                if similarity_score > 0.7:
+                    print(f"1: {set1[row]}, 2: {set2[col]}, Similarity Score: {similarity_score}")
 
     # Adjust the similarity score for size differences
     overall_similarity *= (min(len(set1), len(set2)) / max_size)

@@ -14,7 +14,7 @@ This script aims to automate the MIS downloading process via the ERCOT API.
 
 Currently, the process is sped up through futures and thread-lock synchronization. Running
 the script will extract all new files for the current day into the targeted directory
-in less than two minutes (almost 7 times speedup compared to a sequential implementation!).
+in less than two minutes on a 4-core machine - almost 7 times speedup compared to a sequential implementation!
 """
 
 # Ignore warnings. Whatever.
@@ -35,7 +35,7 @@ file_lock = threading.Lock()
 # Current temporary storage for downloaded files
 destination_folder = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Scheduled Downloads/"
 
-# Text file for invalid request numbers
+# Text file for invalid request numbers♣
 invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/invalid_requests.txt"
 
 # Reference Excel Sheet for all the web data and requirements
@@ -64,6 +64,11 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date:
     sub_folder = f"{destination_folder}{folder_name}"
     current_file_names = os.listdir(sub_folder)
     reportID, file_type = mapping[folder_name]
+    
+    if reportID in invalid_requests:
+        print("Invalid query to ERCOT. Check the validity of the request URL for report ID " + str(reportID))
+        return
+
     ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={date}T00:00:00&endTime={date}T00:00:00&unzipFiles=false"
     print(ercot_url)
 
@@ -87,6 +92,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date:
 
     return
 
+
 # Create the folder mapping by reading the Excel sheet.
 webpage_partial = pd.read_excel(excel_path, sheet_name="List of Webpage", usecols=['Folder Name', 'Type Id', 'New Table Name'])
 webpage_complete = pd.read_excel(excel_path, sheet_name="List of Webpage_complete", usecols=['Folder Name', 'Type of file'])
@@ -107,6 +113,7 @@ for folder in folders:
     if not os.path.exists(sub_folder):
         os.makedirs(sub_folder)
 
+
 # Create a ThreadPoolExecutor with the specified number of workers
 with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     # Submit each folder for processing
@@ -115,13 +122,6 @@ with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     # Wait for all futures to complete
     concurrent.futures.wait(futures)
 
-# Check any stragglers.
-print("Concurrent Downloads Complete. Checking for stragglers....")
-print("===========================================================")
-
-for folder_name in os.listdir(destination_folder):
-    if len(os.listdir(os.path.join(destination_folder, folder_name))) == 0 and str(full_mapping[folder_name][0]) not in invalid_requests:
-        download_folder(full_mapping, folder_name, "today")
 
 # Output Summary Statistics
 end_time = time.time()

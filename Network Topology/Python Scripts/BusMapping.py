@@ -1,3 +1,4 @@
+# type: ignore
 """
 This Python Script aims to create a mapping between buses in two different electrical systems. Buses
 are compared and scored based on three criteria:
@@ -17,7 +18,7 @@ import numpy as np
 import time
 from collections import deque
 
-# os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
+os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
 
 base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
@@ -25,13 +26,13 @@ sys.path.append("/Python Scripts")
 from Graph import Network
 from Node import Node
 from Edge import Edge
-from utils import levenshtein, optimal_matching
+from utils import levenshtein, optimal_matching, name_compare
 from typing import *
 
 # Global parameters & variables
 start_time = time.time()
-CRR_sheet = "./Network Topology/Input Data/CRR Buses and Branches.xlsx"
-WECC_sheet = "./Network Topology/Input Data/WECC Buses and Branches.xlsx"
+CRR_sheet = "./Input Data/CRR Buses and Branches.xlsx"
+WECC_sheet = "./Input Data/WECC Buses and Branches.xlsx"
 
 
 def extract_nodes(sheet_path: str, from_name: str, to_name: str, zone: str) -> List[str]:
@@ -115,7 +116,7 @@ def search_depth(
     return nodes, edges
 
 
-def compare_sets(list1: List, list2: List) -> float:
+def compare_sets(list1: List, list2: List, verbose=False) -> float:
     """
     Compares the proximity of two sets of elements utilizing the optimal matching
     algorithm in utils.
@@ -126,12 +127,20 @@ def compare_sets(list1: List, list2: List) -> float:
 
     for i in range(0, len(list1)):
         for j in range(0, len(list2)):
-            similarity_matrix[i][j] = list1[i].simple_compare(list2[j])
+            similarity_matrix[i][j] = list1[i].simple_compare(list2[j]) * 0.5
 
-    return optimal_matching(list1, list2, similarity_matrix)[0]
+            if isinstance(list1[i], Node):
+                node1_neighbors = len(search_depth(CRR_Network, list1[i].name, 1)[0])
+                node2_neighbors = len(search_depth(WECC_Network, list2[j].name, 1)[0])
+                similarity_matrix[i][j] += min(node1_neighbors, node2_neighbors) / max(node1_neighbors, node2_neighbors) * 0.5
+            
+            else:
+                similarity_matrix[i][j] *= 2
+
+    return optimal_matching(list1, list2, similarity_matrix, verbose=verbose)[0]
 
 
-def topology_comp(net1: Network, node1: str, net2: Network, node2: str, depth: int, n_w=0.4, e_w=0.6) -> float:
+def topology_comp(net1: Network, node1: str, net2: Network, node2: str, depth: int, n_w=0.4, e_w=0.6, verbose=False) -> float:
     """
     Function that compares the topologies between two nodes in two distinct networks
     by computing a weighted average between the similarity of the nodes
@@ -143,6 +152,8 @@ def topology_comp(net1: Network, node1: str, net2: Network, node2: str, depth: i
         - depth: How deep to search in each graph.
         - n_w, e_w: The weights of the node and edge similarities, 
                     (0.4, 0.6) by default.
+        - verbose: Boolean flag that determines if neighborhood nodes/edges should
+                   be displayed.
 
     Output:
         - A float in [0, 1] giving the similarity of the topologies.
@@ -150,10 +161,16 @@ def topology_comp(net1: Network, node1: str, net2: Network, node2: str, depth: i
     net1_nodes, net1_edges = search_depth(net1, node1, depth)
     net2_nodes, net2_edges = search_depth(net2, node2, depth)
 
-    return compare_sets(net1_nodes, net2_nodes) * n_w + compare_sets(net1_edges, net2_edges) * e_w
+    if len(net1_nodes) == 0:
+        return 1 / len(net2_nodes) if len(net2_nodes) > 0 else 1
+    
+    if len(net2_nodes) == 0:
+        return 1 / len(net1_nodes) if len(net2_nodes) > 0 else 1
+    
+    return compare_sets(net1_nodes, net2_nodes, verbose) * n_w + compare_sets(net1_edges, net2_edges, verbose) * e_w
 
 
-def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int, weights = [0.35, 0.35, 0.3]) -> float:
+def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int, weights = [0.35, 0.35, 0.3], verbose=False) -> float:
     """
     Overall function that evaluates the similarity between any two nodes
     from two different networks. Computes a weighted average between
@@ -167,7 +184,7 @@ def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int
     Output:
         - The similiarity score from [0, 1].
     """
-    name_score = levenshtein(node1, node2)
+    name_score = name_compare(node1, node2)
     n_1 = net1.get_node(node1)
     n_2 = net2.get_node(node2)
 
@@ -185,8 +202,18 @@ def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int
             penalty = 0.5
         
         number_score = max(levenshtein(self_num, other_num), levenshtein(other_num, self_num)) * penalty
+
+        if number_score < 0.3:
+            weights = [0.4, 0, 0.6]
     
-    top_score = topology_comp(net1, node1, net2, node2, depth)
+    if verbose:
+        print("Name Score: " + str(name_score))
+        print("Number Score: " + str(number_score))
+
+    top_score = topology_comp(net1, node1, net2, node2, depth, verbose=verbose)
+
+    if verbose:
+        print("Topology Score: " + str(top_score))
 
     scores = [name_score, number_score, top_score]
     return sum(a * b for a, b in zip(scores, weights))
@@ -197,11 +224,10 @@ WECC_Network = build_graph(WECC_sheet)
 
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 
-print(similiarity(CRR_Network, "MIDWAY10", WECC_Network, "MIDWAY", 4))
+print(similiarity(CRR_Network, "DIABLO 4", WECC_Network, "DIABLOCNYNSS", 3, verbose=True))
 
-#pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", "PGAE-30")
-#pge_wecc = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", "PG AND E")
-
+pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", "PGAE-30")
+pge_wecc = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", "PG AND E")
 
 """
 output_df = pd.DataFrame()
@@ -219,9 +245,11 @@ output_df['CRR Buses'] = crr_nodes
 output_df['WECC Buses'] = wecc_nodes
 output_df['Similarity'] = similarities
 
-output_df.to_csv("./Network Topology/Input Data/Similiarity Table.csv", index=False)
-"""
+np_sims = np.reshape(similarities, (len(pge_crr), len(pge_wecc)))
+optimal_matching(pge_crr, pge_wecc, np_sims, verbose=True)
 
+output_df.to_csv("./Input Data/Similiarity Table.csv", index=False)
+"""
 
 # Output Summary Statistics
 end_time = time.time()
