@@ -1,0 +1,11 @@
+{"errorMessage":"An unexpected error occurred while trying to download https://misapi.ercot.com/misdownload/servlets/mirDownload?doclookupId=927542907. System.OutOfMemoryException: Exception of type 'System.OutOfMemoryException' was thrown.
+   at System.IO.MemoryStream.set_Capacity(Int32 value)
+   at System.IO.MemoryStream.EnsureCapacity(Int32 value)
+   at System.IO.MemoryStream.Write(Byte[] buffer, Int32 offset, Int32 count)
+   at System.Net.Http.HttpContent.LimitMemoryStream.Write(Byte[] buffer, Int32 offset, Int32 count)
+   at System.Net.Http.StreamToStreamCopy.TryStartWriteSync(Int32 bytesRead)
+   at System.Net.Http.StreamToStreamCopy.BufferReadCallback(IAsyncResult ar)
+--- End of stack trace from previous location where exception was thrown ---
+   at System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   at System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   at Calpine.ErcotInterface.Infrastructure.HttpErcotReportDownloader.<DownloadAsync>d__3.MoveNext() in D:\a\1\s\Calpine.ErcotInterface.Infrastructure\HttpErcotReportDownloader.cs:line 46"}

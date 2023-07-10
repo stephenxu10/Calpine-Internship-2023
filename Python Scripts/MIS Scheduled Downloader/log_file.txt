@@ -1,0 +1,264 @@
+https://ercotapi.app.calpine.com/reports?reportId=13062&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13112&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13110&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13006&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=10008&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=11024&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=11185&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13517&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13511&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13515&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13048&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=11424&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13222&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13108&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=12316&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13517
+
+https://ercotapi.app.calpine.com/reports?reportId=13223&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13515
+
+https://ercotapi.app.calpine.com/reports?reportId=12328&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13511
+
+https://ercotapi.app.calpine.com/reports?reportId=13114&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+
+https://ercotapi.app.calpine.com/reports?reportId=12329&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=12354&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+
+https://ercotapi.app.calpine.com/reports?reportId=12325&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=11205&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+
+https://ercotapi.app.calpine.com/reports?reportId=13240&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13029&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12310&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12337&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=11202&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13475&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13514&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13042&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13518&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13514
+
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13518
+
+https://ercotapi.app.calpine.com/reports?reportId=16013&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=13431&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12345&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13079&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13520&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13520
+
+https://ercotapi.app.calpine.com/reports?reportId=12308&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12315&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13513&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13072&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13051&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=11180&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13513
+
+https://ercotapi.app.calpine.com/reports?reportId=13746&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+cdr.00012345.0000000000000000.20230710.160200173.NSAINANP5911_csv.zip 15_ICIS
+
+https://ercotapi.app.calpine.com/reports?reportId=11203&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12358&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13113&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13073&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13221&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=14788&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+cdr.00012315.0000000000000000.20230710.160310870.RESCAPACITNP3763_csv.zip 59_SSAR
+
+https://ercotapi.app.calpine.com/reports?reportId=13946&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=10047&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13483&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13428&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13070&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13056&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13231&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13426&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13427&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13099&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12334&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12309&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12324&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=10036&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12333&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13080&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=11200&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12312&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=4&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13432&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=11204&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12302&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13018&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12998&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12311&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=10000&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13109&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12340&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13057&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=10050&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13430&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12999&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13052&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 10000
+
+https://ercotapi.app.calpine.com/reports?reportId=13484&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13072
+
+https://ercotapi.app.calpine.com/reports?reportId=13101&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12352&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 12324
+
+https://ercotapi.app.calpine.com/reports?reportId=12305&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13043&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=11481&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 11481
+
+
+https://ercotapi.app.calpine.com/reports?reportId=13516&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+https://ercotapi.app.calpine.com/reports?reportId=12304&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12301&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12331&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13516
+
+https://ercotapi.app.calpine.com/reports?reportId=12300&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+cdr.00012305.0000000000000000.20230710.160200187.NSAACTNP66_csv.zip 03_ASC
+
+https://ercotapi.app.calpine.com/reports?reportId=13220&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12359&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13071&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13428
+
+https://ercotapi.app.calpine.com/reports?reportId=13230&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+cdr.00012301.0000000000000000.20230710.160211850.SPPHLZNP6905_20230710_1600_csv.zip 31_SPPARNHALZ
+
+https://ercotapi.app.calpine.com/reports?reportId=13519&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 11204
+
+https://ercotapi.app.calpine.com/reports?reportId=13111&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13519
+
+https://ercotapi.app.calpine.com/reports?reportId=12338&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13055&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13054&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13427
+
+https://ercotapi.app.calpine.com/reports?reportId=11485&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=11206&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13103&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=11201&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13102&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13054
+
+https://ercotapi.app.calpine.com/reports?reportId=13446&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+cdr.00013071.0000000000000000.20230710.160126324.WPP5MINAVGACTNP4733_csv.zip 57_WPP-A5AV
+
+https://ercotapi.app.calpine.com/reports?reportId=13429&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13089&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=13028&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+cdr.00013103.0000000000000000.20230710.160318916.HRLYRESOUTCAPNP3233_csv.zip 62_HROC
+
+https://ercotapi.app.calpine.com/reports?reportId=13512&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13512
+
+https://ercotapi.app.calpine.com/reports?reportId=12336&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+cdr.00013220.0000000000000000.20230710.160204277.RTORDCRELDEPpricesNP6324_20230710_1600_csv.zip 87_ROARDPF1SI
+
+https://ercotapi.app.calpine.com/reports?reportId=13529&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=12332&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+https://ercotapi.app.calpine.com/reports?reportId=14787&marketParticipantId=CRRAH&startTime=todayT00:00:00&endTime=todayT00:00:00&unzipFiles=false
+
+
+
+
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13475
+
+
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13432
+
+
+
+
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13529
+
+Invalid query to ERCOT. Check the validity of the request URL for report ID 12998
+
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13231
+
+Invalid query to ERCOT. Check the validity of the request URL for report ID 13946
+
+Invalid query to ERCOT. Check the validity of the request URL for report ID 12999
+

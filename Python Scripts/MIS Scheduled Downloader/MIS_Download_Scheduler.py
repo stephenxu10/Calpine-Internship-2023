@@ -26,7 +26,7 @@ start_time = time.time()
 # Maximum number of concurrent operations.
 max_workers = 10
 
-# Write lock on the destination folder.
+# Write lock on the destination folder to ensure atomicity. Is it necessary?
 file_lock = threading.Lock()
 
 # End goal for all downloaded files to be. Redirect here once testing complete.
@@ -38,12 +38,14 @@ destination_folder = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/
 # Text file for invalid request numbers♣
 invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/invalid_requests.txt"
 
+# Log file for output
+log_file = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/log_file.txt"
+
 # Reference Excel Sheet for all the web data and requirements
 excel_path = "\\\\Pzpwuplancli01\\APP-DATA\\Task Scheduler\\MIS_Download_210125a_v3_via_API.xlsm"
 
-# Grab the set of invalid request ID numbers
-with open(invalid_rid, "r") as invalids:
-    invalid_requests = set(invalids.read().split("\n"))
+log_file = open(log_file, "w")
+invalid_rid = open(invalid_rid, "w")
 
 def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date: str):
     """
@@ -65,12 +67,8 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date:
     current_file_names = os.listdir(sub_folder)
     reportID, file_type = mapping[folder_name]
     
-    if reportID in invalid_requests:
-        print("Invalid query to ERCOT. Check the validity of the request URL for report ID " + str(reportID))
-        return
-
     ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={date}T00:00:00&endTime={date}T00:00:00&unzipFiles=false"
-    print(ercot_url)
+    log_file.write(ercot_url + "\n")
 
     response = requests.get(ercot_url, verify=False)
 
@@ -79,16 +77,16 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date:
         
         filtered_files = [filename for filename in zip_file.namelist() if file_type == 'all' or file_type in filename]
 
-        with file_lock:
-            for filename in filtered_files:
-                if filename not in current_file_names:
-                    zip_file.extract(filename, sub_folder)
-                    print(filename + " " + folder_name)
+        for filename in filtered_files:
+            if filename not in current_file_names:
+                zip_file.extract(filename, sub_folder)
+                log_file.write(filename + " " + folder_name + "\n")
         
     else:
-        print("Invalid query to ERCOT. Check the validity of the request URL for report ID " + str(reportID))
+        log_file.write("Invalid query to ERCOT. Check the validity of the request URL for report ID " + str(reportID) + "\n")
+        invalid_rid.write(str(reportID) + "\n")
     
-    print("")
+    log_file.write("\n")
 
     return
 
@@ -128,3 +126,6 @@ end_time = time.time()
 execution_time = (end_time - start_time)
 print("Downloading Complete")
 print(f"The script took {execution_time:.2f} seconds to run.")
+
+log_file.close()
+invalid_rid.close()

@@ -78,6 +78,7 @@ for yr in range(lower_year, upper_year + 1):
     merged.append(aggregate_year(yr))
     
 final_merged = pd.concat(merged, axis=0)
+final_merged.drop(columns=['SCED Time Stamp'])
 final_merged.to_csv(output_path, index=False)
 
 end_time = time.time()

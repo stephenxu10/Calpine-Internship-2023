@@ -200,8 +200,7 @@ if not os.path.isfile(final_output_path):
     df_final = filter_raw_data(raw_merged, "01/01/2019")
     df_final.to_csv(final_output_path, index=False)
 
-# Otherwise, assume the Data has been recently updated.
-else:
+# Otherwise, assume the Data has been recently updated - update up today's data.
     current_data = pd.read_csv(final_output_path)
     current_year = datetime.now().year
     current_date = datetime.now().strftime("%m/%d")
