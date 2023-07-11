@@ -56,7 +56,7 @@ class Edge:
     def get_attributes(self):
         return self.device_type, self.circuit_number, self.r, self.x, self.b, self.lim_a, self.lim_b, self.lim_c
     
-    def simple_compare(self, other, ratios = [0.125] * 8):
+    def simple_compare(self, other):
         # Circuit Number comparison
         circuit = 1 if self.circuit_number == other.circuit_number else 0.5
 
@@ -67,10 +67,9 @@ class Edge:
         r, x, b = num_proximity(self.r, other.r), num_proximity(self.x, other.x), num_proximity(self.b, other.b)
 
         if self.lim_a == "99999" or other.lim_a == "99999":
-            ratios = [0.2] * 5
-            comps = [circuit, device, r, x, b]
+            comps = (circuit, device, r, x, b)
 
         else:
             lim_a, lim_b, lim_c = num_proximity(self.lim_a, other.lim_a), num_proximity(self.lim_b, other.lim_b), num_proximity(self.lim_b, other.lim_c)
-            comps = [circuit, device, r, x, b, lim_a, lim_b, lim_c]
-        return sum(a * b for a, b in zip(comps, ratios))
+            comps = (circuit, device, r, x, b, lim_a, lim_b, lim_c)
+        return comps

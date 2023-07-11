@@ -85,6 +85,8 @@ def name_compare(x: str, y: str) -> float:
     Strips numbers from each string and compares them through their Edit Distance. Also
     accounts for a special case when a string is in the format XX_YY_##
     """
+    regex = r"[\w]+_[\w]+_[\d]*"
+
     x = re.sub(r'\d+', '', x)
     y = re.sub(r'\d+', '', y)
     x = re.sub(r'[aeiouAEIOU]', '', x)
@@ -92,23 +94,29 @@ def name_compare(x: str, y: str) -> float:
 
     x = x.replace(' ', '')
     y = y.replace(' ', '')
-    if "_" in x:
+    if re.match(regex, x):
         x_components = x.split("_")[:2]
+
+        if x_components[0][0] != y[0] and x_components[1][0] != y[0]:
+            return 0.3
 
         for loc in x_components:
             if isSubsequence(loc, y):
                 return 1
         
-        return 0.5
+        return 0.3
     
-    elif "_" in y:
+    elif re.match(regex, y):
         y_components = y.split("_")[:2]
+
+        if y_components[0][0] != x[0] and y_components[1][0] != x[0]:
+            return 0.3
 
         for loc in y_components:
             if isSubsequence(loc, x):
                 return 1
         
-        return 0.5
+        return 0.3
     
     # Otherwise, neither string has any underscores - use the edit distance
     return max(levenshtein(x, y), levenshtein(y, x))
@@ -151,7 +159,7 @@ def optimal_matching(set1: List, set2: List, similarity_scores, verbose=False) -
         for row, col in zip(row_indices, col_indices):
             if row < len(set1) and col < len(set2):
                 similarity_score = similarity_matrix[row, col]
-                if similarity_score > 0.7:
+                if similarity_score > 0.6:
                     print(f"1: {set1[row]}, 2: {set2[col]}, Similarity Score: {similarity_score}")
 
     # Adjust the similarity score for size differences

@@ -38,9 +38,7 @@ class Node:
             return self.name == other.name and self.number == other.number
         return False
     
-    def simple_compare(self, other, name_weight=0.6, num_weight=0.4) -> float:
-        assert(name_weight + num_weight == 1)
-
+    def simple_compare(self, other) -> tuple[float, float]:
         name_ratio = name_compare(self.name, other.name)
 
         if self.number == other.number:
@@ -58,4 +56,4 @@ class Node:
             
             number_ratio = max(levenshtein(self_num, other_num), levenshtein(other_num, self_num)) * penalty
         
-        return name_ratio * name_weight + number_ratio * num_weight
+        return name_ratio, number_ratio
