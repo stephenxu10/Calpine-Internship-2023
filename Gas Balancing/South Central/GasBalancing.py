@@ -3,7 +3,6 @@ import itertools
 import os
 import warnings
 from datetime import date, timedelta
-from itertools import product
 import pandas as pd
 import urllib.parse
 from typing import Union, Tuple, List, Set
@@ -17,6 +16,8 @@ Blaine's original code: Y:\5_Trans Analysis\Models\Development\Python\Scripts\So
 # Ignore warnings.
 warnings.simplefilter("ignore")
 
+os.chdir("\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Gas Balancing\\South Central")
+
 """
 Global Parameters and Values. Tweak as necessary.
 """
@@ -24,8 +25,10 @@ Global Parameters and Values. Tweak as necessary.
 mapping_path = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Pipeline_FilterValues.xlsx"
 pipeline_mapping = {row['Gas Pipeline Name']: row['Gas Pipeline ID'] for _, row in
                     pd.read_excel(mapping_path).iterrows()}
-output_path = "./Aggregated_BalanceSheets.xlsx"
-south_central = "\\\\pzpwcmfs01\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Copy Of SouthCentral Balance.xlsx"
+
+output_path = "./Aggregated_BalanceSheets.csv"
+
+south_central = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Copy Of SouthCentral Balance.xlsx"
 
 # Dataset Number
 dataset = 2359
@@ -154,6 +157,7 @@ def fetch_gas_data(pipeline: str, flow_point: Set[str], days_behind: int, datase
             print("not found!")
             return
 
+
 def find_recent_capacities(overall_df: pd.DataFrame) -> pd.DataFrame:
     """
     Given the overall merged DataFrame, this method computes the most recent capacity
@@ -171,18 +175,23 @@ def find_recent_capacities(overall_df: pd.DataFrame) -> pd.DataFrame:
     return filtered_df[['Flow Point Name', 'Flow Direction', 'Sum Scheduled Quantity Dth']]
 
 
+paths = []
 # Extract the (pipeline, flow-point) paths from the path text file, or create it if it does not already exist.
 if os.path.isfile(path_file):
     # Read in the paths from the pre-existing path file
     with open(path_file, 'r') as pth_file:
-        paths = ast.literal_eval(pth_file.read())
+        for path in pth_file.read().split("\n"):
+            paths.append((path.split(", ")[0], path.split(", ")[1]))
 
 else:
     paths = extract_paths(south_central)
 
     # Create and write in the paths otherwise.
     with open(path_file, 'w') as pth_file:
-        pth_file.write(repr(paths))
+        for path in paths:
+            pth_file.write(path[0] + ", " + path[1] + "\n")
+    
+    pth_file.close()
 
 print(paths)
 merge = []
@@ -196,6 +205,7 @@ for key in processed_paths:
 
 # Merge together the queried data and output it to a CSV
 merged_df = pd.concat(merge, axis=0)
-merged_df.to_csv(output_path, sheet_name = "Raw Data", index=False)
-find_recent_capacities(merged_df).to_excel(output_path, sheet_name="Capacity", index=False)
+merged_df.to_csv(output_path, index=False)
+
+# find_recent_capacities(merged_df).to_csv(output_path, sheet_name="Capacity", index=False)
 

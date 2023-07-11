@@ -8,6 +8,7 @@ import os
 from typing import Dict, Tuple
 import pandas as pd
 from io import BytesIO
+from datetime import date, timedelta
 
 """
 This script aims to automate the MIS downloading process via the ERCOT API.
@@ -67,7 +68,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date:
     current_file_names = os.listdir(sub_folder)
     reportID, file_type = mapping[folder_name]
     
-    ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={date}T00:00:00&endTime={date}T00:00:00&unzipFiles=false"
+    ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={date}T00:00:00&endTime=todayT00:00:00&unzipFiles=false"
     log_file.write(ercot_url + "\n")
 
     response = requests.get(ercot_url, verify=False)
@@ -111,11 +112,13 @@ for folder in folders:
     if not os.path.exists(sub_folder):
         os.makedirs(sub_folder)
 
+# Yesterday's date
+yesterday = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 # Create a ThreadPoolExecutor with the specified number of workers
 with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     # Submit each folder for processing
-    futures = [executor.submit(download_folder, full_mapping, folder, "today") for folder in folders]
+    futures = [executor.submit(download_folder, full_mapping, folder, yesterday) for folder in folders]
 
     # Wait for all futures to complete
     concurrent.futures.wait(futures)

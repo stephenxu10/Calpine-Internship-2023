@@ -18,7 +18,7 @@ The outputted table is located in the Data subfolder or at \\pzpwtabapp01\Ercot\
 
 # Global Variables and Parameters
 start_time = time.time()
-year = 2023
+year = 2022
 
 json_processed = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
 output_path = (
@@ -83,7 +83,7 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
 
                 # Check if the values match for contingency, constraint, and peak type
                 if contin == sink_contin and constr == sink_constr and peak == sink_peak:
-                    if abs(sf) > 0.01 and abs(sink_sf) > 0.01:
+                    if abs(sf) > 0.001 and abs(sink_sf) > 0.001:
                         # Append the data to the respective columns
                         data[0].append(date[:10])
                         data[1].append(int(date[11:13]) + 1)

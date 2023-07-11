@@ -236,9 +236,9 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
                     contin, constr, peak, sf, ss = source_item
                     sink_contin, sink_constr, sink_peak, sink_sf, sink_ss = sink_item
 
-                    # Check if the values match for contingency, constraint, and peak type
+                    # Check if the values match for contingency, const♠raint, and peak type
                     if contin == sink_contin and constr == sink_constr and peak == sink_peak:
-                        if abs(sf) > 0.01 and abs(sink_sf) > 0.01:
+                        if abs(sf) > 0.001 and abs(sink_sf) > 0.001:
                             # Append the data to the respective columns
                             data[0].append(date)
                             data[1].append(hour)
