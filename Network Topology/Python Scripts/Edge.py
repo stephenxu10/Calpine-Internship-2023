@@ -18,11 +18,11 @@ base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
 """
 
-from Node import Node
+from Node import Bus
 from utils import num_proximity
 
 class Edge:
-    def __init__(self, node1: Node, node2: Node, device_type, circuit_number, r, x, b, lim_a, lim_b, lim_c):
+    def __init__(self, node1: Bus, node2: Bus, device_type, circuit_number, r, x, b, lim_a, lim_b, lim_c):
         self.node1 = node1
         self.node2 = node2
         self.device_type = device_type
@@ -37,8 +37,8 @@ class Edge:
     @classmethod
     def from_row(self, row):
         return Edge(
-            Node(row["From Name"], row["From Number"]),
-            Node(row["To Name"], row["To Number"]),
+            Bus(row["From Name"], row["From Number"]),
+            Bus(row["To Name"], row["To Number"]),
             row["Branch Device Type"],
             row["Circuit"],
             row["R"],

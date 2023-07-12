@@ -3,6 +3,7 @@ Some utility methods for the project
 """
 import numpy as np
 from scipy.optimize import linear_sum_assignment
+from anytree import Node
 from typing import List, Dict, Tuple
 import re
 
@@ -19,6 +20,17 @@ def num_proximity(num1: float, num2: float) -> float:
         max_diff = max(abs(num1), abs(num2))
         similarity = 1 - (abs_diff / max_diff)
         return similarity
+    
+def find_node(nodes: List[Node], target: str) -> int | None:
+    """
+    Simple helper function to find the index in a list of nodes
+    whose name matches the target node.
+    """
+    for i in range(len(nodes)):
+        if nodes[i].name == target:
+            return i
+    
+    return None
 
 def levenshtein(x: str, y: str, c_i: float = 1.0, c_d: float = 1.0, c_s: float = 1.0) -> float:
     """

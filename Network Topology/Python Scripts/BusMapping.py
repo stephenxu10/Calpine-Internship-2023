@@ -1,4 +1,5 @@
 # type: ignore
+
 """
 This Python Script aims to create a mapping between buses in two different electrical systems. Buses
 are compared and scored based on three criteria:
@@ -16,6 +17,8 @@ import sys
 import pandas as pd
 import numpy as np
 import time
+from anytree import Node, RenderTree
+from anytree.exporter import UniqueDotExporter
 from collections import deque
 
 os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
@@ -24,9 +27,9 @@ base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
 
 from Graph import Network
-from Node import Node
+from Node import Bus
 from Edge import Edge
-from utils import levenshtein, optimal_matching, name_compare
+from utils import levenshtein, optimal_matching, name_compare, find_node
 from typing import *
 
 # Global parameters & variables
@@ -69,7 +72,7 @@ def build_graph(sheet_path: str) -> Network:
     df_bus = pd.read_excel(sheet_path, sheet_name="Bus")
 
     for _, row in df_bus.iterrows():
-        row_node = Node.from_row(row)
+        row_node = Bus.from_row(row)
         base_graph.add_node(row_node)
 
     for _, row in df_branch.iterrows():
@@ -81,7 +84,7 @@ def build_graph(sheet_path: str) -> Network:
 
 def search_depth(
     graph: Network, start_node: str, depth: int
-) -> Tuple[Set[Node], Set[Edge]]:
+) -> Tuple[Set[Bus], Set[Edge]]:
     """
     Helper method that performs a Breadth-first search on an input Network graph from
     a starting node in order to accumulate the set of nodes and edges within
@@ -129,7 +132,7 @@ def compare_sets(list1: List, list2: List, verbose=False) -> float:
         for j in range(0, len(list2)):
             comparison = list1[i].simple_compare(list2[j])
 
-            if isinstance(list1[i], Node):
+            if isinstance(list1[i], Bus):
                 if comparison[1] < 0.3:
                     node1_neighbors = len(search_depth(CRR_Network, list1[i].name, 1)[0])
                     node2_neighbors = len(search_depth(WECC_Network, list2[j].name, 1)[0])
@@ -224,7 +227,7 @@ def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int
     return sum(a * b for a, b in zip(scores, weights))
 
 
-def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Node, curr: Dict[str, str], threshold=0.7, limit=50):
+def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], threshold=0.7, limit=50):
     """
     A recursive algorithm to populate a set of mappings by starting from a ground truth of matching
     nodes. Recurses in a 'breadth-first' manner - begins by attempting to match the input nodes'
@@ -249,8 +252,15 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Node, curr
         for neighbor_2 in search_depth(net_2, node_2, 1)[0]:
             if neighbor_1.name not in curr and neighbor_2.name not in curr.values():
                 if similiarity(net_1, neighbor_1.name, net_2, neighbor_2.name, 2) > threshold:
+                    # Add this new match the the current mapping
                     curr[neighbor_1.name] = neighbor_2.name
-                    map_populate(net_1, neighbor_1.name, net_2, neighbor_2.name, curr)
+
+                    # Add in the node!
+                    neighbor_node = Node(neighbor_1.name + " " + neighbor_2.name, parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+                    tree_nodes.append(neighbor_node)
+
+                    # Recurse on the neighbors.
+                    map_populate(net_1, neighbor_1.name, net_2, neighbor_2.name, curr, tree_nodes)
 
 
 
@@ -261,11 +271,14 @@ gt_1 = "MIDWAY10"
 gt_2 = "MIDWAY"
 
 curr_mapping = {gt_1: gt_2}
+tree_nodes = [Node(gt_1 + " " + gt_2)]
 
-map_populate(CRR_Network, gt_1, WECC_Network, gt_2, curr_mapping)
+map_populate(CRR_Network, gt_1, WECC_Network, gt_2, curr_mapping, tree_nodes)
 
 for key, val in curr_mapping.items():
     print(key + " " + val)
+
+UniqueDotExporter(tree_nodes[0]).to_picture("recursive_bus_traversal.png")
 
 """
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
@@ -273,8 +286,7 @@ CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
 pge_wecc = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", ["PG AND E", 'SOCALIF'])
 
-print(similiarity(CRR_Network, "LUGO   6", WECC_Network, "LUGO", depth=1, verbose=True))
-
+# print(similiarity(CRR_Network, "LUGO   6", WECC_Network, "LUGO", depth=1, verbose=True))
 
 output_df = pd.DataFrame()
 crr_nodes = []
@@ -285,7 +297,7 @@ for crr in pge_crr:
     for wecc in pge_wecc:   
         crr_nodes.append(crr)
         wecc_nodes.append(wecc)
-        similarities.append(similiarity(CRR_Network, crr, WECC_Network, wecc, depth=3))
+        similarities.append(similiarity(CRR_Network, crr, WECC_Network, wecc, depth=2))
 
 output_df['CRR Buses'] = crr_nodes
 output_df['WECC Buses'] = wecc_nodes
@@ -295,8 +307,8 @@ np_sims = np.reshape(similarities, (len(pge_crr), len(pge_wecc)))
 optimal_matching(pge_crr, pge_wecc, np_sims, verbose=True)
 
 output_df.to_csv("./Input Data/Similiarity Table.csv", index=False)
-"""
 
+"""
 
 # Output Summary Statistics
 end_time = time.time()

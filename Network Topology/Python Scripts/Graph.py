@@ -1,4 +1,5 @@
 # type: ignore
+
 import os
 import sys
 """
@@ -12,7 +13,7 @@ base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
 """
 
-from Node import Node
+from Node import Bus
 from Edge import Edge
 from typing import List
 
@@ -26,7 +27,7 @@ class Network:
                 print(str(edge.node1) + " -> " + str(edge.node2) + " " + str(edge.get_attributes()))
 
     
-    def add_node(self, node: Node):
+    def add_node(self, node: Bus):
         if node not in self.graph:
             self.graph[node] = []
     
@@ -38,7 +39,7 @@ class Network:
             self.graph[from_node].append(edge)
             self.graph[to_node].append(edge)
     
-    def get_node(self, name: str) -> Node:
+    def get_node(self, name: str) -> Bus:
         for node in self.graph:
             if node.name == name:
                 return node

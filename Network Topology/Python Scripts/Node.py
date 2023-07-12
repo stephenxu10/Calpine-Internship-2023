@@ -18,23 +18,23 @@ sys.path.append("/Python Scripts")
 
 from utils import levenshtein, name_compare
 
-class Node:
+class Bus:
     def __init__(self, name, num):
         self.name = name
         self.number = num
     
     @classmethod
     def from_row(self, row):
-        return Node(row['Name'], row['Number'])
+        return Bus(row['Name'], row['Number'])
 
     def __str__(self):
-        return f"Node({self.name}, {self.number})"
+        return f"Bus({self.name}, {self.number})"
     
     def __hash__(self):
         return hash(self.name)
 
     def __eq__(self, other):
-        if isinstance(other, Node):
+        if isinstance(other, Bus):
             return self.name == other.name and self.number == other.number
         return False
     
