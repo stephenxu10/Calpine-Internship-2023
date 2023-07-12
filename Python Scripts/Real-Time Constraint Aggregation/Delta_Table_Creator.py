@@ -18,7 +18,7 @@ The outputted table is located in the Data subfolder or at \\pzpwtabapp01\Ercot\
 
 # Global Variables and Parameters
 start_time = time.time()
-year = 2022
+year = 2023
 
 json_processed = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
 output_path = (
