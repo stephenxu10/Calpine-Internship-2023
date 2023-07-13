@@ -8,7 +8,7 @@ import os
 from typing import Dict, Tuple
 import pandas as pd
 from io import BytesIO
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 
 """
 This script aims to automate the MIS downloading process via the ERCOT API.
@@ -48,7 +48,58 @@ excel_path = "\\\\Pzpwuplancli01\\APP-DATA\\Task Scheduler\\MIS_Download_210125a
 log_file = open(log_file, "w")
 invalid_rid = open(invalid_rid, "w")
 
-def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date: str):
+def convert(hour: int) -> str:
+    """
+    Simple helper method to convert an input hour.
+        - 9 -> "09"
+        - 13 -> "13"
+    """
+    if hour < 10:
+        return "0" + str(hour)
+    else:
+        return str(hour)
+
+def handle_oom_error(mapping: Dict, folder: str, request: str, start_date: str, start_hour: int, hours_left: int, back: int):
+    """
+    This method handles a caught 500 HTTP response. In practice, this is almost guaranteed to be
+    a 'System.OutOfMemory' Exception from the ERCOT Calpine API. To address this, we split up 
+    the original queried time into smaller chunks, typically 6 or 8 hours at a time. The
+    received contents are then downloaded into the desired folder.
+
+    This method is purely sequential. Not really worth the hassle to parallelize.
+
+    Inputs:
+        - folder: The name of the folder to download to, i.e. '83_CTOR'
+        - request: The 5-digit ID of the request for that folder
+        - start_date: The starting date in YYYY-MM-DD format.
+        - start_hour: The starting hour in [0, 24]
+        - hours_left: How many hours left to query.
+        - back: How many hours we look back at a time. 6-8 hours is reasonable.
+    
+    Output:
+        Returns nothing, but downloads to the appropriate folder.
+    """
+    if hours_left == 0:
+        return
+    
+    # Calculate the new upper and lower bounds
+    upper_date = start_date
+    upper_hour = start_hour
+    lower_date = start_date
+    lower_hour = int(start_hour) - back
+
+    if int(lower_hour) < 0:
+        lower_date = (datetime.strptime(start_date, "%Y-%m-%d") - timedelta(days=1)).strftime("%Y-%m-%d")
+        lower_hour += 24
+
+    lower_hour = convert(lower_hour)
+    
+    # Download the contents for this new bound.
+    download_folder(mapping, folder, lower_date, lower_hour, upper_date, upper_hour, handle=False)
+    handle_oom_error(mapping, folder, request, lower_date, lower_hour, hours_left - back, back)
+
+
+def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: str, l_h: str, u_d: str, u_h: str, handle=True):
     """
     Given a mapping of folder names to (reportID, Type) tuples, a requested folder name,
     and an input date in YYYY-MM-DD or today - x format, this helper method
@@ -59,16 +110,18 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date:
         - mapping: A dictionary mapping folder names to an ordered pair of corresponding
           report IDs and Types
         - folder_name: The requested folder name to extract.
-        - date: The date to query for in the ERCOT API.
-    
+        - lower_date, lower_hour: The lower-bound date in YYYY-MM-DD format and hour in '05' or '23' format.
+        - upper_date, upper_hour: Analagous to above.
+        - handle: Boolean flag that determines if invalid requests should be handled. True by default.
+
     Output:
-        - Returns nothing.
+        - Returns nothing, but downloads files to appropriate folder. 
     """
     sub_folder = f"{destination_folder}{folder_name}"
     current_file_names = os.listdir(sub_folder)
     reportID, file_type = mapping[folder_name]
     
-    ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={date}T00:00:00&endTime=todayT00:00:00&unzipFiles=false"
+    ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={l_d}T{l_h}:00:00&endTime={u_d}T{u_h}:00:00&unzipFiles=false"
     log_file.write(ercot_url + "\n")
 
     response = requests.get(ercot_url, verify=False)
@@ -82,10 +135,20 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, date:
             if filename not in current_file_names:
                 zip_file.extract(filename, sub_folder)
                 log_file.write(filename + " " + folder_name + "\n")
-        
+
+    elif response.status_code == 500:
+        # Handle the Internal Server Error Exception here. Most likely an OutOfMemory issue.
+        log_file.write(f"Report ID {reportID} was invalid for folder {folder_name}. Status Code: {response.status_code}\n")
+        invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
+
+        if handle:
+            print("Handling Exception...")
+            handle_oom_error(mapping, folder_name, reportID, u_d, u_h, 24, 8)
+
     else:
-        log_file.write("Invalid query to ERCOT. Check the validity of the request URL for report ID " + str(reportID) + "\n")
-        invalid_rid.write(str(reportID) + "\n")
+        # Most likely a 404 error code - no data is available for today. 
+        log_file.write(f"Report ID {reportID} was invalid for folder {folder_name}. Status Code: {response.status_code}\n")
+        invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
     
     log_file.write("\n")
 
@@ -112,17 +175,17 @@ for folder in folders:
     if not os.path.exists(sub_folder):
         os.makedirs(sub_folder)
 
-# Yesterday's date
+# Yesterday and today's date
 yesterday = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
+today = date.today().strftime('%Y-%m-%d')
 
 # Create a ThreadPoolExecutor with the specified number of workers
 with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     # Submit each folder for processing
-    futures = [executor.submit(download_folder, full_mapping, folder, yesterday) for folder in folders]
+    futures = [executor.submit(download_folder, full_mapping, folder, yesterday, "09", today, "09") for folder in folders]
 
     # Wait for all futures to complete
     concurrent.futures.wait(futures)
-
 
 # Output Summary Statistics
 end_time = time.time()
