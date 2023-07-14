@@ -15,9 +15,8 @@ This script aims to automate the MIS downloading process via the ERCOT API.
 
 Currently, the process is sped up through futures and thread-lock synchronization. Running
 the script will extract all new files for the current day into the targeted directory
-in less than two minutes on a 4-core machine - almost 7 times speedup compared to a sequential implementation!
+in about five minutes.
 """
-
 # Ignore warnings. Whatever.
 warnings.simplefilter("ignore")
 
@@ -27,8 +26,8 @@ start_time = time.time()
 # Maximum number of concurrent operations.
 max_workers = 10
 
-# Write lock on the destination folder to ensure atomicity. Is it necessary?
-file_lock = threading.Lock()
+# How many days we look back for data collection.
+days_back = 2
 
 # End goal for all downloaded files to be. Redirect here once testing complete.
 # destination_folder = "//Pzpwuplancli01/Uplan/ERCOT/MIS 2023"
@@ -36,16 +35,19 @@ file_lock = threading.Lock()
 # Current temporary storage for downloaded files
 destination_folder = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Scheduled Downloads/"
 
-# Text file for invalid request numbers♣
-invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/invalid_requests.txt"
-
-# Log file for output
-log_file = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/log_file.txt"
+# Text file for invalid request numbers
+invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
 
 # Reference Excel Sheet for all the web data and requirements
 excel_path = "\\\\Pzpwuplancli01\\APP-DATA\\Task Scheduler\\MIS_Download_210125a_v3_via_API.xlsm"
 
-log_file = open(log_file, "w")
+# Assume these folders will throw OOM error when querying back a day. More optimal to give up immediately.
+if days_back == 2:
+    give_up = ["34_TC", "83_CTOR", "20_RTDRD", "58_RILBRNLZAH", "16_LBEB"]
+
+else:
+    give_up = ["34_TC", "83_CTOR"]
+
 invalid_rid = open(invalid_rid, "w")
 
 def convert(hour: int) -> str:
@@ -120,40 +122,44 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
     sub_folder = f"{destination_folder}{folder_name}"
     current_file_names = os.listdir(sub_folder)
     reportID, file_type = mapping[folder_name]
+
+    # Give up on some folders and immediately handle an OOM error.
+    if folder_name in give_up and handle:
+        print(f"Handling assumed Exception for folder {folder_name}...")
+        invalid_rid.write(f"{reportID} {folder_name} 500\n")
+        handle_oom_error(mapping, folder_name, reportID, u_d, u_h, 24 * days_back, 6)
     
-    ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={l_d}T{l_h}:00:00&endTime={u_d}T{u_h}:00:00&unzipFiles=false"
-    log_file.write(ercot_url + "\n")
-
-    response = requests.get(ercot_url, verify=False)
-
-    if response.status_code == 200:
-        zip_file = zipfile.ZipFile(BytesIO(response.content))
-        
-        filtered_files = [filename for filename in zip_file.namelist() if file_type == 'all' or file_type in filename]
-
-        for filename in filtered_files:
-            if filename not in current_file_names:
-                zip_file.extract(filename, sub_folder)
-                log_file.write(filename + " " + folder_name + "\n")
-
-    elif response.status_code == 500:
-        # Handle the Internal Server Error Exception here. Most likely an OutOfMemory issue.
-        log_file.write(f"Report ID {reportID} was invalid for folder {folder_name}. Status Code: {response.status_code}\n")
-        invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
-
-        if handle:
-            print("Handling Exception...")
-            handle_oom_error(mapping, folder_name, reportID, u_d, u_h, 24, 8)
-
     else:
+        ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={l_d}T{l_h}:00:00&endTime={u_d}T{u_h}:00:00&unzipFiles=false"
+        response = requests.get(ercot_url, verify=False)
+
+        # If the request was successful, extract the received files
+        if response.status_code == 200:
+            # This statement will execute if an OOM Handler successfully worked on a folder.
+            if u_h != l_h:
+                invalid_rid.write(f"Folder {folder_name} written to successfully from {l_d} Hour {l_h} to {u_d} Hour {u_h}.\n")
+
+            zip_file = zipfile.ZipFile(BytesIO(response.content))
+            filtered_files = [filename for filename in zip_file.namelist() if file_type == 'all' or file_type in filename]
+
+            for filename in filtered_files:
+                if filename not in current_file_names:
+                    zip_file.extract(filename, sub_folder)
+                    # log_file.write(filename + " " + folder_name + "\n")
+
+        # Handle the Internal Server Error Exception here. Most likely an OutOfMemory issue.
+        elif response.status_code == 500:
+            invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
+
+            if handle:
+                print(f"Handling Exception for folder {folder_name}...")
+                handle_oom_error(mapping, folder_name, reportID, u_d, u_h, 24 * days_back, 6)
+
         # Most likely a 404 error code - no data is available for today. 
-        log_file.write(f"Report ID {reportID} was invalid for folder {folder_name}. Status Code: {response.status_code}\n")
-        invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
-    
-    log_file.write("\n")
-
+        else:
+            invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
+        
     return
-
 
 # Create the folder mapping by reading the Excel sheet.
 webpage_partial = pd.read_excel(excel_path, sheet_name="List of Webpage", usecols=['Folder Name', 'Type Id', 'New Table Name'])
@@ -164,6 +170,7 @@ dict_partial = dict(zip(webpage_partial.loc[condition, 'Folder Name'], webpage_p
 dict_complete = dict(zip(webpage_complete['Folder Name'], webpage_complete['Type of file']))
 
 full_mapping = {a: (dict_partial[a], dict_complete[a]) for a in dict_partial.keys() & dict_complete.keys()}
+full_mapping.pop("48_3MRCR")
 
 # List of folders to process
 folders = full_mapping.keys()
@@ -176,22 +183,22 @@ for folder in folders:
         os.makedirs(sub_folder)
 
 # Yesterday and today's date
-yesterday = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
-today = date.today().strftime('%Y-%m-%d')
+yesterday = (date.today() - timedelta(days=days_back)).strftime('%Y-%m-%d')
+today = (date.today() - timedelta(days=0)).strftime('%Y-%m-%d')
 
 # Create a ThreadPoolExecutor with the specified number of workers
 with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
     # Submit each folder for processing
-    futures = [executor.submit(download_folder, full_mapping, folder, yesterday, "09", today, "09") for folder in folders]
+    futures = [executor.submit(download_folder, full_mapping, folder, yesterday, "06", today, "06") for folder in folders]
 
     # Wait for all futures to complete
     concurrent.futures.wait(futures)
+
 
 # Output Summary Statistics
 end_time = time.time()
 execution_time = (end_time - start_time)
 print("Downloading Complete")
-print(f"The script took {execution_time:.2f} seconds to run.")
+invalid_rid.write(f"The script took {execution_time:.2f} seconds to run.")
 
-log_file.close()
 invalid_rid.close()

@@ -89,7 +89,6 @@ def aggregate_year(year: int, start: str = "01/01") -> pd.DataFrame:
     # Return nothing if no files are found
     if len(constraint_files) == 0:
         return pd.DataFrame()
-
     # Merge together the sheets, drop duplicates, and do some reformatting
     if start == "01/01":
         yearly_df_list = [pd.read_excel(file) for file in constraint_files]
@@ -101,6 +100,9 @@ def aggregate_year(year: int, start: str = "01/01") -> pd.DataFrame:
             if extract_date(file) != "" and extract_date(file) >= start
         ]
 
+    if len(yearly_df_list) == 0:
+        return pd.DataFrame()
+    
     merged_df = pd.concat(yearly_df_list, ignore_index=True)
     merged_df.drop_duplicates(subset=["Time"])
     merged_df.insert(1, "Marketdate", merged_df["Time"].dt.strftime("%m/%d/%Y"))
@@ -201,15 +203,18 @@ if not os.path.isfile(final_output_path):
     df_final.to_csv(final_output_path, index=False)
 
 # Otherwise, assume the Data has been recently updated - update up today's data.
-    current_data = pd.read_csv(final_output_path)
+else:
+    current_data = pd.read_csv(final_output_path, low_memory=False)
     current_year = datetime.now().year
     current_date = datetime.now().strftime("%m/%d")
 
     new_current = aggregate_year(current_year, current_date)
-    new_current = filter_raw_data(new_current, "today")
-    current_data = pd.concat([current_data, new_current], axis=0)
-    current_data = current_data.drop_duplicates()
-    current_data.to_csv(final_output_path, header=False, index=False)
+
+    if len(new_current):
+        new_current = filter_raw_data(new_current, "today")
+        current_data = pd.concat([current_data, new_current], axis=0)
+        current_data = current_data.drop_duplicates()
+        current_data.to_csv(final_output_path, index=False)
 
 # Output summary statistics
 end_time = time.time()

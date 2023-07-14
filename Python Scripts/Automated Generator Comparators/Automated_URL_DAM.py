@@ -1,3 +1,5 @@
+# type: ignore
+
 from io import BytesIO
 import requests
 import zipfile
