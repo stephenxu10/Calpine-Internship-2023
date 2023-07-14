@@ -24,10 +24,13 @@ warnings.simplefilter("ignore")
 start_time = time.time()
 
 # Maximum number of concurrent operations.
-max_workers = 10
+max_workers = 8
 
 # How many days we look back for data collection.
 days_back = 2
+
+# How many hours to look back for OOM Exception Handling.
+chunk_size = 4
 
 # End goal for all downloaded files to be. Redirect here once testing complete.
 # destination_folder = "//Pzpwuplancli01/Uplan/ERCOT/MIS 2023"
@@ -127,7 +130,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
     if folder_name in give_up and handle:
         print(f"Handling assumed Exception for folder {folder_name}...")
         invalid_rid.write(f"{reportID} {folder_name} 500\n")
-        handle_oom_error(mapping, folder_name, reportID, u_d, u_h, 24 * days_back, 6)
+        handle_oom_error(mapping, folder_name, reportID, u_d, u_h, 24 * days_back, chunk_size)
     
     else:
         ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId={reportID}&marketParticipantId=CRRAH&startTime={l_d}T{l_h}:00:00&endTime={u_d}T{u_h}:00:00&unzipFiles=false"
@@ -145,7 +148,6 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
             for filename in filtered_files:
                 if filename not in current_file_names:
                     zip_file.extract(filename, sub_folder)
-                    # log_file.write(filename + " " + folder_name + "\n")
 
         # Handle the Internal Server Error Exception here. Most likely an OutOfMemory issue.
         elif response.status_code == 500:
@@ -153,7 +155,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
 
             if handle:
                 print(f"Handling Exception for folder {folder_name}...")
-                handle_oom_error(mapping, folder_name, reportID, u_d, u_h, 24 * days_back, 6)
+                handle_oom_error(mapping, folder_name, reportID, u_d, u_h, 24 * days_back, chunk_size)
 
         # Most likely a 404 error code - no data is available for today. 
         else:
@@ -183,8 +185,8 @@ for folder in folders:
         os.makedirs(sub_folder)
 
 # Yesterday and today's date
-yesterday = (date.today() - timedelta(days=days_back)).strftime('%Y-%m-%d')
-today = (date.today() - timedelta(days=0)).strftime('%Y-%m-%d')
+yesterday = (date.today() - timedelta(days=(days_back + 1))).strftime('%Y-%m-%d')
+today = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 # Create a ThreadPoolExecutor with the specified number of workers
 with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:

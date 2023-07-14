@@ -1,87 +1,121 @@
-13517 110_2017GSSSAFR 404
-11180 78_CAC 404
-11205 69_CNM_Monthly 404
-13223 79_PEL 404
-13428 116_2010RTPP 404
-13429 117_2011RTPP 404
-11024 20_RTDRD 500
-13519 112_2019GSSSAFR 404
-11185 80_CMUIS 404
-13513 106_2013GSSSAFR 404
-13231 85_HROARDPAAR 404
-12309 34_TC 500
-Folder 20_RTDRD written to successfully from 2023-07-14 Hour 00 to 2023-07-14 Hour 06.
-13446 83_CTOR 500
-Folder 20_RTDRD written to successfully from 2023-07-13 Hour 18 to 2023-07-14 Hour 00.
-13475 121_2015RTPP 404
-13432 120_2014RTPP 404
-Folder 83_CTOR written to successfully from 2023-07-14 Hour 00 to 2023-07-14 Hour 06.
-Folder 20_RTDRD written to successfully from 2023-07-13 Hour 12 to 2023-07-13 Hour 18.
-13110 73_CMPSA 404
-11202 74_CAAN 404
-Folder 34_TC written to successfully from 2023-07-14 Hour 00 to 2023-07-14 Hour 06.
-13006 23_SCL 404
-13515 108_2015GSSSAFR 404
-13746 127_OSELP 404
-13529 122_2016RTPP 404
-13426 114_2008RTPP 404
-11206 77_COOR 404
-13431 119_2013RTPP 404
-11201 72_CMAR 404
-Folder 83_CTOR written to successfully from 2023-07-13 Hour 18 to 2023-07-14 Hour 00.
-Folder 20_RTDRD written to successfully from 2023-07-13 Hour 06 to 2023-07-13 Hour 12.
-13516 109_2016GSSSAFR 404
-11203 75_CAAR 404
-13518 111_2018GSSSAFR 404
-Folder 20_RTDRD written to successfully from 2023-07-13 Hour 00 to 2023-07-13 Hour 06.
-Folder 83_CTOR written to successfully from 2023-07-13 Hour 12 to 2023-07-13 Hour 18.
-13511 104_2011GSSSAFR 404
-Folder 20_RTDRD written to successfully from 2023-07-12 Hour 18 to 2023-07-13 Hour 00.
-Folder 83_CTOR written to successfully from 2023-07-13 Hour 06 to 2023-07-13 Hour 12.
-Folder 34_TC written to successfully from 2023-07-13 Hour 18 to 2023-07-14 Hour 00.
-13073 58_RILBRNLZAH 500
-Folder 20_RTDRD written to successfully from 2023-07-12 Hour 12 to 2023-07-12 Hour 18.
-Folder 83_CTOR written to successfully from 2023-07-13 Hour 00 to 2023-07-13 Hour 06.
-Folder 20_RTDRD written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 12.
-Folder 58_RILBRNLZAH written to successfully from 2023-07-14 Hour 00 to 2023-07-14 Hour 06.
-Folder 83_CTOR written to successfully from 2023-07-12 Hour 18 to 2023-07-13 Hour 00.
-Folder 34_TC written to successfully from 2023-07-13 Hour 12 to 2023-07-13 Hour 18.
-Folder 83_CTOR written to successfully from 2023-07-12 Hour 12 to 2023-07-12 Hour 18.
-Folder 58_RILBRNLZAH written to successfully from 2023-07-13 Hour 18 to 2023-07-14 Hour 00.
-Folder 83_CTOR written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 12.
 13512 105_2012GSSSAFR 404
-Folder 58_RILBRNLZAH written to successfully from 2023-07-13 Hour 12 to 2023-07-13 Hour 18.
-11485 16_LBEB 500
-Folder 34_TC written to successfully from 2023-07-13 Hour 06 to 2023-07-13 Hour 12.
-13062 100_NOCOGRD 404
-13514 107_2014GSSSAFR 404
 13946 123_2017RTPP 404
-13427 115_2009RTPP 404
-Folder 58_RILBRNLZAH written to successfully from 2023-07-13 Hour 06 to 2023-07-13 Hour 12.
-Folder 16_LBEB written to successfully from 2023-07-14 Hour 00 to 2023-07-14 Hour 06.
-13240 86_HROARDPF1S 404
-13430 118_2012RTPP 404
-13072 66_MTLR 404
-12324 18_LFDF 404
-Folder 58_RILBRNLZAH written to successfully from 2023-07-13 Hour 00 to 2023-07-13 Hour 06.
-11204 70_CNM_Annual 404
-Folder 34_TC written to successfully from 2023-07-13 Hour 00 to 2023-07-13 Hour 06.
-Folder 16_LBEB written to successfully from 2023-07-13 Hour 18 to 2023-07-14 Hour 00.
+13429 117_2011RTPP 404
 11200 71_CMAN 404
-Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 18 to 2023-07-13 Hour 00.
-Folder 16_LBEB written to successfully from 2023-07-13 Hour 12 to 2023-07-13 Hour 18.
-10008 44_SPLAEBM 404
-13043 124_NOSOO 404
+13240 86_HROARDPF1S 404
+13514 107_2014GSSSAFR 404
+11206 77_COOR 404
+13111 76_CAPSA 404
+13426 114_2008RTPP 404
+13475 121_2015RTPP 404
+13006 23_SCL 404
+13072 66_MTLR 404
+13231 85_HROARDPAAR 404
+13518 111_2018GSSSAFR 404
+13516 109_2016GSSSAFR 404
+13513 106_2013GSSSAFR 404
+13432 120_2014RTPP 404
+13515 108_2015GSSSAFR 404
+11485 16_LBEB 500
+13223 79_PEL 404
+13073 58_RILBRNLZAH 500
 10000 128_RCNMADR 404
+Folder 16_LBEB written to successfully from 2023-07-13 Hour 02 to 2023-07-13 Hour 06.
+Folder 58_RILBRNLZAH written to successfully from 2023-07-13 Hour 02 to 2023-07-13 Hour 06.
 13520 113_2020GSSSAFR 404
-Folder 34_TC written to successfully from 2023-07-12 Hour 18 to 2023-07-13 Hour 00.
-Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 12 to 2023-07-12 Hour 18.
-Folder 16_LBEB written to successfully from 2023-07-13 Hour 06 to 2023-07-13 Hour 12.
-Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 12.
-Folder 16_LBEB written to successfully from 2023-07-13 Hour 00 to 2023-07-13 Hour 06.
-Folder 34_TC written to successfully from 2023-07-12 Hour 12 to 2023-07-12 Hour 18.
-Folder 16_LBEB written to successfully from 2023-07-12 Hour 18 to 2023-07-13 Hour 00.
-Folder 34_TC written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 12.
-Folder 16_LBEB written to successfully from 2023-07-12 Hour 12 to 2023-07-12 Hour 18.
-Folder 16_LBEB written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 12.
-The script took 502.00 seconds to run.
+13043 124_NOSOO 404
+13519 112_2019GSSSAFR 404
+Folder 16_LBEB written to successfully from 2023-07-12 Hour 22 to 2023-07-13 Hour 02.
+Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 22 to 2023-07-13 Hour 02.
+Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 18 to 2023-07-12 Hour 22.
+Folder 16_LBEB written to successfully from 2023-07-12 Hour 18 to 2023-07-12 Hour 22.
+16013 130_SSPSF 500
+Folder 130_SSPSF written to successfully from 2023-07-13 Hour 02 to 2023-07-13 Hour 06.
+Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 14 to 2023-07-12 Hour 18.
+Folder 130_SSPSF written to successfully from 2023-07-12 Hour 22 to 2023-07-13 Hour 02.
+Folder 16_LBEB written to successfully from 2023-07-12 Hour 14 to 2023-07-12 Hour 18.
+Folder 130_SSPSF written to successfully from 2023-07-12 Hour 18 to 2023-07-12 Hour 22.
+Folder 130_SSPSF written to successfully from 2023-07-12 Hour 14 to 2023-07-12 Hour 18.
+Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 10 to 2023-07-12 Hour 14.
+Folder 16_LBEB written to successfully from 2023-07-12 Hour 10 to 2023-07-12 Hour 14.
+Folder 130_SSPSF written to successfully from 2023-07-12 Hour 10 to 2023-07-12 Hour 14.
+Folder 130_SSPSF written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 10.
+Folder 130_SSPSF written to successfully from 2023-07-12 Hour 02 to 2023-07-12 Hour 06.
+Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 10.
+Folder 130_SSPSF written to successfully from 2023-07-11 Hour 22 to 2023-07-12 Hour 02.
+Folder 16_LBEB written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 10.
+Folder 130_SSPSF written to successfully from 2023-07-11 Hour 18 to 2023-07-11 Hour 22.
+11204 70_CNM_Annual 404
+13517 110_2017GSSSAFR 404
+Folder 130_SSPSF written to successfully from 2023-07-11 Hour 14 to 2023-07-11 Hour 18.
+13428 116_2010RTPP 404
+Folder 130_SSPSF written to successfully from 2023-07-11 Hour 10 to 2023-07-11 Hour 14.
+11185 80_CMUIS 404
+13430 118_2012RTPP 404
+12309 34_TC 500
+Folder 130_SSPSF written to successfully from 2023-07-11 Hour 06 to 2023-07-11 Hour 10.
+13062 100_NOCOGRD 404
+13427 115_2009RTPP 404
+11180 78_CAC 404
+Folder 58_RILBRNLZAH written to successfully from 2023-07-12 Hour 02 to 2023-07-12 Hour 06.
+Folder 16_LBEB written to successfully from 2023-07-12 Hour 02 to 2023-07-12 Hour 06.
+13529 122_2016RTPP 404
+13746 127_OSELP 404
+12324 18_LFDF 404
+Folder 58_RILBRNLZAH written to successfully from 2023-07-11 Hour 22 to 2023-07-12 Hour 02.
+Folder 16_LBEB written to successfully from 2023-07-11 Hour 22 to 2023-07-12 Hour 02.
+Folder 34_TC written to successfully from 2023-07-13 Hour 02 to 2023-07-13 Hour 06.
+10008 44_SPLAEBM 404
+11205 69_CNM_Monthly 404
+Folder 58_RILBRNLZAH written to successfully from 2023-07-11 Hour 18 to 2023-07-11 Hour 22.
+Folder 16_LBEB written to successfully from 2023-07-11 Hour 18 to 2023-07-11 Hour 22.
+11203 75_CAAR 404
+Folder 58_RILBRNLZAH written to successfully from 2023-07-11 Hour 14 to 2023-07-11 Hour 18.
+Folder 16_LBEB written to successfully from 2023-07-11 Hour 14 to 2023-07-11 Hour 18.
+Folder 34_TC written to successfully from 2023-07-12 Hour 22 to 2023-07-13 Hour 02.
+13511 104_2011GSSSAFR 404
+11024 20_RTDRD 500
+13446 83_CTOR 500
+Folder 58_RILBRNLZAH written to successfully from 2023-07-11 Hour 10 to 2023-07-11 Hour 14.
+Folder 16_LBEB written to successfully from 2023-07-11 Hour 10 to 2023-07-11 Hour 14.
+Folder 20_RTDRD written to successfully from 2023-07-13 Hour 02 to 2023-07-13 Hour 06.
+Folder 83_CTOR written to successfully from 2023-07-13 Hour 02 to 2023-07-13 Hour 06.
+Folder 58_RILBRNLZAH written to successfully from 2023-07-11 Hour 06 to 2023-07-11 Hour 10.
+Folder 20_RTDRD written to successfully from 2023-07-12 Hour 22 to 2023-07-13 Hour 02.
+Folder 34_TC written to successfully from 2023-07-12 Hour 18 to 2023-07-12 Hour 22.
+Folder 83_CTOR written to successfully from 2023-07-12 Hour 22 to 2023-07-13 Hour 02.
+Folder 16_LBEB written to successfully from 2023-07-11 Hour 06 to 2023-07-11 Hour 10.
+13110 73_CMPSA 404
+Folder 20_RTDRD written to successfully from 2023-07-12 Hour 18 to 2023-07-12 Hour 22.
+11201 72_CMAR 404
+11202 74_CAAN 404
+Folder 83_CTOR written to successfully from 2023-07-12 Hour 18 to 2023-07-12 Hour 22.
+13431 119_2013RTPP 404
+Folder 20_RTDRD written to successfully from 2023-07-12 Hour 14 to 2023-07-12 Hour 18.
+Folder 83_CTOR written to successfully from 2023-07-12 Hour 14 to 2023-07-12 Hour 18.
+Folder 34_TC written to successfully from 2023-07-12 Hour 14 to 2023-07-12 Hour 18.
+Folder 20_RTDRD written to successfully from 2023-07-12 Hour 10 to 2023-07-12 Hour 14.
+Folder 83_CTOR written to successfully from 2023-07-12 Hour 10 to 2023-07-12 Hour 14.
+Folder 20_RTDRD written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 10.
+Folder 83_CTOR written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 10.
+Folder 20_RTDRD written to successfully from 2023-07-12 Hour 02 to 2023-07-12 Hour 06.
+Folder 34_TC written to successfully from 2023-07-12 Hour 10 to 2023-07-12 Hour 14.
+Folder 83_CTOR written to successfully from 2023-07-12 Hour 02 to 2023-07-12 Hour 06.
+Folder 20_RTDRD written to successfully from 2023-07-11 Hour 22 to 2023-07-12 Hour 02.
+Folder 83_CTOR written to successfully from 2023-07-11 Hour 22 to 2023-07-12 Hour 02.
+Folder 20_RTDRD written to successfully from 2023-07-11 Hour 18 to 2023-07-11 Hour 22.
+Folder 34_TC written to successfully from 2023-07-12 Hour 06 to 2023-07-12 Hour 10.
+Folder 83_CTOR written to successfully from 2023-07-11 Hour 18 to 2023-07-11 Hour 22.
+Folder 20_RTDRD written to successfully from 2023-07-11 Hour 14 to 2023-07-11 Hour 18.
+Folder 20_RTDRD written to successfully from 2023-07-11 Hour 10 to 2023-07-11 Hour 14.
+Folder 83_CTOR written to successfully from 2023-07-11 Hour 14 to 2023-07-11 Hour 18.
+Folder 20_RTDRD written to successfully from 2023-07-11 Hour 06 to 2023-07-11 Hour 10.
+Folder 83_CTOR written to successfully from 2023-07-11 Hour 10 to 2023-07-11 Hour 14.
+Folder 34_TC written to successfully from 2023-07-12 Hour 02 to 2023-07-12 Hour 06.
+Folder 83_CTOR written to successfully from 2023-07-11 Hour 06 to 2023-07-11 Hour 10.
+Folder 34_TC written to successfully from 2023-07-11 Hour 22 to 2023-07-12 Hour 02.
+Folder 34_TC written to successfully from 2023-07-11 Hour 18 to 2023-07-11 Hour 22.
+Folder 34_TC written to successfully from 2023-07-11 Hour 14 to 2023-07-11 Hour 18.
+Folder 34_TC written to successfully from 2023-07-11 Hour 10 to 2023-07-11 Hour 14.
+Folder 34_TC written to successfully from 2023-07-11 Hour 06 to 2023-07-11 Hour 10.
+The script took 516.41 seconds to run.

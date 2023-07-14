@@ -27,8 +27,8 @@ Reads from 'invalid_requests.txt', an error log file from the Python MIS downloa
 warnings.simplefilter("ignore")
 
 log_file = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
-yesterday = (date.today() - timedelta(days=2)).strftime('%Y-%m-%d')
-today = (date.today() - timedelta(days=0)).strftime('%Y-%m-%d')
+yesterday = (date.today() - timedelta(days=3)).strftime('%Y-%m-%d')
+today = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
 # Reference Excel Sheet for all the web data and requirements
 excel_path = "\\\\Pzpwuplancli01\\APP-DATA\\Task Scheduler\\MIS_Download_210125a_v3_via_API.xlsm"
@@ -41,7 +41,7 @@ with open(log_file, "r") as log:
     rows = log.read().split("\n")
 
 hour = "06"
-intended_chunks = 8
+intended_chunks = 12
 
 # Build the result table by parsing the request summary text file
 result_df = pd.DataFrame()
@@ -52,6 +52,7 @@ reportIDs = []
 descriptions = []
 codes = []
 handled_500 = {}
+
 for row in rows:
     row_data = row.split(" ")
     if not "to" in row and row != "":
@@ -112,7 +113,7 @@ if len(caught_404) == 0:
             html_result += f"<li><strong>{folder_name} had an OutOfMemory Exception that was handled successfully.</strong></li>\n"
         
         else:
-            html_result += f"<li><strong>{folder_name} had an OutOfMemory Exception that was not handled successfully. {intended_chunks} of 8-hour data were expected and only {handled_500[folder_name]} were found. Consider manually adding in any missing chunks.</strong></li>\n"
+            html_result += f"<li><strong>{folder_name} had an OutOfMemory Exception that was not handled successfully. {intended_chunks} of 8-hour data chunks were expected and only {handled_500[folder_name]} were found. Consider manually adding in any missing chunks.</strong></li>\n"
 else:
     html_result = "<ul>\n"
     for folder_name in caught_404:

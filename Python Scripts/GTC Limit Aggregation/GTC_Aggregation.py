@@ -32,6 +32,12 @@ desired_names = [
     "MCCAMY",
     "VALIMP",
     "EASTEX",
+    "BEARKT",
+    "CULBSN",
+    "ZAPSTR",
+    "WILBRN",
+    "WHARTN",
+    "HMLTN"
 ]
 
 ercot_root = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\"
@@ -210,7 +216,7 @@ else:
 
     new_current = aggregate_year(current_year, current_date)
 
-    if len(new_current):
+    if len(new_current) > 0:
         new_current = filter_raw_data(new_current, "today")
         current_data = pd.concat([current_data, new_current], axis=0)
         current_data = current_data.drop_duplicates()
