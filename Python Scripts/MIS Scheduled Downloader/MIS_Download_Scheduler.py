@@ -1,8 +1,8 @@
 import requests
 import warnings
-import threading
 import concurrent.futures
 import time
+import sys
 import zipfile
 import os
 from typing import Dict, Tuple
@@ -30,10 +30,11 @@ max_workers = 8
 days_back = 2
 
 # How many hours to look back for OOM Exception Handling.
-chunk_size = 4
+chunk_size = 6
 
-# End goal for all downloaded files to be. Redirect here once testing complete.
-# destination_folder = "//Pzpwuplancli01/Uplan/ERCOT/MIS 2023"
+# Yesterday and today's date
+yesterday = (date.today() - timedelta(days=days_back)).strftime('%Y-%m-%d')
+today = (date.today() - timedelta(days=0)).strftime('%Y-%m-%d')
 
 # Current temporary storage for downloaded files
 destination_folder = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Scheduled Downloads/"
@@ -184,23 +185,58 @@ for folder in folders:
     if not os.path.exists(sub_folder):
         os.makedirs(sub_folder)
 
-# Yesterday and today's date
-yesterday = (date.today() - timedelta(days=(days_back + 1))).strftime('%Y-%m-%d')
-today = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 
-# Create a ThreadPoolExecutor with the specified number of workers
-with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-    # Submit each folder for processing
-    futures = [executor.submit(download_folder, full_mapping, folder, yesterday, "06", today, "06") for folder in folders]
+# Parse the command-line arguments to determine what actions should be taken.
+arguments = sys.argv
+valid_flag = True
 
-    # Wait for all futures to complete
-    concurrent.futures.wait(futures)
+if "-r" in arguments:
+    if arguments[-1] != "-r":
+        # Set the chunk size based on if it is given or not.
+        if "-c" in arguments:
+            c_idx = arguments.index("-c")
+            c_size = int(arguments[c_idx + 1])
+
+        else:
+            c_size = chunk_size
+
+        # Parse all the requested folders.
+        folders_to_download = []
+        index = arguments.index("-r")
+
+        while index < len(arguments) - 1:
+            if arguments[index + 1] == "-c":
+                break
+            
+            folders_to_download.append(arguments[index+1])
+            index += 1
+
+        # Submit the folders for processing.
+        with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = [executor.submit(handle_oom_error, full_mapping, folder, full_mapping[folder][0], today, "06", 24, c_size) for folder in folders_to_download]
+
+            # Wait for all futures to complete
+            concurrent.futures.wait(futures)
+
+    else:
+        sys.stderr.write(f"usage: {sys.argv[0]} [-c <integer>] [-r] <input folder-names>\n")
+        valid_flag = False
+
+else:
+    # Create a ThreadPoolExecutor with the specified number of workers
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        # Submit each folder for processing
+        futures = [executor.submit(download_folder, full_mapping, folder, yesterday, "06", today, "06") for folder in folders]
+
+        # Wait for all futures to complete
+        concurrent.futures.wait(futures)
 
 
 # Output Summary Statistics
-end_time = time.time()
-execution_time = (end_time - start_time)
-print("Downloading Complete")
-invalid_rid.write(f"The script took {execution_time:.2f} seconds to run.")
+if valid_flag:
+    end_time = time.time()
+    execution_time = (end_time - start_time)
+    print("Downloading Complete")
+    invalid_rid.write(f"The script took {execution_time:.2f} seconds to run.")
 
 invalid_rid.close()
