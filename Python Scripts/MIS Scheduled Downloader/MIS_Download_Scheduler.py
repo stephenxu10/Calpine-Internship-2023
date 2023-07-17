@@ -15,7 +15,7 @@ This script aims to automate the MIS downloading process via the ERCOT API.
 
 Currently, the process is sped up through futures and thread-lock synchronization. Running
 the script will extract all new files for the current day into the targeted directory
-in about five minutes.
+in about seven minutes.
 """
 # Ignore warnings. Whatever.
 warnings.simplefilter("ignore")
@@ -124,7 +124,6 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
         - Returns nothing, but downloads files to appropriate folder. 
     """
     sub_folder = f"{destination_folder}{folder_name}"
-    current_file_names = os.listdir(sub_folder)
     reportID, file_type = mapping[folder_name]
 
     # Give up on some folders and immediately handle an OOM error.
@@ -147,7 +146,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
             filtered_files = [filename for filename in zip_file.namelist() if file_type == 'all' or file_type in filename]
 
             for filename in filtered_files:
-                if filename not in current_file_names:
+                if filename != "errorLog.txt":
                     zip_file.extract(filename, sub_folder)
 
         # Handle the Internal Server Error Exception here. Most likely an OutOfMemory issue.

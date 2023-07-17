@@ -124,6 +124,7 @@ df_merged = pd.concat(final_merge, axis=0)
 df_merged = df_merged.drop_duplicates(
     subset=['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path'])
 df_merged = df_merged.sort_values(by=['Date', 'HourEnding', 'Interval'])
+df_merged = df_merged[df_merged['PeakType'] != ""]
 df_merged.to_csv(output_path, index=False)
 
 # Output summary statistics

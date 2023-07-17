@@ -83,33 +83,40 @@ for _, row in result_df.iterrows():
         status_count[row['Status Code']] += 1
 
 caught_404 = []
+folders_502 = []
 # Do the Double-Checking.
 for _, row in result_df.iterrows():
     if row['Status Code'] == "404":
         req_url = f"https://ercotapi.app.calpine.com/reports?reportId={row['Report ID']}&marketParticipantId=CRRAH&startTime={yesterday}T{hour}:00:00&endTime={today}T{hour}:00:00&unzipFiles=false"
         response = requests.get(req_url, verify=False)
         if response.status_code == 200:
-            print(req_url)
             caught_404.append(row['Folder Name'])
+    
+    if row['Status Code'] == "502":
+        folders_502.append(row['Folder Name'])
 
 missing_folder_strings = []
 html_result = "<ul>\n"
+
+if len(caught_404) == 0:
+    html_result += "<li>No folders with error code 404 were found to have uncaught data.</li>\n"
+
+for folder_name in folders_502:
+    missing_folders.append(folder_name)
+    html_result += f"<li><strong>A 502 Bad Gateway Error was encountered for folder {folder_name}. See below for further instructions.</strong></li>\n"
+
 for folder_name in caught_404:
-    html_result += f"<li><strong>{folder_name} was found to have uncaught data. Please add it manually.</strong></li>\n"
+    if folder_name != "51_4DASECR":
+        html_result += f"<li><strong>{folder_name} was found to have uncaught data. Please add it manually.</strong></li>\n"
 
 for folder_name in handled_500:
-    if handled_500[folder_name] == intended_chunks:
+    if handled_500[folder_name] == intended_chunks or (folder_name == "51_4DASECR" and handled_500[folder_name] == 2):
         html_result += f"<li>{folder_name} had an OutOfMemory Exception that was handled successfully.</li>\n"
     else:
         missing_folders.append(folder_name)
         missing_folder_strings.append(f"<li><strong>{folder_name} had an OutOfMemory Exception that was NOT handled successfully. {int(intended_chunks)} of {chunk_size}-hour data chunks were expected and only {handled_500[folder_name]} were found.</strong></li>\n")
 
 html_result += "".join(missing_folder_strings)
-if len(caught_404) == 0 and len(handled_500) == 0:
-    html_result += "<li>No folders with error code 404 or OutOfMemory Exceptions were found.</li>\n"
-elif len(handled_500) == 0:
-    html_result += "<li>No folders with OutOfMemory Exceptions were found.</li>\n"
-
 html_result += "</ul>"
 folder_string = " ".join(missing_folders)
 
