@@ -15,7 +15,7 @@ This script aims to automate the MIS downloading process via the ERCOT API.
 
 Currently, the process is sped up through futures and thread-lock synchronization. Running
 the script will extract all new files for the current day into the targeted directory
-in about seven minutes.
+in about nine minutes.
 """
 # Ignore warnings. Whatever.
 warnings.simplefilter("ignore")
@@ -33,11 +33,12 @@ days_back = 2
 chunk_size = 6
 
 # Yesterday and today's date
-yesterday = (date.today() - timedelta(days=days_back)).strftime('%Y-%m-%d')
-today = (date.today() - timedelta(days=0)).strftime('%Y-%m-%d')
+offset = 0
+yesterday = (date.today() - timedelta(days=days_back+offset)).strftime('%Y-%m-%d')
+today = (date.today() - timedelta(days=offset)).strftime('%Y-%m-%d')
 
 # Current temporary storage for downloaded files
-destination_folder = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Scheduled Downloads/"
+destination_folder = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS 2023\\"
 
 # Text file for invalid request numbers
 invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"

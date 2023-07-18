@@ -20,8 +20,9 @@ days_back = 2
 chunk_size = 6
 
 log_file = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
-yesterday = (date.today() - timedelta(days=days_back)).strftime('%Y-%m-%d')
-today = (date.today() - timedelta(days=0)).strftime('%Y-%m-%d')
+offset = 0
+yesterday = (date.today() - timedelta(days=days_back+offset)).strftime('%Y-%m-%d')
+today = (date.today() - timedelta(days=offset)).strftime('%Y-%m-%d')
 
 # Reference Excel Sheet for all the web data and requirements
 excel_path = "\\\\Pzpwuplancli01\\APP-DATA\\Task Scheduler\\MIS_Download_210125a_v3_via_API.xlsm"
@@ -98,7 +99,7 @@ for _, row in result_df.iterrows():
 missing_folder_strings = []
 html_result = "<ul>\n"
 
-if len(caught_404) == 0:
+if len(caught_404) == 0 or (len(caught_404) == 1 and caught_404[0] == "51_4DASECR"):
     html_result += "<li>No folders with error code 404 were found to have uncaught data.</li>\n"
 
 for folder_name in folders_502:
@@ -124,7 +125,7 @@ cmd_string = f"{pythonPath} {scriptPath} -r {folder_string} -c 4"
 instructions = f"""
 <h4 style="font-weight: normal;">To resolve this issue, follow these steps:</h4>
 <ol>
-    <li style="font-weight: normal;">Search for 'Anaconda Prompt' in the start menu. If it's not available, request IT to install 'Anaconda3'.</li>
+    <li style="font-weight: normal;">Search for 'Anaconda Prompt' in the start menu. If it's not available, request IT to install 'Anaconda'.</li>
     <li style="font-weight: normal;">Launch 'Anaconda Prompt' to open a command prompt window.</li>
     <li style="font-weight: normal;">Copy and paste the following command into the prompt:</li>
 </ol>
@@ -138,7 +139,7 @@ instructions = f"""
     <li style="font-weight: normal;">If you believe Anaconda3 is installed properly, but the path to the Python executable in the command line argument is invalid, 
     type 'where python' in the Anaconda Prompt and make the appropriate substitutions. For future convienience, consider changing line
     15 of the error checker script with this updated path.</li>
-    <li style="font-weight: normal;">After running the provided command, you can verify if the files were successfully downloaded by checking the contents of the log file located at {log_file}.</li>
+    <li style="font-weight: normal;">After running the provided command, you can verify if the files were successfully downloaded by checking the contents of the log file located at <strong>{log_file}</strong></li>
     <li style="font-weight: normal;">If running the command results in a 'missing package/import' error, take note of the package(s) mentioned in the error prompt. You can install all missing packages by running 'conda install (package_name)' in the Anaconda Prompt.
     <li style="font-weight: normal;">If you continue to encounter Out-of-Memory issues even after running the provided command, you can try reducing the chunk size by modifying the end of the command to "-c 1". This will query the API one hour at a time for each missing folder. If the issue persists, there may not be a realistic solution available.</li>
 </ol>"""

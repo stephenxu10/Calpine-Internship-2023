@@ -34,8 +34,9 @@ for zip_file in yearly_zip_files:
         with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
             df = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
             grouped_df = df.groupby(['Constraint_Name', 'Settlement_Point', 'Contingency_Name']).mean()['Shift_Factor'].reset_index()
-            grouped_df['Date'] = zip_date
+            grouped_df.insert(0, 'Date', zip_date)
             merge.append(grouped_df)
 
 df_merged = pd.concat(merge, axis=0)
+df_merged.rename(columns={'Shift_Factor': 'Average SF'})
 df_merged.to_csv(output_path, index=False)
