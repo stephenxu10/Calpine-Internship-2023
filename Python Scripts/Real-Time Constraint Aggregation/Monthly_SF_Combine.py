@@ -38,5 +38,5 @@ for zip_file in yearly_zip_files:
             merge.append(grouped_df)
 
 df_merged = pd.concat(merge, axis=0)
-df_merged.rename(columns={'Shift_Factor': 'Average SF'})
+df_merged.rename(columns={'Shift_Factor': 'Average_SF'}, inplace=True)
 df_merged.to_csv(output_path, index=False)
