@@ -145,7 +145,6 @@ def fetch_gas_data(pipeline: str, flow_point: Set[str], days_behind: int, datase
 
         # Add the API-key.
         final_url = f"{filtered_url}api_key={api_key}"
-        print(final_url)
 
         # Make a request to the API using the final URL.
         r = requests.get(final_url, verify=False)
@@ -193,7 +192,6 @@ else:
     
     pth_file.close()
 
-print(paths)
 merge = []
 
 # Group together the paths by the gas pipeline.
