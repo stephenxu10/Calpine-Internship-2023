@@ -15,9 +15,11 @@ if necessary.
 ## Projects
 
 A brief description of all the major projects and tasks in this repository:
+  - MIS Downloading
+      - An automated Python-based schematic designed to download new ERCOT (Electric Reliability Council of Texas) Market Information System (MIS) data on a daily basis. The schematic utilizes our ERCOT API to efficiently,         securely, and comprehensively request and retrieve all necessary data for analysis and decision-making. With advantages over the previous Excel VBA downloader, including detailed documentation, robust error-checking         procedures, enhanced error-handling capabilities, and significant speedups of 7-8 times faster, the project ensures timely and reliable data retrieval.
   - Network Topology
   - Gas Balancing
-  - Automation Tasks
+  - Aggregation Tasks
 
 ## Contact
 
