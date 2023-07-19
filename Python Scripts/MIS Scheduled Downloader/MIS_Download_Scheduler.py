@@ -40,6 +40,8 @@ today = (date.today() - timedelta(days=offset)).strftime('%Y-%m-%d')
 # Current temporary storage for downloaded files
 destination_folder = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS 2023\\"
 
+#destination_folder = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\MIS Scheduled Downloads\\"
+
 # Text file for invalid request numbers
 invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
 
@@ -142,6 +144,9 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
             # This statement will execute if an OOM Handler successfully worked on a folder.
             if u_h != l_h:
                 invalid_rid.write(f"Folder {folder_name} written to successfully from {l_d} Hour {l_h} to {u_d} Hour {u_h}.\n")
+            
+            else:
+                invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
 
             zip_file = zipfile.ZipFile(BytesIO(response.content))
             filtered_files = [filename for filename in zip_file.namelist() if file_type == 'all' or file_type in filename]

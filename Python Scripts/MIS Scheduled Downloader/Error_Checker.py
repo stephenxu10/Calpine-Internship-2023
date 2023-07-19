@@ -45,6 +45,7 @@ reportIDs = []
 descriptions = []
 codes = []
 handled_500 = {}
+successes = 0
 
 for row in rows:
     row_data = row.split(" ")
@@ -52,6 +53,10 @@ for row in rows:
         folders.append(row_data[1])
         reportIDs.append(row_data[0])
         codes.append(row_data[2])
+
+        if row_data[2] == "200":
+            successes += 1
+
         descriptions.append(full_mapping[row_data[1]][1])
     
     if "seconds" in row:
@@ -155,7 +160,7 @@ body = f"""
       <li style="font-weight: normal;">Queried Upper Bound Date: {today} {hour}:00:00</li>
       <li style="font-weight: normal;">Total Download Time: {runtime} seconds</li>
       <li style="font-weight: normal;">Request URL template: <a href="https://ercotapi.app.calpine.com/reports?reportId=(reportID)&marketParticipantId=CRRAH&startTime={yesterday}T{hour}:00:00&endTime={today}T{hour}:00:00&unzipFiles=false">https://ercotapi.app.calpine.com/reports?reportId=(reportID)&marketParticipantId=CRRAH&startTime={yesterday}T{hour}:00:00&endTime={today}T{hour}:00:00&unzipFiles=false</a></li>
-      <li style="font-weight: normal;">A total of {len(result_df)} folders out of 115 were not written to:
+      <li style="font-weight: normal;">A total of {len(result_df) - successes} folders out of 115 were not written to:
         <ul style="list-style-type: disc; margin-top: 0; padding-left: 2em;">
           {"".join(["<li>{0} folders were status code {1}</li>".format(status_count[code], code) for code in status_count])}
         </ul>
@@ -180,7 +185,7 @@ msg['Subject'] = "MIS Scheduled Download Error Checking Report"
 sender = 'Stephen.Xu@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
+receivers = ['Stephen.Xu@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)

@@ -24,7 +24,7 @@ start_time = time.time()
 year = 2023
 
 # How many days we look back
-days_back = 10
+days_back = 2
 
 # Flag that determines if we would like to update the RT_Constraint table as well.
 table_flag = False
