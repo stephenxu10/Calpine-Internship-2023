@@ -27,10 +27,20 @@ def find_node(nodes: List[Node], target: str) -> Union[int, None]:
     whose name matches the target node.
     """
     for i in range(len(nodes)):
-        if nodes[i].name == target:
+        raw_name = nodes[i].name.split("\n")[0]
+        if raw_name == target:
             return i
     
     return None
+
+def set_node_color(node: Node):
+    sim_score = float(node.name.split("\n")[1].strip())
+
+    if sim_score > 0.7:
+        return "color=red"
+
+    else:
+        return "color=black"
 
 def levenshtein(x: str, y: str, c_i: float = 1.0, c_d: float = 1.0, c_s: float = 1.0) -> float:
     """

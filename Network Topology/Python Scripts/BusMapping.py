@@ -18,7 +18,7 @@ import pandas as pd
 import numpy as np
 import time
 from anytree import Node, RenderTree
-from anytree.exporter import UniqueDotExporter
+from anytree.exporter import DotExporter
 from collections import deque
 
 os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
@@ -27,7 +27,7 @@ os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Ag
 from Graph import Network
 from Node import Bus
 from Edge import Edge
-from utils import levenshtein, optimal_matching, name_compare, find_node
+from utils import levenshtein, optimal_matching, name_compare, find_node, set_node_color
 from typing import *
 
 # Global parameters & variables
@@ -246,37 +246,56 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
     if len(curr) >= limit:
         return
     
-    for neighbor_1 in search_depth(net_1, node_1, 1)[0]:
-        for neighbor_2 in search_depth(net_2, node_2, 1)[0]:
-            if neighbor_1.name not in curr and neighbor_2.name not in curr.values():
-                if similiarity(net_1, neighbor_1.name, net_2, neighbor_2.name, 2) > threshold:
-                    # Add this new match the the current mapping
-                    curr[neighbor_1.name] = neighbor_2.name
+    neighbors_1 = list(search_depth(net_1, node_1, 1)[0])
+    neighbors_2 = list(search_depth(net_2, node_2, 1)[0])
+    similarities = []
+
+    for crr_n in neighbors_1:
+        for wecc_n in neighbors_2:   
+            similarities.append(similiarity(CRR_Network, crr_n.name, WECC_Network, wecc_n.name, depth=2))
+
+    np_sims = np.reshape(similarities, (len(neighbors_1), len(neighbors_2)))
+    _, row_indices, col_indices = optimal_matching(neighbors_1, neighbors_2, np_sims)
+    
+    for row, col in zip(row_indices, col_indices):
+        if row < len(neighbors_1) and col < len(neighbors_2):
+            similarity_score = np_sims[row, col]
+
+            crr_match = neighbors_1[row]
+            wecc_match = neighbors_2[col]
+
+            if similarity_score > threshold:
+                if crr_match.name not in curr and wecc_match.name not in curr.values():
+                    curr[crr_match.name] = wecc_match.name
 
                     # Add in the node!
-                    neighbor_node = Node(neighbor_1.name + " " + neighbor_2.name, parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+                    neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(similarity_score), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
                     tree_nodes.append(neighbor_node)
 
                     # Recurse on the neighbors.
-                    map_populate(net_1, neighbor_1.name, net_2, neighbor_2.name, curr, tree_nodes)
+                    map_populate(net_1, crr_match.name, net_2, wecc_match.name, curr, tree_nodes)
+            
+            else:
+                neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(similarity_score), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+                tree_nodes.append(neighbor_node)
 
 
 
 CRR_Network = build_graph(CRR_sheet)
 WECC_Network = build_graph(WECC_sheet)
 
-gt_1 = "TESLA 10"
-gt_2 = "TESLA"
+gt_1 = "MIDWAY10"
+gt_2 = "MIDWAY"
 
 curr_mapping = {gt_1: gt_2}
-tree_nodes = [Node(gt_1 + " " + gt_2)]
+tree_nodes = [Node(gt_1 + " " + gt_2 + "\n 1.0")]
 
 map_populate(CRR_Network, gt_1, WECC_Network, gt_2, curr_mapping, tree_nodes)
 
 for key, val in curr_mapping.items():
     print(key + " " + val)
 
-UniqueDotExporter(tree_nodes[0]).to_picture("recursive_bus_traversal.png")
+DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("recursive_bus_traversal.png")
 
 """
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
