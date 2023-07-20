@@ -21,10 +21,8 @@ from anytree import Node, RenderTree
 from anytree.exporter import UniqueDotExporter
 from collections import deque
 
-os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
+os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
 
-base_directory = os.getcwd()
-sys.path.append("/Python Scripts")
 
 from Graph import Network
 from Node import Bus
@@ -34,8 +32,8 @@ from typing import *
 
 # Global parameters & variables
 start_time = time.time()
-CRR_sheet = "./Input Data/CRR Buses and Branches.xlsx"
-WECC_sheet = "./Input Data/WECC Buses and Branches.xlsx"
+CRR_sheet = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Input Data/CRR Buses and Branches.xlsx"
+WECC_sheet = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Input Data/WECC Buses and Branches.xlsx"
 
 
 def extract_nodes(sheet_path: str, from_name: str, to_name: str, zone: List[str]) -> List[str]:
@@ -267,8 +265,8 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
 CRR_Network = build_graph(CRR_sheet)
 WECC_Network = build_graph(WECC_sheet)
 
-gt_1 = "MIDWAY10"
-gt_2 = "MIDWAY"
+gt_1 = "TESLA 10"
+gt_2 = "TESLA"
 
 curr_mapping = {gt_1: gt_2}
 tree_nodes = [Node(gt_1 + " " + gt_2)]

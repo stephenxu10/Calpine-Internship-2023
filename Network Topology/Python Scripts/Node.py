@@ -10,13 +10,14 @@ Stores the following attributes:
     2) Number
 """
 
-os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
+os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
 
 base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
 
 
 from utils import levenshtein, name_compare
+from typing import *
 
 class Bus:
     def __init__(self, name, num):
@@ -38,7 +39,7 @@ class Bus:
             return self.name == other.name and self.number == other.number
         return False
     
-    def simple_compare(self, other) -> tuple[float, float]:
+    def simple_compare(self, other) -> Tuple[float, float]:
         name_ratio = name_compare(self.name, other.name)
 
         if self.number == other.number:

@@ -6,12 +6,8 @@ import sys
 Basic representation of the Network Topology as an undirected graph. The basic form
 is an adjacency list - each node is mapped to its immediate neighbors.
 """
-"""
-os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology")
 
-base_directory = os.getcwd()
-sys.path.append("/Python Scripts")
-"""
+os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
 
 from Node import Bus
 from Edge import Edge

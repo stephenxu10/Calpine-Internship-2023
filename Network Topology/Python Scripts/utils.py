@@ -4,7 +4,7 @@ Some utility methods for the project
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from anytree import Node
-from typing import List, Dict, Tuple
+from typing import List, Dict, Tuple, Union
 import re
 
 def num_proximity(num1: float, num2: float) -> float:
@@ -21,7 +21,7 @@ def num_proximity(num1: float, num2: float) -> float:
         similarity = 1 - (abs_diff / max_diff)
         return similarity
     
-def find_node(nodes: List[Node], target: str) -> int | None:
+def find_node(nodes: List[Node], target: str) -> Union[int, None]:
     """
     Simple helper function to find the index in a list of nodes
     whose name matches the target node.
