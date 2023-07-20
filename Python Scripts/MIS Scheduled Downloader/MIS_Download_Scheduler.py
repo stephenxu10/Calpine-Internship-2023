@@ -38,9 +38,9 @@ yesterday = (date.today() - timedelta(days=days_back+offset)).strftime('%Y-%m-%d
 today = (date.today() - timedelta(days=offset)).strftime('%Y-%m-%d')
 
 # Current temporary storage for downloaded files
-destination_folder = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS 2023\\"
+# destination_folder = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS 2023\\"
 
-#destination_folder = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\MIS Scheduled Downloads\\"
+destination_folder = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\MIS Scheduled Downloads\\"
 
 # Text file for invalid request numbers
 invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
@@ -54,6 +54,10 @@ if days_back == 2:
 
 else:
     give_up = ["34_TC", "83_CTOR"]
+
+give_up.append("03_ASC")
+give_up.append("02_AAFRWP")
+give_up.append("130_SSPSF")
 
 invalid_rid = open(invalid_rid, "w")
 
@@ -120,7 +124,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
           report IDs and Types
         - folder_name: The requested folder name to extract.
         - lower_date, lower_hour: The lower-bound date in YYYY-MM-DD format and hour in '05' or '23' format.
-        - upper_date, upper_hour: Analagous to above.
+        - upper_date, upper_hour: Analogous to above.
         - handle: Boolean flag that determines if invalid requests should be handled. True by default.
 
     Output:
@@ -168,6 +172,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
             invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
         
     return
+
 
 # Create the folder mapping by reading the Excel sheet.
 webpage_partial = pd.read_excel(excel_path, sheet_name="List of Webpage", usecols=['Folder Name', 'Type Id', 'New Table Name'])
