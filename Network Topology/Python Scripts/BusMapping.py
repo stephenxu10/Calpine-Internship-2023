@@ -27,7 +27,7 @@ os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Ag
 from Graph import Network
 from Node import Bus
 from Edge import Edge
-from utils import levenshtein, optimal_matching, name_compare, find_node, set_node_color
+from utils import levenshtein, optimal_matching, name_compare, find_node, set_node_color, find_other_neighbor
 from typing import *
 
 # Global parameters & variables
@@ -225,7 +225,7 @@ def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int
     return sum(a * b for a, b in zip(scores, weights))
 
 
-def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], threshold=0.7, limit=1000):
+def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0.65, limit=1000):
     """
     A recursive algorithm to populate a set of mappings by starting from a ground truth of matching
     nodes. Recurses in a 'breadth-first' manner - begins by attempting to match the input nodes'
@@ -243,70 +243,96 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
     Output:
         Returns nothing, but populates the input curr mapping.
     """
+
     if len(curr) >= limit:
         print("Limit exceeded.")
         return
     
     neighbors_1 = list(search_depth(net_1, node_1, 1)[0])
     neighbors_2 = list(search_depth(net_2, node_2, 1)[0])
-    similarities = []
-
-    for crr_n in neighbors_1:
-        for wecc_n in neighbors_2:   
-            similarities.append(similiarity(CRR_Network, crr_n.name, WECC_Network, wecc_n.name, depth=2))
-
-    np_sims = np.reshape(similarities, (len(neighbors_1), len(neighbors_2)))
-    _, row_indices, col_indices = optimal_matching(neighbors_1, neighbors_2, np_sims)
     
-    for row, col in zip(row_indices, col_indices):
-        if row < len(neighbors_1) and col < len(neighbors_2):
-            similarity_score = np_sims[row, col]
+    if len(neighbors_1) == 2 and len(neighbors_2) == 2:
+        other_1 = find_other_neighbor(neighbors_1, curr, visited)
+        other_2 = find_other_neighbor(neighbors_2, curr, visited)
+        visited.add(other_1.name)
+        visited.add(other_2.name)
 
-            crr_match = neighbors_1[row]
-            wecc_match = neighbors_2[col]
+        print(other_1.name + " " + other_2.name)
+    
+        neighbor_node = Node(other_1.name + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+        tree_nodes.append(neighbor_node)
 
-            if similarity_score > threshold:
-                if crr_match.name not in curr and wecc_match.name not in curr.values():
-                    curr[crr_match.name] = wecc_match.name
+        map_populate(net_1, other_1.name, net_2, other_2.name, curr, tree_nodes, visited, float('inf'))
+    
+    elif len(neighbors_1) == 2:
+        other_1 = find_other_neighbor(neighbors_1, curr, visited)
+        neighbor_node = Node(other_1.name + " " + node_2 + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+        visited.add(other_1.name)
+        tree_nodes.append(neighbor_node)
+        print(other_1.name)
 
-                    # Add in the node!
-                    neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
-                    tree_nodes.append(neighbor_node)
+        map_populate(net_1, other_1.name, net_2, node_2, curr, tree_nodes, visited, float('inf'))
+    
+    elif len(neighbors_2) == 2:
+        other_2 = find_other_neighbor(neighbors_2, curr, visited)
+        neighbor_node = Node(node_1 + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+        visited.add(other_2.name)
+        tree_nodes.append(neighbor_node)
+        #print(node_1+ " " + other_2.name)
 
-                    # Recurse on the neighbors.
-                    map_populate(net_1, crr_match.name, net_2, wecc_match.name, curr, tree_nodes)
+        map_populate(net_1, node_1, net_2, other_2.name, curr, tree_nodes, visited, float('inf'))
+    
+    else:
+        similarities = []
+        if sim > threshold:
+            for crr_n in neighbors_1:
+                for wecc_n in neighbors_2:   
+                    similarities.append(similiarity(CRR_Network, crr_n.name, WECC_Network, wecc_n.name, depth=2))
+
+            np_sims = np.reshape(similarities, (len(neighbors_1), len(neighbors_2)))
+            _, row_indices, col_indices = optimal_matching(neighbors_1, neighbors_2, np_sims)
             
-            else:
-                neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
-                tree_nodes.append(neighbor_node)
+            for row, col in zip(row_indices, col_indices):
+                if row < len(neighbors_1) and col < len(neighbors_2):
+                    similarity_score = np_sims[row, col]
 
+                    crr_match = neighbors_1[row]
+                    wecc_match = neighbors_2[col]
 
+                    if crr_match.name not in curr and wecc_match.name not in curr.values() and crr_match.name != "VALLEY 9" and wecc_match.name not in visited:
+                        curr[crr_match.name] = wecc_match.name
+
+                        # Add in the node!
+                        idx = find_node(tree_nodes, node_1 + " " + node_2)
+                        neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[idx])
+                        tree_nodes.append(neighbor_node)
+
+                        # Recurse on the neighbors.
+                        print(crr_match.name + " " + wecc_match.name)
+                        map_populate(net_1, crr_match.name, net_2, wecc_match.name, curr, tree_nodes, visited, similarity_score)
+                    
 
 CRR_Network = build_graph(CRR_sheet)
 WECC_Network = build_graph(WECC_sheet)
-
-
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
-gt_1 = "MIDWAY10"
-gt_2 = "MIDWAY"
+
+gt_1 = "DEVERS 7"
+gt_2 = "DEVERS"
+visited = set()
 
 curr_mapping = {gt_1: gt_2}
 tree_nodes = [Node(gt_1 + " " + gt_2 + "\n 1.0")]
 
-map_populate(CRR_Network, gt_1, WECC_Network, gt_2, curr_mapping, tree_nodes)
+map_populate(CRR_Network, gt_1, WECC_Network, gt_2, curr_mapping, tree_nodes, visited, 1.0)
 
 for key, val in curr_mapping.items():
     print(key + " " + val)
 
-DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("recursive_bus_traversal.png")
+# DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("recursive_bus_traversal.png")
 
 
-
-"""
-pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
+"""pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
 pge_wecc = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", ["PG AND E", 'SOCALIF'])
-
-# print(similiarity(CRR_Network, "LUGO   6", WECC_Network, "LUGO", depth=1, verbose=True))
 
 output_df = pd.DataFrame()
 crr_nodes = []
@@ -326,9 +352,7 @@ output_df['Similarity'] = similarities
 np_sims = np.reshape(similarities, (len(pge_crr), len(pge_wecc)))
 optimal_matching(pge_crr, pge_wecc, np_sims, verbose=True)
 
-output_df.to_csv("./Input Data/Similiarity Table.csv", index=False)
-
-"""
+output_df.to_csv("./../Input Data/Similiarity Table.csv", index=False)"""
 
 # Output Summary Statistics
 end_time = time.time()
@@ -336,3 +360,4 @@ execution_time = end_time - start_time
 
 print("Generation Complete")
 print(f"The script took {execution_time:.2f} seconds to run.")
+

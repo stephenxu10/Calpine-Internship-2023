@@ -33,10 +33,27 @@ def find_node(nodes: List[Node], target: str) -> Union[int, None]:
     
     return None
 
-def set_node_color(node: Node):
-    sim_score = float(node.name.split("\n")[1].strip())
+def find_other_neighbor(neighbors: List, curr: Dict, visited):
+    if(neighbors[0].name in curr or neighbors[0].name in curr.values()):
+        return neighbors[1]
+    
+    if (neighbors[0].name in visited):
+        return neighbors[1]
+    else:
+        return neighbors[0]
 
-    if sim_score > 0.7:
+def set_node_color(node: Node):
+    """
+    Node coloring method for Graphviz.
+    """
+    score = node.name.split("\n")[1].strip()
+
+    if score == "":
+        return "color=blue"
+
+    sim_score = float(score)
+
+    if sim_score > 0.65:
         return "color=red"
 
     else:

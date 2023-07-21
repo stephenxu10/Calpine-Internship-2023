@@ -15,6 +15,8 @@ warnings.simplefilter("ignore")
 pythonPath = "C:/ProgramData/Anaconda3/python.exe"
 scriptPath = "\"//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/MIS_Download_Scheduler.py\""
 
+code_descriptions = {"200" : "Successful Request", "404": "Not Found", "500": "Out Of Memory", "502": "Bad Gateway"}
+
 missing_folders = []
 days_back = 2
 chunk_size = 6
@@ -162,7 +164,7 @@ body = f"""
       <li style="font-weight: normal;">Request URL template: <a href="https://ercotapi.app.calpine.com/reports?reportId=(reportID)&marketParticipantId=CRRAH&startTime={yesterday}T{hour}:00:00&endTime={today}T{hour}:00:00&unzipFiles=false">https://ercotapi.app.calpine.com/reports?reportId=(reportID)&marketParticipantId=CRRAH&startTime={yesterday}T{hour}:00:00&endTime={today}T{hour}:00:00&unzipFiles=false</a></li>
       <li style="font-weight: normal;">A total of {len(result_df) - successes} folders out of 115 were not written to:
         <ul style="list-style-type: disc; margin-top: 0; padding-left: 2em;">
-          {"".join(["<li>{0} folders were status code {1}</li>".format(status_count[code], code) for code in status_count])}
+          {"".join(["<li>{0} folders were status code {1} ({2})</li>".format(status_count[code], code, code_descriptions[code]) for code in status_count])}
         </ul>
       </li>
     </ol>
@@ -185,7 +187,7 @@ msg['Subject'] = "MIS Scheduled Download Error Checking Report"
 sender = 'Stephen.Xu@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
+receivers = ['Stephen.Xu@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
