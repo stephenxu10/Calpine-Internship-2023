@@ -107,7 +107,7 @@ def name_compare(x: str, y: str) -> float:
     Strips numbers from each string and compares them through their Edit Distance. Also
     accounts for a special case when a string is in the format XX_YY_##
     """
-    regex = r"[\w]+_[\w]+_[\d]*"
+    y_regex = r"[\w]+_[\w]+_[\d]*"
 
     x = re.sub(r'\d+', '', x)
     y = re.sub(r'\d+', '', y)
@@ -116,11 +116,12 @@ def name_compare(x: str, y: str) -> float:
 
     x = x.replace(' ', '')
     y = y.replace(' ', '')
-    if re.match(regex, x):
-        x_components = x.split("_")[:2]
 
-        if x_components[0][0] != y[0] and x_components[1][0] != y[0]:
-            return 0.3
+    if isSubsequence(x, y) or isSubsequence(y, x):
+        return 1.0
+    
+    if "_" in x:
+        x_components = x.split("_")[:2]
 
         for loc in x_components:
             if isSubsequence(loc, y):
@@ -128,7 +129,7 @@ def name_compare(x: str, y: str) -> float:
         
         return 0.3
     
-    elif re.match(regex, y):
+    elif re.match(y_regex, y):
         y_components = y.split("_")[:2]
 
         if y_components[0][0] != x[0] and y_components[1][0] != x[0]:

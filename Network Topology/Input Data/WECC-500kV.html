@@ -1,0 +1,250 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 1600px;
+                 height: 1000px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 1600px;
+                 height: 1000px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "sienna", "id": 26115, "label": "RINALDI2\n26115", "shape": "dot", "title": "RINALDI2", "x": 0.24908097893604259, "y": 0.15241815477059803}, {"color": "sienna", "id": 18437, "label": "LENZ CB1\n18437", "shape": "dot", "title": "LENZ CB1", "x": 0.33288925302995914, "y": 0.45979380231624895}, {"color": "sienna", "id": 18438, "label": "LENZ CB2\n18438", "shape": "dot", "title": "LENZ CB2", "x": 0.33288925302997263, "y": 0.4597938023162438}, {"color": "sienna", "id": 300551, "label": "GT_MW_11\n300551", "shape": "dot", "title": "GT_MW_11", "x": -0.5437218848506, "y": 0.0577433505000211}, {"color": "sienna", "id": 26119, "label": "ADELSVC\n26119", "shape": "dot", "title": "ADELSVC", "x": 0.25833601414788354, "y": 0.19004553633995827}, {"color": "sienna", "id": 26120, "label": "MKTPSVC\n26120", "shape": "dot", "title": "MKTPSVC", "x": 0.29760165194011, "y": 0.3310715469924431}, {"color": "sienna", "id": 999947, "label": "CRYMCC11\n999947", "shape": "dot", "title": "CRYMCC11", "x": 0.30807716653211104, "y": 0.3712153435762066}, {"color": "sienna", "id": 26123, "label": "CRYSTAL\n26123", "shape": "dot", "title": "CRYSTAL", "x": 0.3205667172529826, "y": 0.41177489959434765}, {"color": "sienna", "id": 24590, "label": "MW_VINCNT_12\n24590", "shape": "dot", "title": "MW_VINCNT_12", "x": -0.1526323469130966, "y": -0.15612274171660737}, {"color": "sienna", "id": 24591, "label": "MW_VINCNT_11\n24591", "shape": "dot", "title": "MW_VINCNT_11", "x": -0.3079095651985327, "y": -0.0778767489780488}, {"color": "sienna", "id": 24592, "label": "MW_VINCNT_22\n24592", "shape": "dot", "title": "MW_VINCNT_22", "x": -0.1526323469130967, "y": -0.15612274171661059}, {"color": "sienna", "id": 24593, "label": "MW_VINCNT_21\n24593", "shape": "dot", "title": "MW_VINCNT_21", "x": -0.3079095651985318, "y": -0.07787674897805054}, {"color": "sienna", "id": 18450, "label": "H ALLEN\n18450", "shape": "dot", "title": "H ALLEN", "x": 0.32425291368271975, "y": 0.42672858534038466}, {"color": "sienna", "id": 300051, "label": "RM_TM_11\n300051", "shape": "dot", "title": "RM_TM_11", "x": -0.7563093436658349, "y": 0.21748889555548626}, {"color": "sienna", "id": 300052, "label": "RM_TM_12\n300052", "shape": "dot", "title": "RM_TM_12", "x": -0.7559488856372906, "y": 0.21721066934235367}, {"color": "sienna", "id": 300053, "label": "RM_TM_21\n300053", "shape": "dot", "title": "RM_TM_21", "x": -0.7563093436658334, "y": 0.21748889555548623}, {"color": "sienna", "id": 300054, "label": "RM_TM_22\n300054", "shape": "dot", "title": "RM_TM_22", "x": -0.7559488856372908, "y": 0.217210669342355}, {"color": "sienna", "id": 18451, "label": "NWEST\n18451", "shape": "dot", "title": "NWEST", "x": 0.3350114770273299, "y": 0.46865062764907517}, {"color": "sienna", "id": 18452, "label": "CRSTL N\n18452", "shape": "dot", "title": "CRSTL N", "x": 0.32248666425215416, "y": 0.4195200814170146}, {"color": "sienna", "id": 24086, "label": "LUGO\n24086", "shape": "dot", "title": "LUGO", "x": 0.19097799629575507, "y": 0.034079407919276154}, {"color": "sienna", "id": 24594, "label": "MW_WRLWND_32\n24594", "shape": "dot", "title": "MW_WRLWND_32", "x": -0.1989211761980649, "y": -0.28691094026930175}, {"color": "sienna", "id": 24595, "label": "MW_WRLWND_31\n24595", "shape": "dot", "title": "MW_WRLWND_31", "x": -0.3310594964848764, "y": -0.14331270325971968}, {"color": "sienna", "id": 24092, "label": "MIRALOMA\n24092", "shape": "dot", "title": "MIRALOMA", "x": 0.20136167279651024, "y": -0.0851948192702928}, {"color": "sienna", "id": 18461, "label": "LAUGHLIN1\n18461", "shape": "dot", "title": "LAUGHLIN1", "x": 0.291717527771461, "y": 0.328547720424523}, {"color": "sienna", "id": 999966, "label": "MCCVIC21\n999966", "shape": "dot", "title": "MCCVIC21", "x": 0.27254755841030315, "y": 0.25466398775829846}, {"color": "sienna", "id": 999967, "label": "MCCVIC11\n999967", "shape": "dot", "title": "MCCVIC11", "x": 0.27254755841030337, "y": 0.2546639877582999}, {"color": "sienna", "id": 999968, "label": "MARADE11\n999968", "shape": "dot", "title": "MARADE11", "x": 0.27777000202455404, "y": 0.26005780878534573}, {"color": "sienna", "id": 18462, "label": "LAUGHLIN2\n18462", "shape": "dot", "title": "LAUGHLIN2", "x": 0.2917175277714631, "y": 0.32854772042452274}, {"color": "sienna", "id": 24097, "label": "MOHAVE\n24097", "shape": "dot", "title": "MOHAVE", "x": 0.28779807789639184, "y": 0.31637050861790345}, {"color": "sienna", "id": 29240, "label": "ELD_LUGO_11\n29240", "shape": "dot", "title": "ELD_LUGO_11", "x": 0.27759834455282234, "y": 0.2854239530276506}, {"color": "sienna", "id": 29241, "label": "ELD_LUGO_12\n29241", "shape": "dot", "title": "ELD_LUGO_12", "x": 0.25611604536921, "y": 0.22293523697826817}, {"color": "sienna", "id": 29242, "label": "ELD_LUGO_13\n29242", "shape": "dot", "title": "ELD_LUGO_13", "x": 0.23451168094130484, "y": 0.16016132739475442}, {"color": "sienna", "id": 29243, "label": "ELD_LUGO_14\n29243", "shape": "dot", "title": "ELD_LUGO_14", "x": 0.21279554793762806, "y": 0.09718252882369963}, {"color": "sienna", "id": 999996, "label": "NAVCRY12\n999996", "shape": "dot", "title": "NAVCRY12", "x": 0.31912631295540517, "y": 0.39879167387002723}, {"color": "sienna", "id": 999997, "label": "NAVCRY11\n999997", "shape": "dot", "title": "NAVCRY11", "x": 0.31753381263708025, "y": 0.385298287399487}, {"color": "sienna", "id": 25660, "label": "MIRA81X2\n25660", "shape": "dot", "title": "MIRA81X2", "x": 0.20686430296571695, "y": -0.08409339229124432}, {"color": "sienna", "id": 29244, "label": "LGO_MOHVE_11\n29244", "shape": "dot", "title": "LGO_MOHVE_11", "x": 0.21056123814814864, "y": 0.09091509557347675}, {"color": "sienna", "id": 29245, "label": "LGO_MOHVE_12\n29245", "shape": "dot", "title": "LGO_MOHVE_12", "x": 0.2300441262373267, "y": 0.14763447861040596}, {"color": "sienna", "id": 29246, "label": "LGO_MOHVE_13\n29246", "shape": "dot", "title": "LGO_MOHVE_13", "x": 0.2494173749931866, "y": 0.20416499783519543}, {"color": "sienna", "id": 29247, "label": "LGO_MOHVE_14\n29247", "shape": "dot", "title": "LGO_MOHVE_14", "x": 0.2686717510998721, "y": 0.2604343356600966}, {"color": "sienna", "id": 29248, "label": "DEL_CLRVR_11\n29248", "shape": "dot", "title": "DEL_CLRVR_11", "x": 0.30184743064457664, "y": 0.25493287257776914}, {"color": "sienna", "id": 29249, "label": "DEL_CLRVR_12\n29249", "shape": "dot", "title": "DEL_CLRVR_12", "x": 0.2966954887010813, "y": 0.2239135503897444}, {"color": "sienna", "id": 29250, "label": "PV_CLRVR_11\n29250", "shape": "dot", "title": "PV_CLRVR_11", "x": 0.30298470748430123, "y": 0.26114023485887095}, {"color": "sienna", "id": 29251, "label": "PV_CLRVR_12\n29251", "shape": "dot", "title": "PV_CLRVR_12", "x": 0.2972642626601526, "y": 0.22701921801825195}, {"color": "sienna", "id": 29252, "label": "DVRS_RB_11\n29252", "shape": "dot", "title": "DVRS_RB_11", "x": 0.2623876480826959, "y": 0.05100778985740017}, {"color": "sienna", "id": 29253, "label": "DVRS_RB_12\n29253", "shape": "dot", "title": "DVRS_RB_12", "x": 0.2704751199880342, "y": 0.0873854645895139}, {"color": "sienna", "id": 29254, "label": "DVRS_RB_21\n29254", "shape": "dot", "title": "DVRS_RB_21", "x": 0.2623876480826972, "y": 0.05100778985740062}, {"color": "sienna", "id": 24138, "label": "SERRANO\n24138", "shape": "dot", "title": "SERRANO", "x": 0.2150714157948099, "y": -0.12960141690831684}, {"color": "sienna", "id": 29255, "label": "DVRS_RB_22\n29255", "shape": "dot", "title": "DVRS_RB_22", "x": 0.2704751199880343, "y": 0.08738546458951307}, {"color": "sienna", "id": 24151, "label": "VALLEYSC\n24151", "shape": "dot", "title": "VALLEYSC", "x": 0.23672742718482778, "y": -0.05894419006439002}, {"color": "sienna", "id": 26200, "label": "COPPMTN3\n26200", "shape": "dot", "title": "COPPMTN3", "x": 0.2984611340330599, "y": 0.3336815559337935}, {"color": "sienna", "id": 24156, "label": "VINCENT\n24156", "shape": "dot", "title": "VINCENT", "x": 0.002717616149750956, "y": -0.23416901189414818}, {"color": "sienna", "id": 19038, "label": "MEAD\n19038", "shape": "dot", "title": "MEAD", "x": 0.31717427221729133, "y": 0.3957054753989354}, {"color": "sienna", "id": 366700, "label": "DALLASES\n366700", "shape": "dot", "title": "DALLASES", "x": -0.7407219334543248, "y": 0.2043006218952442}, {"color": "sienna", "id": 300151, "label": "TM_VD_11\n300151", "shape": "dot", "title": "TM_VD_11", "x": -0.7557300829120619, "y": 0.2170504745936845}, {"color": "sienna", "id": 300152, "label": "TM_VD_12\n300152", "shape": "dot", "title": "TM_VD_12", "x": -0.7558718424970451, "y": 0.21716871098988574}, {"color": "sienna", "id": 300153, "label": "TM_TS_11\n300153", "shape": "dot", "title": "TM_TS_11", "x": -0.7518430500096844, "y": 0.21403392367263335}, {"color": "sienna", "id": 300154, "label": "TM_TS_12\n300154", "shape": "dot", "title": "TM_TS_12", "x": -0.7480996292572808, "y": 0.2111394681196974}, {"color": "sienna", "id": 26231, "label": "APEX\n26231", "shape": "dot", "title": "APEX", "x": 0.3231037705029426, "y": 0.42168863523967337}, {"color": "sienna", "id": 37508, "label": "TCY MP1\n37508", "shape": "dot", "title": "TCY MP1", "x": -0.7497059596634765, "y": 0.21248838674646528}, {"color": "sienna", "id": 37510, "label": "TCY MP2\n37510", "shape": "dot", "title": "TCY MP2", "x": -0.7497059596634786, "y": 0.21248838674646603}, {"color": "sienna", "id": 26263, "label": "RING2DUM\n26263", "shape": "dot", "title": "RING2DUM", "x": 0.2420294172704559, "y": 0.12806284896747197}, {"color": "sienna", "id": 26264, "label": "VIC KDUM\n26264", "shape": "dot", "title": "VIC KDUM", "x": 0.25899032136215383, "y": 0.19901710215011034}, {"color": "sienna", "id": 26274, "label": "ADL PF BUS 1\n26274", "shape": "dot", "title": "ADL PF BUS 1", "x": 0.2582127734181603, "y": 0.18980179426808816}, {"color": "sienna", "id": 26275, "label": "ADL PF BUS 2\n26275", "shape": "dot", "title": "ADL PF BUS 2", "x": 0.25821277341816073, "y": 0.18980179426808833}, {"color": "sienna", "id": 26276, "label": "ADL PF BUS 3\n26276", "shape": "dot", "title": "ADL PF BUS 3", "x": 0.25821277341815924, "y": 0.18980179426808882}, {"color": "sienna", "id": 26277, "label": "ADL PF BUS 4\n26277", "shape": "dot", "title": "ADL PF BUS 4", "x": 0.2582127734181607, "y": 0.18980179426808805}, {"color": "sienna", "id": 300201, "label": "OL_MX_11\n300201", "shape": "dot", "title": "OL_MX_11", "x": -0.739489863891747, "y": 0.20427775546676236}, {"color": "sienna", "id": 300202, "label": "OL_MX_12\n300202", "shape": "dot", "title": "OL_MX_12", "x": -0.7387848121527004, "y": 0.20375476943959797}, {"color": "sienna", "id": 24236, "label": "RANCHVST\n24236", "shape": "dot", "title": "RANCHVST", "x": 0.2040612285067859, "y": -0.03737636285292094}, {"color": "sienna", "id": 15021, "label": "PALOVRDE\n15021", "shape": "dot", "title": "PALOVRDE", "x": 0.3085607493981155, "y": 0.29492718379934635}, {"color": "sienna", "id": 14001, "label": "FOURCORN\n14001", "shape": "dot", "title": "FOURCORN", "x": 0.3141333398128245, "y": 0.36679893277999964}, {"color": "sienna", "id": 14002, "label": "MOENKOPI\n14002", "shape": "dot", "title": "MOENKOPI", "x": 0.3127857497321109, "y": 0.36257462832576237}, {"color": "sienna", "id": 14003, "label": "NAVAJO\n14003", "shape": "dot", "title": "NAVAJO", "x": 0.3157899752857517, "y": 0.371312001817218}, {"color": "sienna", "id": 14005, "label": "WESTWING\n14005", "shape": "dot", "title": "WESTWING", "x": 0.31466505447222715, "y": 0.33499354265181464}, {"color": "sienna", "id": 14006, "label": "YAVAPAI\n14006", "shape": "dot", "title": "YAVAPAI", "x": 0.3144825732202185, "y": 0.34772915649065783}, {"color": "sienna", "id": 15031, "label": "PERK PS1\n15031", "shape": "dot", "title": "PERK PS1", "x": 0.3158947558264297, "y": 0.35199111419607976}, {"color": "sienna", "id": 15032, "label": "PERK PS2\n15032", "shape": "dot", "title": "PERK PS2", "x": 0.3158947558264278, "y": 0.35199111419608087}, {"color": "sienna", "id": 14010, "label": "SNVLY\n14010", "shape": "dot", "title": "SNVLY", "x": 0.3100121073327082, "y": 0.3066527550270571}, {"color": "sienna", "id": 14011, "label": "MORGAN\n14011", "shape": "dot", "title": "MORGAN", "x": 0.31302095078168923, "y": 0.32728715178604084}, {"color": "sienna", "id": 14012, "label": "DELANEY\n14012", "shape": "dot", "title": "DELANEY", "x": 0.30685551170537473, "y": 0.28562606773499}, {"color": "sienna", "id": 15034, "label": "PERKINS\n15034", "shape": "dot", "title": "PERKINS", "x": 0.31574419997005865, "y": 0.3515408238283379}, {"color": "sienna", "id": 14014, "label": "CEDARMT\n14014", "shape": "dot", "title": "CEDARMT", "x": 0.3141664687710666, "y": 0.35343363943633294}, {"color": "sienna", "id": 14016, "label": "PNPKAPS\n14016", "shape": "dot", "title": "PNPKAPS", "x": 0.3131702081150349, "y": 0.3277063755061494}, {"color": "sienna", "id": 14018, "label": "DUGAS\n14018", "shape": "dot", "title": "DUGAS", "x": 0.31393798967633757, "y": 0.3389580228176966}, {"color": "sienna", "id": 15061, "label": "RUDD\n15061", "shape": "dot", "title": "RUDD", "x": 0.3087078799799968, "y": 0.2953049574775403}, {"color": "sienna", "id": 29400, "label": "ANTELOPE\n29400", "shape": "dot", "title": "ANTELOPE", "x": -0.016821544612414446, "y": -0.4229651761992305}, {"color": "sienna", "id": 29401, "label": "WINDHUB\n29401", "shape": "dot", "title": "WINDHUB", "x": -0.04558894854076447, "y": -0.6019230741896614}, {"color": "sienna", "id": 29402, "label": "WIRLWIND\n29402", "shape": "dot", "title": "WIRLWIND", "x": -0.0666880498168833, "y": -0.4301421417839702}, {"color": "sienna", "id": 300251, "label": "MX_TR_11\n300251", "shape": "dot", "title": "MX_TR_11", "x": -0.7363188950759944, "y": 0.2019278300472708}, {"color": "sienna", "id": 24801, "label": "DEVERS\n24801", "shape": "dot", "title": "DEVERS", "x": 0.25417512187896385, "y": 0.014564862579055505}, {"color": "sienna", "id": 14068, "label": "YAV-WW SC1\n14068", "shape": "dot", "title": "YAV-WW SC1", "x": 0.31464879486108843, "y": 0.34157983535606656}, {"color": "sienna", "id": 14069, "label": "MOEN-CM SC1\n14069", "shape": "dot", "title": "MOEN-CM SC1", "x": 0.31355082862037686, "y": 0.35823327175580055}, {"color": "sienna", "id": 14070, "label": "NAV-DUG SC1\n14070", "shape": "dot", "title": "NAV-DUG SC1", "x": 0.3153228319371917, "y": 0.36098453672167524}, {"color": "sienna", "id": 14071, "label": "NAV-DUG SC2\n14071", "shape": "dot", "title": "NAV-DUG SC2", "x": 0.3147054053119378, "y": 0.3501952762760982}, {"color": "sienna", "id": 14072, "label": "NAV-MOEN SC1\n14072", "shape": "dot", "title": "NAV-MOEN SC1", "x": 0.3143627753651649, "y": 0.3671781744024643}, {"color": "sienna", "id": 14073, "label": "FC-MOEN SC1\n14073", "shape": "dot", "title": "FC-MOEN SC1", "x": 0.3135342601929902, "y": 0.36492019560577305}, {"color": "sienna", "id": 14077, "label": "MOEN-ELD SC1\n14077", "shape": "dot", "title": "MOEN-ELD SC1", "x": 0.30954606064993806, "y": 0.3595030420383783}, {"color": "sienna", "id": 14078, "label": "MOEN-ELD SC2\n14078", "shape": "dot", "title": "MOEN-ELD SC2", "x": 0.3061588415078736, "y": 0.3559715556271735}, {"color": "sienna", "id": 14079, "label": "MOEN-ELD SC3\n14079", "shape": "dot", "title": "MOEN-ELD SC3", "x": 0.3026257066590141, "y": 0.3519846868036741}, {"color": "sienna", "id": 159997, "label": "PL-RCTR1\n159997", "shape": "dot", "title": "PL-RCTR1", "x": 0.30870787997999594, "y": 0.29530495747753693}, {"color": "sienna", "id": 159998, "label": "PL-RCTR2\n159998", "shape": "dot", "title": "PL-RCTR2", "x": 0.3087078799799968, "y": 0.29530495747754165}, {"color": "sienna", "id": 159999, "label": "PL-RCTR3\n159999", "shape": "dot", "title": "PL-RCTR3", "x": 0.30870787997999566, "y": 0.2953049574775387}, {"color": "sienna", "id": 300301, "label": "VD_TS_11\n300301", "shape": "dot", "title": "VD_TS_11", "x": -0.7500052346430098, "y": 0.2126280238000693}, {"color": "sienna", "id": 26105, "label": "VICTORVL\n26105", "shape": "dot", "title": "VICTORVL", "x": 0.24952443446735342, "y": 0.17882128817940574}, {"color": "sienna", "id": 24374, "label": "REDBLUFF\n24374", "shape": "dot", "title": "REDBLUFF", "x": 0.2784336830952192, "y": 0.12365135004229706}, {"color": "sienna", "id": 30015, "label": "TABLE MTN\n30015", "shape": "dot", "title": "TABLE MTN", "x": -0.7552281413749705, "y": 0.21665457284150666}, {"color": "sienna", "id": 24384, "label": "EAST TS\n24384", "shape": "dot", "title": "EAST TS", "x": 0.1579791093896459, "y": -0.13916201664439487}, {"color": "sienna", "id": 24385, "label": "WEST TS\n24385", "shape": "dot", "title": "WEST TS", "x": 0.13616970885692675, "y": -0.1658957910948919}, {"color": "sienna", "id": 24386, "label": "MESA CAL\n24386", "shape": "dot", "title": "MESA CAL", "x": 0.11429540966175651, "y": -0.19241734065173347}, {"color": "sienna", "id": 24900, "label": "COLRIVER\n24900", "shape": "dot", "title": "COLRIVER", "x": 0.2914021412971966, "y": 0.19260778314421237}, {"color": "sienna", "id": 30020, "label": "OLINDA\n30020", "shape": "dot", "title": "OLINDA", "x": -0.7398424737884466, "y": 0.2045394158469985}, {"color": "sienna", "id": 30025, "label": "MAXWELL\n30025", "shape": "dot", "title": "MAXWELL", "x": -0.7377276545998908, "y": 0.20297112680389712}, {"color": "sienna", "id": 30030, "label": "VACA-DIX\n30030", "shape": "dot", "title": "VACA-DIX", "x": -0.7556533525671052, "y": 0.2170091307742734}, {"color": "sienna", "id": 30035, "label": "TRACY\n30035", "shape": "dot", "title": "TRACY", "x": -0.7345592049976517, "y": 0.20062621382409307}, {"color": "sienna", "id": 30040, "label": "TESLA\n30040", "shape": "dot", "title": "TESLA", "x": -0.7439996632370254, "y": 0.20797490896211956}, {"color": "sienna", "id": 26970, "label": "MOAPA\n26970", "shape": "dot", "title": "MOAPA", "x": 0.32241835042244205, "y": 0.41826792149391473}, {"color": "sienna", "id": 30042, "label": "METCALF\n30042", "shape": "dot", "title": "METCALF", "x": -0.7499658392555056, "y": 0.21191999386602559}, {"color": "sienna", "id": 30045, "label": "MOSSLAND\n30045", "shape": "dot", "title": "MOSSLAND", "x": -0.7364600088969185, "y": 0.20111296243324306}, {"color": "sienna", "id": 30050, "label": "LOSBANOS\n30050", "shape": "dot", "title": "LOSBANOS", "x": -0.6927154554644539, "y": 0.16799490226535269}, {"color": "sienna", "id": 22885, "label": "SUNCREST\n22885", "shape": "dot", "title": "SUNCREST", "x": 0.28374396975573496, "y": -0.6359754027864134}, {"color": "sienna", "id": 30055, "label": "GATES\n30055", "shape": "dot", "title": "GATES", "x": -0.6241445977553409, "y": 0.11494396301765433}, {"color": "sienna", "id": 22888, "label": "SNCRSMP1\n22888", "shape": "dot", "title": "SNCRSMP1", "x": 0.28367635338103064, "y": -0.6355686118385065}, {"color": "sienna", "id": 22889, "label": "SNCRSMP2\n22889", "shape": "dot", "title": "SNCRSMP2", "x": 0.283676353381029, "y": -0.6355686118385098}, {"color": "sienna", "id": 30057, "label": "DIABLOCNYNSS\n30057", "shape": "dot", "title": "DIABLOCNYNSS", "x": -0.5445019647370268, "y": 0.057967007782843374}, {"color": "sienna", "id": 30060, "label": "MIDWAY\n30060", "shape": "dot", "title": "MIDWAY", "x": -0.4630400333799621, "y": 0.00046886886047278677}, {"color": "sienna", "id": 29040, "label": "IEEC\n29040", "shape": "dot", "title": "IEEC", "x": 0.2372934386886907, "y": -0.05932462412495466}, {"color": "sienna", "id": 30066, "label": "TABLE MTN5M\n30066", "shape": "dot", "title": "TABLE MTN5M", "x": -0.7563098599524128, "y": 0.21748996836429452}, {"color": "sienna", "id": 30069, "label": "L.BANS M\n30069", "shape": "dot", "title": "L.BANS M", "x": -0.7152038554258611, "y": 0.18322920055969755}, {"color": "sienna", "id": 64895, "label": "ROBINSON\n64895", "shape": "dot", "title": "ROBINSON", "x": 0.327532556030678, "y": 0.438523778288944}, {"color": "sienna", "id": 22930, "label": "ECO\n22930", "shape": "dot", "title": "ECO", "x": 0.28469688947837013, "y": -0.6418372523622606}, {"color": "sienna", "id": 26003, "label": "ADELANTO\n26003", "shape": "dot", "title": "ADELANTO", "x": 0.25808970887051874, "y": 0.18955898723038034}, {"color": "sienna", "id": 26011, "label": "ADELANTX\n26011", "shape": "dot", "title": "ADELANTX", "x": 0.25821277341816, "y": 0.18980179426808694}, {"color": "sienna", "id": 26012, "label": "ADELANTY\n26012", "shape": "dot", "title": "ADELANTY", "x": 0.25821277341815996, "y": 0.18980179426808932}, {"color": "sienna", "id": 999868, "label": "MEAPER11\n999868", "shape": "dot", "title": "MEAPER11", "x": 0.31684851614549353, "y": 0.38146564073894335}, {"color": "sienna", "id": 999869, "label": "MEAPER12\n999869", "shape": "dot", "title": "MEAPER12", "x": 0.316371749653903, "y": 0.3667378099429112}, {"color": "sienna", "id": 26044, "label": "MARKETPL\n26044", "shape": "dot", "title": "MARKETPL", "x": 0.2973179096300541, "y": 0.3302239471513659}, {"color": "sienna", "id": 26048, "label": "MCCULLGH\n26048", "shape": "dot", "title": "MCCULLGH", "x": 0.29544078582822175, "y": 0.3301809042816687}, {"color": "sienna", "id": 22468, "label": "MIGUEL\n22468", "shape": "dot", "title": "MIGUEL", "x": 0.2842898934103128, "y": -0.6393750604560432}, {"color": "sienna", "id": 999878, "label": "EASMIR11\n999878", "shape": "dot", "title": "EASMIR11", "x": 0.17971321687091746, "y": -0.11225021691677024}, {"color": "sienna", "id": 999879, "label": "VINMES11\n999879", "shape": "dot", "title": "VINMES11", "x": 0.05852045836949284, "y": -0.21342969297899478}, {"color": "sienna", "id": 22472, "label": "MIGUELMP\n22472", "shape": "dot", "title": "MIGUELMP", "x": 0.28410885519957235, "y": -0.6382782943565433}, {"color": "sienna", "id": 999885, "label": "ECOMIG11\n999885", "shape": "dot", "title": "ECOMIG11", "x": 0.28456120256616446, "y": -0.6410161715998746}, {"color": "sienna", "id": 26062, "label": "RINALDI\n26062", "shape": "dot", "title": "RINALDI", "x": 0.24387453978120624, "y": 0.14071549621369359}, {"color": "sienna", "id": 18896, "label": "RSHASC1\n18896", "shape": "dot", "title": "RSHASC1", "x": 0.32659482373414495, "y": 0.4351470389532111}, {"color": "sienna", "id": 18897, "label": "RSHASC2\n18897", "shape": "dot", "title": "RSHASC2", "x": 0.3255014359148052, "y": 0.431213630678153}, {"color": "sienna", "id": 300501, "label": "LB_GT_11\n300501", "shape": "dot", "title": "LB_GT_11", "x": -0.6585869683178224, "y": 0.14155997909633503}, {"color": "sienna", "id": 300502, "label": "LB_MW_11\n300502", "shape": "dot", "title": "LB_MW_11", "x": -0.6357237405228086, "y": 0.12630217774851427}, {"color": "sienna", "id": 300503, "label": "LB_MW_12\n300503", "shape": "dot", "title": "LB_MW_12", "x": -0.5784290388097769, "y": 0.08444787911298038}, {"color": "sienna", "id": 300504, "label": "LB_MW_13\n300504", "shape": "dot", "title": "LB_MW_13", "x": -0.5208586570555909, "y": 0.042485549152201846}, {"color": "sienna", "id": 26079, "label": "TOLUCA\n26079", "shape": "dot", "title": "TOLUCA", "x": 0.25450588120393014, "y": 0.1640209491539243}, {"color": "sienna", "id": 18400, "label": "SLHWK\n18400", "shape": "dot", "title": "SLHWK", "x": 0.32580816626611997, "y": 0.43228208164495635}, {"color": "sienna", "id": 24042, "label": "ELDORDO\n24042", "shape": "dot", "title": "ELDORDO", "x": 0.2989483400000814, "y": 0.3475475358347743}, {"color": "sienna", "id": 18425, "label": "HA CC\n18425", "shape": "dot", "title": "HA CC", "x": 0.3258081662662024, "y": 0.4322820816449099}, {"color": "sienna", "id": 24572, "label": "HAE SVC\n24572", "shape": "dot", "title": "HAE SVC", "x": 0.3159673059880021, "y": 0.40083641904053574}, {"color": "sienna", "id": 24573, "label": "HAE SVCL\n24573", "shape": "dot", "title": "HAE SVCL", "x": 0.3075311078594122, "y": 0.37443147622089507}, {"color": "sienna", "id": 18430, "label": "LENZIE\n18430", "shape": "dot", "title": "LENZIE", "x": 0.33130019872017286, "y": 0.45388686494725466}]);
+                  edges = new vis.DataSet([{"from": 26115, "to": 26003}, {"from": 18437, "to": 18430}, {"from": 18438, "to": 18430}, {"from": 300551, "to": 30055}, {"from": 300551, "to": 30060}, {"from": 26119, "to": 26003}, {"from": 26120, "to": 26044}, {"from": 999947, "to": 26048}, {"from": 999947, "to": 26123}, {"from": 26123, "to": 18452}, {"dashes": [5, 5], "from": 26123, "to": 26231}, {"from": 26123, "to": 26970}, {"from": 26123, "to": 999996}, {"from": 24590, "to": 24156}, {"from": 24590, "to": 24591}, {"from": 24591, "to": 30060}, {"from": 24592, "to": 24156}, {"from": 24592, "to": 24593}, {"from": 24593, "to": 30060}, {"from": 18450, "to": 18400}, {"from": 18450, "to": 18425}, {"from": 18450, "to": 18430}, {"from": 18450, "to": 18452}, {"from": 18450, "to": 18897}, {"from": 18450, "to": 19038}, {"from": 18450, "to": 24572}, {"from": 18450, "to": 26231}, {"from": 300051, "to": 300052}, {"from": 300052, "to": 30015}, {"from": 300053, "to": 300054}, {"from": 300054, "to": 30015}, {"from": 18451, "to": 18430}, {"from": 24086, "to": 24092}, {"from": 24086, "to": 24156}, {"from": 24086, "to": 24236}, {"from": 24086, "to": 26105}, {"from": 24086, "to": 29243}, {"from": 24086, "to": 29244}, {"from": 24594, "to": 24595}, {"from": 24594, "to": 29402}, {"from": 24595, "to": 30060}, {"from": 24092, "to": 24138}, {"from": 24092, "to": 25660}, {"from": 24092, "to": 999878}, {"from": 18461, "to": 24097}, {"from": 999966, "to": 26048}, {"from": 999966, "to": 26105}, {"from": 999967, "to": 26048}, {"from": 999967, "to": 26105}, {"from": 999968, "to": 26003}, {"from": 999968, "to": 26044}, {"from": 18462, "to": 24097}, {"from": 24097, "to": 24042}, {"from": 24097, "to": 29247}, {"from": 29240, "to": 24042}, {"from": 29240, "to": 29241}, {"from": 29241, "to": 29242}, {"from": 29242, "to": 29243}, {"from": 999996, "to": 999997}, {"from": 999997, "to": 14003}, {"from": 25660, "to": 24138}, {"from": 25660, "to": 24236}, {"from": 29244, "to": 29245}, {"from": 29245, "to": 29246}, {"from": 29246, "to": 29247}, {"dashes": [5, 5], "from": 29248, "to": 14012}, {"dashes": [5, 5], "from": 29248, "to": 29249}, {"dashes": [5, 5], "from": 29249, "to": 24900}, {"from": 29250, "to": 15021}, {"from": 29250, "to": 29251}, {"from": 29251, "to": 24900}, {"from": 29252, "to": 24801}, {"from": 29252, "to": 29253}, {"from": 29253, "to": 24374}, {"from": 29254, "to": 24801}, {"from": 29254, "to": 29255}, {"from": 24138, "to": 24151}, {"from": 29255, "to": 24374}, {"from": 24151, "to": 24801}, {"dashes": [5, 5], "from": 24151, "to": 29040}, {"from": 26200, "to": 26044}, {"from": 24156, "to": 29400}, {"from": 24156, "to": 29402}, {"from": 24156, "to": 999879}, {"from": 19038, "to": 26044}, {"from": 19038, "to": 999868}, {"from": 366700, "to": 30045}, {"from": 300151, "to": 30015}, {"from": 300151, "to": 300152}, {"from": 300152, "to": 30030}, {"from": 300153, "to": 30015}, {"from": 300153, "to": 300154}, {"from": 300154, "to": 30040}, {"from": 37508, "to": 30035}, {"from": 37510, "to": 30035}, {"from": 26263, "to": 26062}, {"from": 26264, "to": 26105}, {"from": 26274, "to": 26003}, {"from": 26275, "to": 26003}, {"from": 26276, "to": 26003}, {"from": 26277, "to": 26003}, {"from": 300201, "to": 30020}, {"from": 300201, "to": 300202}, {"from": 300202, "to": 30025}, {"from": 15021, "to": 14005}, {"from": 15021, "to": 14012}, {"from": 15021, "to": 15061}, {"from": 15021, "to": 159997}, {"from": 15021, "to": 159998}, {"from": 15021, "to": 159999}, {"from": 14001, "to": 14073}, {"from": 14002, "to": 14069}, {"from": 14002, "to": 14072}, {"from": 14002, "to": 14073}, {"from": 14002, "to": 14077}, {"from": 14003, "to": 14070}, {"from": 14003, "to": 14072}, {"from": 14005, "to": 14011}, {"from": 14005, "to": 14068}, {"from": 14005, "to": 15034}, {"from": 14006, "to": 14014}, {"from": 14006, "to": 14068}, {"dashes": [5, 5], "from": 15031, "to": 15034}, {"dashes": [5, 5], "from": 15032, "to": 15034}, {"from": 14010, "to": 14011}, {"from": 14010, "to": 14012}, {"from": 14011, "to": 14016}, {"from": 14011, "to": 14018}, {"from": 15034, "to": 999869}, {"from": 14014, "to": 14069}, {"from": 14018, "to": 14071}, {"from": 29400, "to": 29401}, {"from": 29400, "to": 29402}, {"from": 29401, "to": 29402}, {"from": 300251, "to": 30025}, {"from": 300251, "to": 30035}, {"from": 14070, "to": 14071}, {"from": 14077, "to": 14078}, {"from": 14078, "to": 14079}, {"from": 14079, "to": 24042}, {"from": 300301, "to": 30030}, {"from": 300301, "to": 30040}, {"from": 26105, "to": 26003}, {"from": 26105, "to": 26062}, {"from": 24374, "to": 24900}, {"from": 30015, "to": 30066}, {"from": 24384, "to": 24385}, {"from": 24384, "to": 999878}, {"from": 24385, "to": 24386}, {"from": 24386, "to": 999879}, {"from": 30035, "to": 30040}, {"from": 30035, "to": 30050}, {"from": 30040, "to": 30042}, {"from": 30040, "to": 30050}, {"from": 30042, "to": 30045}, {"from": 30045, "to": 30050}, {"from": 30050, "to": 30055}, {"from": 30050, "to": 30069}, {"from": 30050, "to": 300501}, {"from": 30050, "to": 300502}, {"from": 22885, "to": 22888}, {"from": 22885, "to": 22889}, {"from": 30055, "to": 30057}, {"from": 30055, "to": 300501}, {"from": 30057, "to": 30060}, {"from": 30060, "to": 300504}, {"from": 64895, "to": 18896}, {"from": 22930, "to": 999885}, {"from": 26003, "to": 26011}, {"from": 26003, "to": 26012}, {"from": 26003, "to": 26079}, {"from": 999868, "to": 999869}, {"from": 26044, "to": 26048}, {"from": 26048, "to": 24042}, {"from": 22468, "to": 22472}, {"from": 22468, "to": 999885}, {"from": 18896, "to": 18897}, {"from": 300502, "to": 300503}, {"from": 300503, "to": 300504}, {"from": 24042, "to": 24573}, {"dashes": [5, 5], "from": 24572, "to": 24573}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

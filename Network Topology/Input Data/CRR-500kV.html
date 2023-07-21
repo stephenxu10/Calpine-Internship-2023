@@ -1,0 +1,250 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 1600px;
+                 height: 1000px;
+                 background-color: #ffffff;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+             #loadingBar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width: 1600px;
+                 height: 1000px;
+                 background-color:rgba(200,200,200,0.8);
+                 -webkit-transition: all 0.5s ease;
+                 -moz-transition: all 0.5s ease;
+                 -ms-transition: all 0.5s ease;
+                 -o-transition: all 0.5s ease;
+                 transition: all 0.5s ease;
+                 opacity:1;
+             }
+
+             #bar {
+                 position:absolute;
+                 top:0px;
+                 left:0px;
+                 width:20px;
+                 height:20px;
+                 margin:auto auto auto auto;
+                 border-radius:11px;
+                 border:2px solid rgba(30,30,30,0.05);
+                 background: rgb(0, 173, 246); /* Old browsers */
+                 box-shadow: 2px 0px 4px rgba(0,0,0,0.4);
+             }
+
+             #border {
+                 position:absolute;
+                 top:10px;
+                 left:10px;
+                 width:500px;
+                 height:23px;
+                 margin:auto auto auto auto;
+                 box-shadow: 0px 0px 4px rgba(0,0,0,0.2);
+                 border-radius:10px;
+             }
+
+             #text {
+                 position:absolute;
+                 top:8px;
+                 left:530px;
+                 width:30px;
+                 height:50px;
+                 margin:auto auto auto auto;
+                 font-size:22px;
+                 color: #000000;
+             }
+
+             div.outerBorder {
+                 position:relative;
+                 top:400px;
+                 width:600px;
+                 height:44px;
+                 margin:auto auto auto auto;
+                 border:8px solid rgba(0,0,0,0.1);
+                 background: rgb(252,252,252); /* Old browsers */
+                 background: -moz-linear-gradient(top,  rgba(252,252,252,1) 0%, rgba(237,237,237,1) 100%); /* FF3.6+ */
+                 background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(252,252,252,1)), color-stop(100%,rgba(237,237,237,1))); /* Chrome,Safari4+ */
+                 background: -webkit-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Chrome10+,Safari5.1+ */
+                 background: -o-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* Opera 11.10+ */
+                 background: -ms-linear-gradient(top,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* IE10+ */
+                 background: linear-gradient(to bottom,  rgba(252,252,252,1) 0%,rgba(237,237,237,1) 100%); /* W3C */
+                 filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#fcfcfc', endColorstr='#ededed',GradientType=0 ); /* IE6-9 */
+                 border-radius:72px;
+                 box-shadow: 0px 0px 10px rgba(0,0,0,0.2);
+             }
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+            <div id="loadingBar">
+              <div class="outerBorder">
+                <div id="text">0%</div>
+                <div id="border">
+                  <div id="bar"></div>
+                </div>
+              </div>
+            </div>
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "sienna", "id": 11264, "label": "MEAD_Z 8\n11264", "shape": "dot", "title": "MEAD_Z 8", "x": 0.2406208294649334, "y": 0.2751058605673264}, {"color": "sienna", "id": 88584, "label": "H ALLE 5\n88584", "shape": "dot", "title": "H ALLE 5", "x": 0.2438002286503639, "y": 0.315654269799495}, {"color": "sienna", "id": 5643, "label": "CM3_PP 3\n5643", "shape": "dot", "title": "CM3_PP 3", "x": 0.23144555336612913, "y": 0.27924183893901894}, {"color": "sienna", "id": 5644, "label": "CRY_LA 2\n5644", "shape": "dot", "title": "CRY_LA 2", "x": 0.24248325331258827, "y": 0.3154288438974042}, {"color": "sienna", "id": 5645, "label": "CRY_LA 1\n5645", "shape": "dot", "title": "CRY_LA 1", "x": 0.24318193167013114, "y": 0.3177279249125735}, {"color": "sienna", "id": 10772, "label": "WES_WI 4\n10772", "shape": "dot", "title": "WES_WI 4", "x": 0.24365749879668114, "y": 0.21725293443141724}, {"color": "sienna", "id": 24086, "label": "LUGO   6\n24086", "shape": "dot", "title": "LUGO   6", "x": 0.16549230769240664, "y": 0.11163759559924052}, {"color": "sienna", "id": 10263, "label": "RUDD   2\n10263", "shape": "dot", "title": "RUDD   2", "x": 0.24149493953465617, "y": 0.18430826270045242}, {"color": "sienna", "id": 12312, "label": "ECONTY 6\n12312", "shape": "dot", "title": "ECONTY 6", "x": 0.2761308333768038, "y": -0.9765819481117377}, {"color": "sienna", "id": 11290, "label": "PERKIN 1\n11290", "shape": "dot", "title": "PERKIN 1", "x": 0.24254467432942595, "y": 0.23633901538098287}, {"color": "sienna", "id": 6171, "label": "SLVRHW 4\n6171", "shape": "dot", "title": "SLVRHW 4", "x": 0.24440296804700692, "y": 0.3176314536372555}, {"color": "sienna", "id": 24092, "label": "MIRLOM10\n24092", "shape": "dot", "title": "MIRLOM10", "x": 0.16032362460365626, "y": -0.04338074672392285}, {"color": "sienna", "id": 24097, "label": "MOHAVE 1\n24097", "shape": "dot", "title": "MOHAVE 1", "x": 0.19499055351763467, "y": 0.18836606038015508}, {"color": "sienna", "id": 28195, "label": "RDBLUF 8\n28195", "shape": "dot", "title": "RDBLUF 8", "x": 0.2226359638951951, "y": 0.0061058729453680105}, {"color": "sienna", "id": 29241, "label": "NEWSPR 4\n29241", "shape": "dot", "title": "NEWSPR 4", "x": 0.18132966752862426, "y": 0.15280179085936155}, {"color": "sienna", "id": 29246, "label": "LUDLO  1\n29246", "shape": "dot", "title": "LUDLO  1", "x": 0.18027841200212433, "y": 0.15007931734832894}, {"color": "sienna", "id": 2114, "label": "MXL    2\n2114", "shape": "dot", "title": "MXL    2", "x": -0.5464538386148052, "y": -0.01426815733645449}, {"color": "sienna", "id": 2115, "label": "MXL    3\n2115", "shape": "dot", "title": "MXL    3", "x": -0.5466781241581831, "y": -0.01428290651421941}, {"color": "sienna", "id": 16962, "label": "PALVER 3\n16962", "shape": "dot", "title": "PALVER 3", "x": 0.2344026585097729, "y": 0.11333192430858581}, {"color": "sienna", "id": 16963, "label": "PALVER 4\n16963", "shape": "dot", "title": "PALVER 4", "x": 0.23794807143572153, "y": 0.14880176069146617}, {"color": "sienna", "id": 16964, "label": "PALVER 5\n16964", "shape": "dot", "title": "PALVER 5", "x": 0.2414949395346562, "y": 0.18430826270045267}, {"color": "sienna", "id": 16965, "label": "PALVER 7\n16965", "shape": "dot", "title": "PALVER 7", "x": 0.2414949395346574, "y": 0.18430826270045197}, {"color": "sienna", "id": 16966, "label": "PALVER 8\n16966", "shape": "dot", "title": "PALVER 8", "x": 0.24149493953465742, "y": 0.18430826270045242}, {"color": "sienna", "id": 24138, "label": "SERRAN 6\n24138", "shape": "dot", "title": "SERRAN 6", "x": 0.18733843984328036, "y": -0.16728987530058342}, {"color": "sienna", "id": 88655, "label": "ADL_CS 1\n88655", "shape": "dot", "title": "ADL_CS 1", "x": 0.20461119840019765, "y": 0.22063020251717083}, {"color": "sienna", "id": 88656, "label": "ADL_CS 2\n88656", "shape": "dot", "title": "ADL_CS 2", "x": 0.20461119840019734, "y": 0.22063020251717305}, {"color": "sienna", "id": 88657, "label": "ADL_CS 1\n88657", "shape": "dot", "title": "ADL_CS 1", "x": 0.20461119840019776, "y": 0.22063020251717103}, {"color": "sienna", "id": 88658, "label": "ADL_CS 2\n88658", "shape": "dot", "title": "ADL_CS 2", "x": 0.20461119840019706, "y": 0.22063020251717222}, {"color": "sienna", "id": 1110, "label": "MCLLAZ 1\n1110", "shape": "dot", "title": "MCLLAZ 1", "x": 0.23875918157809564, "y": 0.304785329726469}, {"color": "sienna", "id": 24151, "label": "VALLEY 9\n24151", "shape": "dot", "title": "VALLEY 9", "x": 0.20223481144653144, "y": -0.12106978156448892}, {"color": "sienna", "id": 24156, "label": "VINCNT 9\n24156", "shape": "dot", "title": "VINCNT 9", "x": 0.03814196620342348, "y": 0.01884422866023409}, {"color": "sienna", "id": 2157, "label": "TRY    6\n2157", "shape": "dot", "title": "TRY    6", "x": -0.5444366487240881, "y": -0.014135643086552978}, {"color": "sienna", "id": 2158, "label": "TRY    7\n2158", "shape": "dot", "title": "TRY    7", "x": -0.5460053595456547, "y": -0.014238674211596025}, {"color": "sienna", "id": 2159, "label": "TRY    8\n2159", "shape": "dot", "title": "TRY    8", "x": -0.5453328709481546, "y": -0.014194487585256165}, {"color": "sienna", "id": 17517, "label": "PERKIN 2\n17517", "shape": "dot", "title": "PERKIN 2", "x": 0.24163231912293434, "y": 0.2558545414823021}, {"color": "sienna", "id": 5749, "label": "MCC_LA 8\n5749", "shape": "dot", "title": "MCC_LA 8", "x": 0.2385632299936463, "y": 0.30415553404091034}, {"color": "sienna", "id": 1142, "label": "MK     9\n1142", "shape": "dot", "title": "MK     9", "x": 0.21749673198451788, "y": 0.248142460597261}, {"color": "sienna", "id": 5751, "label": "MCC_LA 3\n5751", "shape": "dot", "title": "MCC_LA 3", "x": 0.2256350082110316, "y": 0.2666124839414053}, {"color": "sienna", "id": 5752, "label": "MCC_LA 4\n5752", "shape": "dot", "title": "MCC_LA 4", "x": 0.22204119590625024, "y": 0.25814803805719955}, {"color": "sienna", "id": 5753, "label": "MCC_LA 9\n5753", "shape": "dot", "title": "MCC_LA 9", "x": 0.22582034078457006, "y": 0.26716454160043057}, {"color": "sienna", "id": 5754, "label": "MCC_LA11\n5754", "shape": "dot", "title": "MCC_LA11", "x": 0.2259130260843305, "y": 0.26744071302351846}, {"color": "sienna", "id": 1143, "label": "MK     7\n1143", "shape": "dot", "title": "MK     7", "x": 0.21776472221952398, "y": 0.24891331273192285}, {"color": "sienna", "id": 1144, "label": "MK     8\n1144", "shape": "dot", "title": "MK     8", "x": 0.217675379923038, "y": 0.24865627354359196}, {"color": "sienna", "id": 5750, "label": "MCC_LA 6\n5750", "shape": "dot", "title": "MCC_LA 6", "x": 0.23434937979342985, "y": 0.29193834368459265}, {"color": "sienna", "id": 5755, "label": "MCC_LA10\n5755", "shape": "dot", "title": "MCC_LA10", "x": 0.22591302608433012, "y": 0.2674407130235182}, {"color": "sienna", "id": 5760, "label": "MKP    3\n5760", "shape": "dot", "title": "MKP    3", "x": 0.2149659283006114, "y": 0.2429678260535462}, {"color": "sienna", "id": 5761, "label": "MKP    4\n5761", "shape": "dot", "title": "MKP    4", "x": 0.22026392728055558, "y": 0.25444972697821067}, {"color": "sienna", "id": 5762, "label": "MKP    1\n5762", "shape": "dot", "title": "MKP    1", "x": 0.23058668577160346, "y": 0.2766136744062757}, {"color": "sienna", "id": 1668, "label": "WESTAZ 1\n1668", "shape": "dot", "title": "WESTAZ 1", "x": 0.2435574103020201, "y": 0.2170278922609032}, {"color": "sienna", "id": 1674, "label": "WILLAZ 1\n1674", "shape": "dot", "title": "WILLAZ 1", "x": 0.21740727960424738, "y": 0.24788462291919483}, {"color": "sienna", "id": 1675, "label": "WILLOW 1\n1675", "shape": "dot", "title": "WILLOW 1", "x": 0.21722885169782094, "y": 0.24737240447951167}, {"color": "sienna", "id": 5772, "label": "MOA_PP 2\n5772", "shape": "dot", "title": "MOA_PP 2", "x": 0.24378990300547104, "y": 0.31977519994948894}, {"color": "sienna", "id": 15506, "label": "ADL_CS 7\n15506", "shape": "dot", "title": "ADL_CS 7", "x": 0.20419133156968755, "y": 0.21949009663970917}, {"color": "sienna", "id": 1173, "label": "MRG    3\n1173", "shape": "dot", "title": "MRG    3", "x": 0.24365737557310477, "y": 0.21725223678467817}, {"color": "sienna", "id": 15511, "label": "ADL_CS12\n15511", "shape": "dot", "title": "ADL_CS12", "x": 0.20419133156968844, "y": 0.2194900966397075}, {"color": "sienna", "id": 15517, "label": "ADL_CS18\n15517", "shape": "dot", "title": "ADL_CS18", "x": 0.2041913315696887, "y": 0.21949009663970806}, {"color": "sienna", "id": 15520, "label": "ADL_CS21\n15520", "shape": "dot", "title": "ADL_CS21", "x": 0.20419133156968863, "y": 0.21949009663970834}, {"color": "sienna", "id": 11945, "label": "TBLMTN 7\n11945", "shape": "dot", "title": "TBLMTN 7", "x": -0.5473892512059728, "y": -0.014323871634247183}, {"color": "sienna", "id": 15530, "label": "CRY_LA 3\n15530", "shape": "dot", "title": "CRY_LA 3", "x": 0.2428824161556644, "y": 0.31674192545173985}, {"color": "sienna", "id": 24238, "label": "RVISTA 6\n24238", "shape": "dot", "title": "RVISTA 6", "x": 0.16979031388949425, "y": 0.0040980078457355995}, {"color": "sienna", "id": 11952, "label": "TBLMTN12\n11952", "shape": "dot", "title": "TBLMTN12", "x": -0.5478388669790654, "y": -0.014353531172036946}, {"color": "sienna", "id": 180, "label": "MESAS 13\n180", "shape": "dot", "title": "MESAS 13", "x": 0.1374117922249208, "y": -0.04717522892661807}, {"color": "sienna", "id": 99002, "label": "ELDORD15\n99002", "shape": "dot", "title": "ELDORD15", "x": 0.2165149931532914, "y": 0.2453224635058853}, {"color": "sienna", "id": 5820, "label": "RIN    5\n5820", "shape": "dot", "title": "RIN    5", "x": 0.19742465808141726, "y": 0.20376149751938236}, {"color": "sienna", "id": 99005, "label": "LOSBNS 5\n99005", "shape": "dot", "title": "LOSBNS 5", "x": -0.5235727941906347, "y": -0.012734282395141494}, {"color": "sienna", "id": 99006, "label": "TESLA 11\n99006", "shape": "dot", "title": "TESLA 11", "x": -0.5446771259244888, "y": -0.014148298118358644}, {"color": "sienna", "id": 5821, "label": "RIN    4\n5821", "shape": "dot", "title": "RIN    4", "x": 0.20035498242771707, "y": 0.21203927190222335}, {"color": "sienna", "id": 11965, "label": "TESLA 12\n11965", "shape": "dot", "title": "TESLA 12", "x": -0.546715058135527, "y": -0.014279420616249558}, {"color": "sienna", "id": 11966, "label": "TESLA 13\n11966", "shape": "dot", "title": "TESLA 13", "x": -0.5458165643688191, "y": -0.01422022402018341}, {"color": "sienna", "id": 99013, "label": "CACAPS 2\n99013", "shape": "dot", "title": "CACAPS 2", "x": 0.21427182327869818, "y": -0.04790143101168147}, {"color": "sienna", "id": 99014, "label": "CACAPS 1\n99014", "shape": "dot", "title": "CACAPS 1", "x": 0.2142718232786991, "y": -0.047901431011681414}, {"color": "sienna", "id": 1227, "label": "NV     2\n1227", "shape": "dot", "title": "NV     2", "x": 0.24338167697380578, "y": 0.31838582409209437}, {"color": "sienna", "id": 1230, "label": "NV     6\n1230", "shape": "dot", "title": "NV     6", "x": 0.24348157011721414, "y": 0.31871494361373354}, {"color": "sienna", "id": 1745, "label": "WW     9\n1745", "shape": "dot", "title": "WW     9", "x": 0.2433575207725845, "y": 0.21657943488168419}, {"color": "sienna", "id": 1746, "label": "WW    12\n1746", "shape": "dot", "title": "WW    12", "x": 0.24365737557310416, "y": 0.21725223678467975}, {"color": "sienna", "id": 1747, "label": "WW    10\n1747", "shape": "dot", "title": "WW    10", "x": 0.2435574103020185, "y": 0.21702789226090236}, {"color": "sienna", "id": 1748, "label": "WW    11\n1748", "shape": "dot", "title": "WW    11", "x": 0.24355741030201994, "y": 0.21702789226090313}, {"color": "sienna", "id": 8401, "label": "VICTPG 1\n8401", "shape": "dot", "title": "VICTPG 1", "x": 0.19878261786882337, "y": 0.20250639788327823}, {"color": "sienna", "id": 11990, "label": "VACADX 9\n11990", "shape": "dot", "title": "VACADX 9", "x": -0.5514766622464067, "y": -0.014597715561418333}, {"color": "sienna", "id": 11991, "label": "VACADX10\n11991", "shape": "dot", "title": "VACADX10", "x": -0.5469534332521523, "y": -0.014296541305280882}, {"color": "sienna", "id": 11992, "label": "VACADX11\n11992", "shape": "dot", "title": "VACADX11", "x": -0.5489883294791889, "y": -0.014431976377751194}, {"color": "sienna", "id": 11993, "label": "VACADX12\n11993", "shape": "dot", "title": "VACADX12", "x": -0.5512504080076088, "y": -0.014582641297538416}, {"color": "sienna", "id": 88790, "label": "MKP    1\n88790", "shape": "dot", "title": "MKP    1", "x": 0.2307760855648198, "y": 0.27718644089976535}, {"color": "sienna", "id": 88794, "label": "MCC_LA 3\n88794", "shape": "dot", "title": "MCC_LA 3", "x": 0.22591314033415302, "y": 0.26744157183695766}, {"color": "sienna", "id": 88795, "label": "MCC_LA 3\n88795", "shape": "dot", "title": "MCC_LA 3", "x": 0.22572761744321834, "y": 0.2668880846953915}, {"color": "sienna", "id": 29400, "label": "ANTLPE 6\n29400", "shape": "dot", "title": "ANTLPE 6", "x": 0.01790741327822007, "y": 0.021964259502251112}, {"color": "sienna", "id": 29401, "label": "WINHUB11\n29401", "shape": "dot", "title": "WINHUB11", "x": -0.004813235173042433, "y": 0.025984190391506203}, {"color": "sienna", "id": 29402, "label": "WHIRWD 8\n29402", "shape": "dot", "title": "WHIRWD 8", "x": -0.026953708597049847, "y": 0.02055032581479081}, {"color": "sienna", "id": 24801, "label": "DEVERS 7\n24801", "shape": "dot", "title": "DEVERS 7", "x": 0.21130639598086132, "y": -0.0658296987463739}, {"color": "sienna", "id": 88802, "label": "MEAD_Z 7\n88802", "shape": "dot", "title": "MEAD_Z 7", "x": 0.2397073500931112, "y": 0.2946820114602201}, {"color": "sienna", "id": 5859, "label": "TOL_LA 4\n5859", "shape": "dot", "title": "TOL_LA 4", "x": 0.2062823434924709, "y": 0.22737141005176445}, {"color": "sienna", "id": 15589, "label": "MCC_LA 5\n15589", "shape": "dot", "title": "MCC_LA 5", "x": 0.2300393831120192, "y": 0.2794196845394832}, {"color": "sienna", "id": 15590, "label": "MCC_LA 7\n15590", "shape": "dot", "title": "MCC_LA 7", "x": 0.225820340784569, "y": 0.2671645416004311}, {"color": "sienna", "id": 15605, "label": "MKP    2\n15605", "shape": "dot", "title": "MKP    2", "x": 0.22547155861556745, "y": 0.2656688715618172}, {"color": "sienna", "id": 15607, "label": "MOA_PP 2\n15607", "shape": "dot", "title": "MOA_PP 2", "x": 0.24509708899733204, "y": 0.3241260488857283}, {"color": "sienna", "id": 1274, "label": "PALVAZ 1\n1274", "shape": "dot", "title": "PALVAZ 1", "x": 0.24149493953465712, "y": 0.18430826270045203}, {"color": "sienna", "id": 5883, "label": "VIC_LA 6\n5883", "shape": "dot", "title": "VIC_LA 6", "x": 0.2183562867968343, "y": 0.24941701678800257}, {"color": "sienna", "id": 5884, "label": "VIC_LA 7\n5884", "shape": "dot", "title": "VIC_LA 7", "x": 0.21458179268983096, "y": 0.24042843618279305}, {"color": "sienna", "id": 5885, "label": "VIC_LA 5\n5885", "shape": "dot", "title": "VIC_LA 5", "x": 0.210719262146314, "y": 0.23119157825801778}, {"color": "sienna", "id": 5886, "label": "VIC_LA 8\n5886", "shape": "dot", "title": "VIC_LA 8", "x": 0.20677027984604732, "y": 0.22171598141256285}, {"color": "sienna", "id": 5887, "label": "VIC_LA 9\n5887", "shape": "dot", "title": "VIC_LA 9", "x": 0.21217076542408111, "y": 0.23447127837167342}, {"color": "sienna", "id": 5888, "label": "VIC_LA 3\n5888", "shape": "dot", "title": "VIC_LA 3", "x": 0.19861947537237448, "y": 0.20208794711401387}, {"color": "sienna", "id": 88836, "label": "LAUGHL 1\n88836", "shape": "dot", "title": "LAUGHL 1", "x": 0.19853801116934752, "y": 0.19760891943877362}, {"color": "sienna", "id": 88837, "label": "ADL_CS 1\n88837", "shape": "dot", "title": "ADL_CS 1", "x": 0.20461119840019698, "y": 0.22063020251717197}, {"color": "sienna", "id": 88838, "label": "ADL_CS 2\n88838", "shape": "dot", "title": "ADL_CS 2", "x": 0.204611198400197, "y": 0.22063020251717083}, {"color": "sienna", "id": 1299, "label": "PL     7\n1299", "shape": "dot", "title": "PL     7", "x": 0.2414949395346575, "y": 0.18430826270045186}, {"color": "sienna", "id": 1300, "label": "PL     4\n1300", "shape": "dot", "title": "PL     4", "x": 0.24149493953465656, "y": 0.1843082627004527}, {"color": "sienna", "id": 1301, "label": "PL     6\n1301", "shape": "dot", "title": "PL     6", "x": 0.24149493953465717, "y": 0.18430826270045186}, {"color": "sienna", "id": 1302, "label": "PL     5\n1302", "shape": "dot", "title": "PL     5", "x": 0.2414949395346581, "y": 0.18430826270045178}, {"color": "sienna", "id": 15650, "label": "VIC_LA 4\n15650", "shape": "dot", "title": "VIC_LA 4", "x": 0.2027364659373463, "y": 0.21201143057795482}, {"color": "sienna", "id": 806, "label": "DLN    2\n806", "shape": "dot", "title": "DLN    2", "x": 0.24149493953465861, "y": 0.18430826270045259}, {"color": "sienna", "id": 25903, "label": "LAUGHL 1\n25903", "shape": "dot", "title": "LAUGHL 1", "x": 0.19837506942358904, "y": 0.1972005886145756}, {"color": "sienna", "id": 15664, "label": "CRYSTA 6\n15664", "shape": "dot", "title": "CRYSTA 6", "x": 0.24455888317151875, "y": 0.3201018330493401}, {"color": "sienna", "id": 15665, "label": "CRYSTA 7\n15665", "shape": "dot", "title": "CRYSTA 7", "x": 0.24455888317151925, "y": 0.32010183304934287}, {"color": "sienna", "id": 11572, "label": "GATES  9\n11572", "shape": "dot", "title": "GATES  9", "x": -0.33900440749268784, "y": -0.0009802294189749376}, {"color": "sienna", "id": 11573, "label": "GATES 10\n11573", "shape": "dot", "title": "GATES 10", "x": -0.467060046809378, "y": -0.009084943811693969}, {"color": "sienna", "id": 11574, "label": "GATES 11\n11574", "shape": "dot", "title": "GATES 11", "x": -0.35966659998037703, "y": -0.002333448162143735}, {"color": "sienna", "id": 11575, "label": "GATES 12\n11575", "shape": "dot", "title": "GATES 12", "x": -0.48251044226751444, "y": -0.00999014745102116}, {"color": "sienna", "id": 11576, "label": "GATES 13\n11576", "shape": "dot", "title": "GATES 13", "x": -0.46232879152216755, "y": -0.008650206916647607}, {"color": "sienna", "id": 11577, "label": "GATES 14\n11577", "shape": "dot", "title": "GATES 14", "x": -0.3235540120345499, "y": -7.502577964737693e-05}, {"color": "sienna", "id": 11578, "label": "GATES 15\n11578", "shape": "dot", "title": "GATES 15", "x": -0.4314343394370748, "y": -0.006840734392371684}, {"color": "sienna", "id": 11579, "label": "GATES 16\n11579", "shape": "dot", "title": "GATES 16", "x": -0.39056105206547037, "y": -0.004142920686419594}, {"color": "sienna", "id": 12088, "label": "CACAPS 3\n12088", "shape": "dot", "title": "CACAPS 3", "x": 0.2199377695192765, "y": -0.011915064587867842}, {"color": "sienna", "id": 12089, "label": "CACAPS 4\n12089", "shape": "dot", "title": "CACAPS 4", "x": 0.21993776951927713, "y": -0.011915064587867754}, {"color": "sienna", "id": 12090, "label": "CACAPS 5\n12090", "shape": "dot", "title": "CACAPS 5", "x": 0.21714934131111854, "y": -0.029923698084419904}, {"color": "sienna", "id": 12091, "label": "CACAPS 6\n12091", "shape": "dot", "title": "CACAPS 6", "x": 0.2171493413111183, "y": -0.029923698084419945}, {"color": "sienna", "id": 15677, "label": "H ALLE 6\n15677", "shape": "dot", "title": "H ALLE 6", "x": 0.22062003090703372, "y": 0.25512737458202084}, {"color": "sienna", "id": 15679, "label": "H ALLE10\n15679", "shape": "dot", "title": "H ALLE10", "x": 0.24370012264687527, "y": 0.3153276366244145}, {"color": "sienna", "id": 15678, "label": "H ALLE 9\n15678", "shape": "dot", "title": "H ALLE 9", "x": 0.2283748102167601, "y": 0.2753768269506103}, {"color": "sienna", "id": 30015, "label": "TBLMTN 6\n30015", "shape": "dot", "title": "TBLMTN 6", "x": -0.5480637209910184, "y": -0.014368368601833844}, {"color": "sienna", "id": 24900, "label": "COLRIV 6\n24900", "shape": "dot", "title": "COLRIV 6", "x": 0.2270248216692709, "y": 0.042077905086354}, {"color": "sienna", "id": 15687, "label": "LENZIE 7\n15687", "shape": "dot", "title": "LENZIE 7", "x": 0.24739567218419245, "y": 0.3278322818312521}, {"color": "sienna", "id": 15688, "label": "LENZIE 9\n15688", "shape": "dot", "title": "LENZIE 9", "x": 0.24739567218419298, "y": 0.3278322818312522}, {"color": "sienna", "id": 89415, "label": "VIC_LA 3\n89415", "shape": "dot", "title": "VIC_LA 3", "x": 0.19886430642415256, "y": 0.2027163823182191}, {"color": "sienna", "id": 30030, "label": "VACADX 8\n30030", "shape": "dot", "title": "VACADX 8", "x": -0.5507979923552981, "y": -0.014552508336146876}, {"color": "sienna", "id": 12117, "label": "ELDORD10\n12117", "shape": "dot", "title": "ELDORD10", "x": 0.19709263327220286, "y": 0.19380819605246175}, {"color": "sienna", "id": 12118, "label": "ELDORD11\n12118", "shape": "dot", "title": "ELDORD11", "x": 0.18132966752862326, "y": 0.152801790859362}, {"color": "sienna", "id": 12119, "label": "ELDORD12\n12119", "shape": "dot", "title": "ELDORD12", "x": 0.21571230503841357, "y": 0.24301919141787942}, {"color": "sienna", "id": 12120, "label": "ELDORD13\n12120", "shape": "dot", "title": "ELDORD13", "x": 0.2148211166719081, "y": 0.24046496667881956}, {"color": "sienna", "id": 12121, "label": "ELDORD14\n12121", "shape": "dot", "title": "ELDORD14", "x": 0.213841793681476, "y": 0.23766242689714898}, {"color": "sienna", "id": 30040, "label": "TESLA 10\n30040", "shape": "dot", "title": "TESLA 10", "x": -0.5446941385307241, "y": -0.014146342975142577}, {"color": "sienna", "id": 5979, "label": "CRYSTA 4\n5979", "shape": "dot", "title": "CRYSTA 4", "x": 0.24417974025927416, "y": 0.31788084066656974}, {"color": "sienna", "id": 5980, "label": "CRYSTA 8\n5980", "shape": "dot", "title": "CRYSTA 8", "x": 0.2444194506791486, "y": 0.31915612441043617}, {"color": "sienna", "id": 5981, "label": "CRYSTA 9\n5981", "shape": "dot", "title": "CRYSTA 9", "x": 0.2444194506791508, "y": 0.31915612441043717}, {"color": "sienna", "id": 5982, "label": "CRYSTA 5\n5982", "shape": "dot", "title": "CRYSTA 5", "x": 0.2445979805314314, "y": 0.3207169900016064}, {"color": "sienna", "id": 30042, "label": "METCLF 5\n30042", "shape": "dot", "title": "METCLF 5", "x": -0.5484631526166511, "y": -0.014378495052912587}, {"color": "sienna", "id": 30045, "label": "MOSSLD13\n30045", "shape": "dot", "title": "MOSSLD13", "x": -0.5371012297888182, "y": -0.013594969423808095}, {"color": "sienna", "id": 30046, "label": "VISTRA 4\n30046", "shape": "dot", "title": "VISTRA 4", "x": -0.5411165265862142, "y": -0.01385565764051017}, {"color": "sienna", "id": 30050, "label": "LOSBNS 4\n30050", "shape": "dot", "title": "LOSBNS 4", "x": -0.5024941335337011, "y": -0.011319771705545913}, {"color": "sienna", "id": 30055, "label": "GATES  8\n30055", "shape": "dot", "title": "GATES  8", "x": -0.4419574612201706, "y": -0.007301333785860723}, {"color": "sienna", "id": 6504, "label": "ROBINS 4\n6504", "shape": "dot", "title": "ROBINS 4", "x": 0.2455140361036988, "y": 0.3213068364929475}, {"color": "sienna", "id": 6505, "label": "ROBINS 6\n6505", "shape": "dot", "title": "ROBINS 6", "x": 0.2452112756075657, "y": 0.3203066320862206}, {"color": "sienna", "id": 30056, "label": "GATES  7\n30056", "shape": "dot", "title": "GATES  7", "x": -0.39563162756985504, "y": -0.004589460920120243}, {"color": "sienna", "id": 30057, "label": "DIABLO 4\n30057", "shape": "dot", "title": "DIABLO 4", "x": -0.36530886481258934, "y": -0.0025709374268600106}, {"color": "sienna", "id": 30060, "label": "MIDWAY10\n30060", "shape": "dot", "title": "MIDWAY10", "x": -0.28730867963784, "y": 0.0021834740778750397}, {"color": "sienna", "id": 88945, "label": "PALVER 2\n88945", "shape": "dot", "title": "PALVER 2", "x": 0.24149493953465695, "y": 0.18430826270045295}, {"color": "sienna", "id": 13172, "label": "PL     1\n13172", "shape": "dot", "title": "PL     1", "x": 0.24149493953465678, "y": 0.18430826270045245}, {"color": "sienna", "id": 13173, "label": "PL     2\n13173", "shape": "dot", "title": "PL     2", "x": 0.24149493953465764, "y": 0.18430826270045247}, {"color": "sienna", "id": 12152, "label": "LUGO   7\n12152", "shape": "dot", "title": "LUGO   7", "x": 0.17539836183495064, "y": 0.1373644059797111}, {"color": "sienna", "id": 12153, "label": "LUGO   8\n12153", "shape": "dot", "title": "LUGO   8", "x": 0.18523245532066177, "y": 0.16294936763770265}, {"color": "sienna", "id": 89474, "label": "WW     9\n89474", "shape": "dot", "title": "WW     9", "x": 0.24355741030201983, "y": 0.21702789226090383}, {"color": "sienna", "id": 28040, "label": "INLDEM 3\n28040", "shape": "dot", "title": "INLDEM 3", "x": 0.20248409899247466, "y": -0.12144627365116047}, {"color": "sienna", "id": 89482, "label": "WILLOW 1\n89482", "shape": "dot", "title": "WILLOW 1", "x": 0.21740727960424777, "y": 0.24788462291919422}, {"color": "sienna", "id": 6028, "label": "H ALLE 5\n6028", "shape": "dot", "title": "H ALLE 5", "x": 0.24360013983795595, "y": 0.31500201498977454}, {"color": "sienna", "id": 6029, "label": "H ALLE 7\n6029", "shape": "dot", "title": "H ALLE 7", "x": 0.244405542438754, "y": 0.3176529533834365}, {"color": "sienna", "id": 6030, "label": "H ALLE 8\n6030", "shape": "dot", "title": "H ALLE 8", "x": 0.2360358942309573, "y": 0.2953419127045389}, {"color": "sienna", "id": 90001, "label": "SP26SL 1\n90001", "shape": "dot", "title": "SP26SL 1", "x": 0.16562824012385283, "y": 0.11186875652904675}, {"color": "sienna", "id": 6034, "label": "HACC   4\n6034", "shape": "dot", "title": "HACC   4", "x": 0.24430236655613097, "y": 0.3173007178842968}, {"color": "sienna", "id": 22930, "label": "ECONTY 5\n22930", "shape": "dot", "title": "ECONTY 5", "x": 0.2762441680258248, "y": -0.9775914534329063}, {"color": "sienna", "id": 90002, "label": "NP15SL 1\n90002", "shape": "dot", "title": "NP15SL 1", "x": -0.5451415405863115, "y": -0.01417563491553093}, {"color": "sienna", "id": 90003, "label": "ZP26SL 1\n90003", "shape": "dot", "title": "ZP26SL 1", "x": -0.28754466986568394, "y": 0.00218799525996745}, {"color": "sienna", "id": 12187, "label": "NEWSPR 3\n12187", "shape": "dot", "title": "NEWSPR 3", "x": 0.19709263327220264, "y": 0.19380819605246205}, {"color": "sienna", "id": 6056, "label": "LAUGHL 2\n6056", "shape": "dot", "title": "LAUGHL 2", "x": 0.19821209424593067, "y": 0.19679204685099064}, {"color": "sienna", "id": 6058, "label": "LAUGNE 1\n6058", "shape": "dot", "title": "LAUGNE 1", "x": 0.19853801116934788, "y": 0.19760891943877287}, {"color": "sienna", "id": 6066, "label": "LENZIE 8\n6066", "shape": "dot", "title": "LENZIE 8", "x": 0.2466845540177251, "y": 0.32545728242945565}, {"color": "sienna", "id": 15797, "label": "ROBINS 5\n15797", "shape": "dot", "title": "ROBINS 5", "x": 0.24511067281816998, "y": 0.31997586891479574}, {"color": "sienna", "id": 15798, "label": "ROBINS 7\n15798", "shape": "dot", "title": "ROBINS 7", "x": 0.2452112756075658, "y": 0.3203066320862216}, {"color": "sienna", "id": 10167, "label": "PALVER 2\n10167", "shape": "dot", "title": "PALVER 2", "x": 0.24139586144585773, "y": 0.18411793762011197}, {"color": "sienna", "id": 10168, "label": "PALVER 6\n10168", "shape": "dot", "title": "PALVER 6", "x": 0.23076107724397554, "y": 0.07774505623496418}, {"color": "sienna", "id": 22468, "label": "MIGUEL 8\n22468", "shape": "dot", "title": "MIGUEL 8", "x": 0.27590421057655024, "y": -0.9745639799304351}, {"color": "sienna", "id": 5589, "label": "ADL    3\n5589", "shape": "dot", "title": "ADL    3", "x": 0.2041075580259335, "y": 0.21926344120023525}, {"color": "sienna", "id": 5590, "label": "ADL    4\n5590", "shape": "dot", "title": "ADL    4", "x": 0.20957973528490034, "y": 0.23123502552004033}, {"color": "sienna", "id": 5591, "label": "ADL_CS 1\n5591", "shape": "dot", "title": "ADL_CS 1", "x": 0.20452725259774815, "y": 0.22040236975260522}, {"color": "sienna", "id": 5592, "label": "ADL_CS 2\n5592", "shape": "dot", "title": "ADL_CS 2", "x": 0.20452725259774804, "y": 0.2204023697526056}, {"color": "sienna", "id": 6112, "label": "NRTHWS 6\n6112", "shape": "dot", "title": "NRTHWS 6", "x": 0.24824552463347715, "y": 0.33082646909872127}, {"color": "sienna", "id": 11747, "label": "MIDWAY11\n11747", "shape": "dot", "title": "MIDWAY11", "x": -0.1788836837316771, "y": 0.007746971098957651}, {"color": "sienna", "id": 5604, "label": "APEX   4\n5604", "shape": "dot", "title": "APEX   4", "x": 0.2443023665561315, "y": 0.3173007178842975}, {"color": "sienna", "id": 11748, "label": "MIDWAY12\n11748", "shape": "dot", "title": "MIDWAY12", "x": -0.1788836837316767, "y": 0.00774697109895777}, {"color": "sienna", "id": 11749, "label": "MIDWAY13\n11749", "shape": "dot", "title": "MIDWAY13", "x": -0.1571634338254151, "y": 0.011372771966682637}, {"color": "sienna", "id": 12264, "label": "VINCNT10\n12264", "shape": "dot", "title": "VINCNT10", "x": -0.07038529724624293, "y": 0.013302468245942101}, {"color": "sienna", "id": 12265, "label": "VINCNT11\n12265", "shape": "dot", "title": "VINCNT11", "x": -0.07038529724624304, "y": 0.01330246824594185}, {"color": "sienna", "id": 24042, "label": "ELDORD 9\n24042", "shape": "dot", "title": "ELDORD 9", "x": 0.21277473785380144, "y": 0.2346144661026919}, {"color": "sienna", "id": 12267, "label": "VINCNT12\n12267", "shape": "dot", "title": "VINCNT12", "x": 0.11197444092243862, "y": -0.023912146586190612}, {"color": "sienna", "id": 88555, "label": "ADL_CS 1\n88555", "shape": "dot", "title": "ADL_CS 1", "x": 0.20461119840019662, "y": 0.220630202517172}, {"color": "sienna", "id": 88556, "label": "ADL_CS 2\n88556", "shape": "dot", "title": "ADL_CS 2", "x": 0.20461119840019637, "y": 0.2206302025171714}, {"color": "sienna", "id": 11263, "label": "MEAD_Z 7\n11263", "shape": "dot", "title": "MEAD_Z 7", "x": 0.23951062033911802, "y": 0.29407309284988037}]);
+                  edges = new vis.DataSet([{"from": 11264, "to": 11263}, {"from": 11264, "to": 17517}, {"from": 88584, "to": 6028}, {"from": 5643, "to": 5762}, {"from": 5644, "to": 5749}, {"from": 5644, "to": 5772}, {"from": 5644, "to": 5982}, {"from": 5644, "to": 15530}, {"from": 5645, "to": 1227}, {"from": 5645, "to": 15530}, {"from": 10772, "to": 1745}, {"from": 24086, "to": 5888}, {"dashes": [5, 5], "from": 24086, "to": 12118}, {"dashes": [5, 5], "from": 24086, "to": 12152}, {"from": 24086, "to": 24092}, {"from": 24086, "to": 24156}, {"from": 24086, "to": 24238}, {"from": 24086, "to": 29241}, {"from": 24086, "to": 29246}, {"from": 24086, "to": 90001}, {"from": 10263, "to": 10167}, {"from": 12312, "to": 22468}, {"from": 12312, "to": 22930}, {"from": 11290, "to": 1745}, {"from": 11290, "to": 17517}, {"from": 6171, "to": 6028}, {"from": 24092, "to": 180}, {"from": 24092, "to": 12267}, {"from": 24092, "to": 24138}, {"from": 24092, "to": 24238}, {"from": 24097, "to": 6056}, {"dashes": [5, 5], "from": 24097, "to": 12153}, {"from": 24097, "to": 24042}, {"from": 24097, "to": 25903}, {"from": 24097, "to": 29246}, {"from": 28195, "to": 12088}, {"from": 28195, "to": 12089}, {"from": 28195, "to": 24900}, {"from": 29241, "to": 12187}, {"from": 2114, "to": 2115}, {"from": 2114, "to": 2158}, {"from": 16962, "to": 10168}, {"from": 16962, "to": 16963}, {"from": 16963, "to": 10167}, {"from": 16964, "to": 10167}, {"from": 16965, "to": 10167}, {"from": 16966, "to": 10167}, {"from": 24138, "to": 24151}, {"from": 88655, "to": 5591}, {"from": 88656, "to": 5592}, {"from": 88657, "to": 5591}, {"from": 88658, "to": 5592}, {"from": 1110, "to": 5749}, {"from": 24151, "to": 24801}, {"from": 24151, "to": 28040}, {"from": 24156, "to": 12264}, {"from": 24156, "to": 12265}, {"from": 24156, "to": 12267}, {"from": 24156, "to": 29400}, {"from": 24156, "to": 29402}, {"from": 2157, "to": 2159}, {"from": 2157, "to": 99005}, {"from": 2157, "to": 99006}, {"from": 2158, "to": 2159}, {"from": 5749, "to": 5750}, {"from": 1142, "to": 1144}, {"from": 1142, "to": 1675}, {"from": 5751, "to": 5752}, {"from": 5751, "to": 5753}, {"from": 5751, "to": 5762}, {"from": 5751, "to": 5887}, {"from": 5751, "to": 15589}, {"dashes": [5, 5], "from": 5751, "to": 15590}, {"from": 5751, "to": 24042}, {"from": 5751, "to": 88794}, {"from": 5751, "to": 88795}, {"from": 5752, "to": 5883}, {"from": 5753, "to": 5754}, {"from": 5754, "to": 5755}, {"from": 1143, "to": 1144}, {"from": 5750, "to": 15589}, {"from": 5755, "to": 15590}, {"from": 5760, "to": 5590}, {"from": 5760, "to": 5761}, {"from": 5761, "to": 15605}, {"from": 5762, "to": 11263}, {"from": 5762, "to": 15605}, {"from": 5762, "to": 88790}, {"from": 1668, "to": 1745}, {"from": 1674, "to": 1675}, {"from": 1675, "to": 89482}, {"from": 1675, "to": 99002}, {"from": 15506, "to": 5589}, {"from": 1173, "to": 1748}, {"from": 15511, "to": 5589}, {"from": 15517, "to": 5589}, {"from": 15520, "to": 5589}, {"from": 11945, "to": 11952}, {"from": 11945, "to": 11965}, {"from": 11952, "to": 30015}, {"from": 180, "to": 12267}, {"from": 99002, "to": 12119}, {"from": 5820, "to": 5888}, {"from": 99005, "to": 30050}, {"from": 99006, "to": 30040}, {"from": 5821, "to": 5589}, {"from": 11965, "to": 11966}, {"from": 11966, "to": 30040}, {"from": 99013, "to": 12090}, {"from": 99013, "to": 24801}, {"from": 99014, "to": 12091}, {"from": 99014, "to": 24801}, {"from": 1227, "to": 1230}, {"from": 1745, "to": 1747}, {"from": 1745, "to": 1748}, {"from": 1745, "to": 10167}, {"from": 1745, "to": 89474}, {"from": 1746, "to": 1747}, {"from": 8401, "to": 5888}, {"from": 11990, "to": 11993}, {"from": 11991, "to": 11992}, {"from": 11991, "to": 30040}, {"from": 11992, "to": 30030}, {"from": 11993, "to": 30030}, {"from": 29400, "to": 29401}, {"from": 29400, "to": 29402}, {"from": 29401, "to": 29402}, {"from": 29402, "to": 11749}, {"from": 88802, "to": 11263}, {"from": 5859, "to": 5589}, {"from": 1274, "to": 10167}, {"from": 5883, "to": 5884}, {"from": 5884, "to": 5885}, {"from": 5885, "to": 5886}, {"from": 5886, "to": 15650}, {"from": 5887, "to": 5888}, {"from": 5888, "to": 5589}, {"from": 5888, "to": 15650}, {"from": 5888, "to": 89415}, {"from": 88836, "to": 25903}, {"from": 88837, "to": 5591}, {"from": 88838, "to": 5592}, {"from": 1299, "to": 10167}, {"from": 1300, "to": 10167}, {"from": 1301, "to": 10167}, {"from": 1302, "to": 10167}, {"from": 806, "to": 10167}, {"from": 25903, "to": 6058}, {"from": 15664, "to": 5981}, {"from": 15664, "to": 5982}, {"from": 15665, "to": 5980}, {"from": 15665, "to": 5982}, {"from": 11572, "to": 11579}, {"from": 11572, "to": 30060}, {"from": 11573, "to": 11578}, {"dashes": [5, 5], "from": 11573, "to": 30050}, {"from": 11574, "to": 11577}, {"from": 11574, "to": 30056}, {"from": 11575, "to": 11576}, {"from": 11575, "to": 30050}, {"from": 11576, "to": 30055}, {"dashes": [5, 5], "from": 11577, "to": 30060}, {"from": 11578, "to": 30056}, {"from": 11579, "to": 30055}, {"from": 12088, "to": 12090}, {"from": 12089, "to": 12091}, {"from": 15677, "to": 15678}, {"from": 15677, "to": 24042}, {"from": 15679, "to": 6028}, {"from": 15678, "to": 6030}, {"from": 24900, "to": 10168}, {"from": 15687, "to": 6066}, {"from": 15688, "to": 6066}, {"dashes": [5, 5], "from": 12117, "to": 12118}, {"dashes": [5, 5], "from": 12117, "to": 24042}, {"from": 12119, "to": 12120}, {"from": 12120, "to": 12121}, {"from": 12121, "to": 24042}, {"from": 30040, "to": 30042}, {"from": 30040, "to": 30050}, {"from": 30040, "to": 90002}, {"from": 5979, "to": 5980}, {"from": 5979, "to": 5981}, {"from": 5979, "to": 6028}, {"from": 30042, "to": 30045}, {"from": 30045, "to": 30046}, {"from": 30045, "to": 30050}, {"from": 30050, "to": 30055}, {"from": 30055, "to": 30057}, {"from": 6504, "to": 15797}, {"from": 6505, "to": 15797}, {"from": 30057, "to": 30060}, {"from": 30060, "to": 11747}, {"from": 30060, "to": 11748}, {"from": 30060, "to": 11749}, {"from": 30060, "to": 90003}, {"from": 88945, "to": 10167}, {"from": 13172, "to": 10167}, {"from": 13173, "to": 10167}, {"dashes": [5, 5], "from": 12152, "to": 12153}, {"from": 6028, "to": 5604}, {"from": 6028, "to": 6029}, {"from": 6028, "to": 6030}, {"from": 6028, "to": 6034}, {"from": 6028, "to": 6066}, {"from": 6028, "to": 11263}, {"from": 6029, "to": 15797}, {"from": 12187, "to": 24042}, {"from": 6066, "to": 6112}, {"from": 15797, "to": 15798}, {"from": 5589, "to": 5590}, {"from": 5589, "to": 5591}, {"from": 5589, "to": 5592}, {"from": 5591, "to": 88555}, {"from": 5592, "to": 88556}, {"from": 11747, "to": 12264}, {"from": 11748, "to": 12265}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+                      network.on("stabilizationProgress", function(params) {
+                          document.getElementById('loadingBar').removeAttribute("style");
+                          var maxWidth = 496;
+                          var minWidth = 20;
+                          var widthFactor = params.iterations/params.total;
+                          var width = Math.max(minWidth,maxWidth * widthFactor);
+                          document.getElementById('bar').style.width = width + 'px';
+                          document.getElementById('text').innerHTML = Math.round(widthFactor*100) + '%';
+                      });
+                      network.once("stabilizationIterationsDone", function() {
+                          document.getElementById('text').innerHTML = '100%';
+                          document.getElementById('bar').style.width = '496px';
+                          document.getElementById('loadingBar').style.opacity = 0;
+                          // really clean the dom element
+                          setTimeout(function () {document.getElementById('loadingBar').style.display = 'none';}, 500);
+                      });
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>

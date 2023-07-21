@@ -210,7 +210,7 @@ def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int
         number_score = max(levenshtein(self_num, other_num), levenshtein(other_num, self_num)) * penalty
 
         if number_score < 0.3:
-            weights = [0.3, 0, 0.7]
+            weights = [0.35, 0, 0.65]
     
     if verbose:
         print("Name Score: " + str(name_score))
@@ -225,7 +225,7 @@ def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int
     return sum(a * b for a, b in zip(scores, weights))
 
 
-def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], threshold=0.7, limit=50):
+def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], threshold=0.7, limit=1000):
     """
     A recursive algorithm to populate a set of mappings by starting from a ground truth of matching
     nodes. Recurses in a 'breadth-first' manner - begins by attempting to match the input nodes'
@@ -244,6 +244,7 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
         Returns nothing, but populates the input curr mapping.
     """
     if len(curr) >= limit:
+        print("Limit exceeded.")
         return
     
     neighbors_1 = list(search_depth(net_1, node_1, 1)[0])
@@ -269,14 +270,14 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
                     curr[crr_match.name] = wecc_match.name
 
                     # Add in the node!
-                    neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(similarity_score), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+                    neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
                     tree_nodes.append(neighbor_node)
 
                     # Recurse on the neighbors.
                     map_populate(net_1, crr_match.name, net_2, wecc_match.name, curr, tree_nodes)
             
             else:
-                neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(similarity_score), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+                neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
                 tree_nodes.append(neighbor_node)
 
 
@@ -284,6 +285,8 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
 CRR_Network = build_graph(CRR_sheet)
 WECC_Network = build_graph(WECC_sheet)
 
+
+CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 gt_1 = "MIDWAY10"
 gt_2 = "MIDWAY"
 
@@ -297,9 +300,9 @@ for key, val in curr_mapping.items():
 
 DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("recursive_bus_traversal.png")
 
-"""
-CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 
+
+"""
 pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
 pge_wecc = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", ["PG AND E", 'SOCALIF'])
 
