@@ -10,7 +10,7 @@ Stores the following attributes:
     2) Number
 """
 
-os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
+# os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
 
 base_directory = os.getcwd()
 sys.path.append("/Python Scripts")

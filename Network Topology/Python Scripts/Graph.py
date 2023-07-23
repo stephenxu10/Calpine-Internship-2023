@@ -7,7 +7,7 @@ Basic representation of the Network Topology as an undirected graph. The basic f
 is an adjacency list - each node is mapped to its immediate neighbors.
 """
 
-os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
+# os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
 
 from Node import Bus
 from Edge import Edge

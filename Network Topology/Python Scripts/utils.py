@@ -53,7 +53,7 @@ def set_node_color(node: Node):
 
     sim_score = float(score)
 
-    if sim_score > 0.65:
+    if sim_score > 0.6:
         return "color=red"
 
     else:

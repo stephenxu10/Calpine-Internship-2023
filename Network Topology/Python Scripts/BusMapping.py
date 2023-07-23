@@ -21,8 +21,7 @@ from anytree import Node, RenderTree
 from anytree.exporter import DotExporter
 from collections import deque
 
-os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
-
+# os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
 
 from Graph import Network
 from Node import Bus
@@ -32,8 +31,8 @@ from typing import *
 
 # Global parameters & variables
 start_time = time.time()
-CRR_sheet = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Input Data/CRR Buses and Branches.xlsx"
-WECC_sheet = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Input Data/WECC Buses and Branches.xlsx"
+CRR_sheet = "./Network Topology/Input Data/CRR Buses and Branches.xlsx"
+WECC_sheet = "./Network Topology/Input Data/WECC Buses and Branches.xlsx"
 
 
 def extract_nodes(sheet_path: str, from_name: str, to_name: str, zone: List[str]) -> List[str]:
@@ -225,7 +224,7 @@ def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int
     return sum(a * b for a, b in zip(scores, weights))
 
 
-def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0.65, limit=1000):
+def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0.65):
     """
     A recursive algorithm to populate a set of mappings by starting from a ground truth of matching
     nodes. Recurses in a 'breadth-first' manner - begins by attempting to match the input nodes'
@@ -242,10 +241,8 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
     
     Output:
         Returns nothing, but populates the input curr mapping.
-    """
-
-    if len(curr) >= limit:
-        print("Limit exceeded.")
+    """ 
+    if node_1 == "WILLOW 1":
         return
     
     neighbors_1 = list(search_depth(net_1, node_1, 1)[0])
@@ -254,10 +251,12 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
     if len(neighbors_1) == 2 and len(neighbors_2) == 2:
         other_1 = find_other_neighbor(neighbors_1, curr, visited)
         other_2 = find_other_neighbor(neighbors_2, curr, visited)
+
+        if other_1.name in visited and other_2.name in visited:
+            return
+        
         visited.add(other_1.name)
         visited.add(other_2.name)
-
-        print(other_1.name + " " + other_2.name)
     
         neighbor_node = Node(other_1.name + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
         tree_nodes.append(neighbor_node)
@@ -265,20 +264,23 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
         map_populate(net_1, other_1.name, net_2, other_2.name, curr, tree_nodes, visited, float('inf'))
     
     elif len(neighbors_1) == 2:
+        if node_2 in curr.values():
+            return
+        
         other_1 = find_other_neighbor(neighbors_1, curr, visited)
         neighbor_node = Node(other_1.name + " " + node_2 + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
         visited.add(other_1.name)
         tree_nodes.append(neighbor_node)
-        print(other_1.name)
 
         map_populate(net_1, other_1.name, net_2, node_2, curr, tree_nodes, visited, float('inf'))
     
     elif len(neighbors_2) == 2:
+        if node_1 in curr:
+            return 
         other_2 = find_other_neighbor(neighbors_2, curr, visited)
         neighbor_node = Node(node_1 + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
         visited.add(other_2.name)
         tree_nodes.append(neighbor_node)
-        #print(node_1+ " " + other_2.name)
 
         map_populate(net_1, node_1, net_2, other_2.name, curr, tree_nodes, visited, float('inf'))
     
@@ -299,16 +301,21 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
                     crr_match = neighbors_1[row]
                     wecc_match = neighbors_2[col]
 
-                    if crr_match.name not in curr and wecc_match.name not in curr.values() and crr_match.name != "VALLEY 9" and wecc_match.name not in visited:
+                    if crr_match.name not in curr and wecc_match.name not in curr.values() and wecc_match.name not in visited and crr_match.name not in visited:
                         curr[crr_match.name] = wecc_match.name
 
-                        # Add in the node!
-                        idx = find_node(tree_nodes, node_1 + " " + node_2)
-                        neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[idx])
-                        tree_nodes.append(neighbor_node)
+                        if len(search_depth(net_1, crr_match.name, 1)[0]) == 2 and len(search_depth(net_2, wecc_match.name, 1)[0]) == 2:
+                            #Add in the node!
+                            idx = find_node(tree_nodes, node_1 + " " + node_2)
+                            neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n ", parent=tree_nodes[idx])
+                            tree_nodes.append(neighbor_node)
+                        else:
+                            # Add in the node!
+                            idx = find_node(tree_nodes, node_1 + " " + node_2)
+                            neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[idx])
+                            tree_nodes.append(neighbor_node)
 
                         # Recurse on the neighbors.
-                        print(crr_match.name + " " + wecc_match.name)
                         map_populate(net_1, crr_match.name, net_2, wecc_match.name, curr, tree_nodes, visited, similarity_score)
                     
 
@@ -316,8 +323,8 @@ CRR_Network = build_graph(CRR_sheet)
 WECC_Network = build_graph(WECC_sheet)
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 
-gt_1 = "DEVERS 7"
-gt_2 = "DEVERS"
+gt_1 = "MIDWAY10"
+gt_2 = "MIDWAY"
 visited = set()
 
 curr_mapping = {gt_1: gt_2}
@@ -328,7 +335,8 @@ map_populate(CRR_Network, gt_1, WECC_Network, gt_2, curr_mapping, tree_nodes, vi
 for key, val in curr_mapping.items():
     print(key + " " + val)
 
-# DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("recursive_bus_traversal.png")
+print(len(tree_nodes))
+DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("recursive_bus_traversal.png")
 
 
 """pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
