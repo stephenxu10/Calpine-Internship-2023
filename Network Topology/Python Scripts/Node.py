@@ -10,7 +10,7 @@ Stores the following attributes:
     2) Number
 """
 
-# os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
+os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
 
 base_directory = os.getcwd()
 sys.path.append("/Python Scripts")
@@ -32,7 +32,7 @@ class Bus:
         return f"Bus({self.name}, {self.number})"
     
     def __hash__(self):
-        return hash(self.name)
+        return hash((self.name, self.number))
 
     def __eq__(self, other):
         if isinstance(other, Bus):

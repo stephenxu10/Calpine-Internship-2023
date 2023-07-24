@@ -7,7 +7,7 @@ Basic representation of the Network Topology as an undirected graph. The basic f
 is an adjacency list - each node is mapped to its immediate neighbors.
 """
 
-# os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
+os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
 
 from Node import Bus
 from Edge import Edge
@@ -35,15 +35,15 @@ class Network:
             self.graph[from_node].append(edge)
             self.graph[to_node].append(edge)
     
-    def get_node(self, name: str) -> Bus:
+    def get_node(self, name: str, number: int) -> Bus:
         for node in self.graph:
-            if node.name == name:
+            if node.name == name and node.number == number:
                 return node
         return ""
     
-    def get_neighbors(self, name: str) -> List[Edge]:
+    def get_neighbors(self, name: str, number: int) -> List[Edge]:
         for node in self.graph:
-            if node.name == name:
+            if node.name == name and node.number == number:
                 return self.graph[node]
         
         return ""
@@ -55,8 +55,8 @@ class Network:
                     if edge.node1.name == neighbor_name or edge.node2.name == neighbor_name:
                         self.graph[node].remove(edge)
         
-    def display_neighbors(self, name: str) -> None:
-        neighbors = self.get_neighbors(name)
+    def display_neighbors(self, name: str, number: int) -> None:
+        neighbors = self.get_neighbors(name, number)
 
         if neighbors != "":
             for edge in neighbors:
