@@ -4,7 +4,7 @@ Some utility methods for the project
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from anytree import Node
-from typing import List, Dict, Tuple, Union
+from typing import List, Dict, Tuple, Union, Set
 import re
 
 def num_proximity(num1: float, num2: float) -> float:
@@ -33,7 +33,7 @@ def find_node(nodes: List[Node], target: str) -> Union[int, None]:
     
     return None
 
-def find_other_neighbor(neighbors: List, curr: Dict, visited):
+def find_other_neighbor(neighbors: Set, curr: Dict, visited):
     if(neighbors[0].name in curr or neighbors[0].name in curr.values()):
         return neighbors[1]
     
@@ -53,7 +53,7 @@ def set_node_color(node: Node):
 
     sim_score = float(score)
 
-    if sim_score > 0.6:
+    if sim_score > 0.65:
         return "color=red"
 
     else:

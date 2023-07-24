@@ -48,8 +48,9 @@ def extract_nodes(sheet_path: str, from_name: str, to_name: str, zone: List[str]
         - The list of Node names within that zone.
     """
     df_branch = pd.read_excel(sheet_path, sheet_name="Branch")
-    filtered_df = df_branch.loc[(df_branch[from_name].isin(zone)) & (df_branch[to_name].isin(zone))]
-    nodes =  filtered_df[['From Name', 'To Name']].values.flatten().tolist()
+    # filtered_df = df_branch.loc[(df_branch[from_name].isin(zone)) & (df_branch[to_name].isin(zone))]
+    # df_branch = df_branch[df_branch['To Name'] != df_branch['From Name']]
+    nodes =  df_branch[['From Name', 'To Name']].values.flatten().tolist()
 
     return list(set(nodes))
 
@@ -68,6 +69,9 @@ def build_graph(sheet_path: str) -> Network:
     df_branch = pd.read_excel(sheet_path, sheet_name="Branch")
     df_bus = pd.read_excel(sheet_path, sheet_name="Bus")
 
+    df_branch = df_branch[df_branch['To Name'] != df_branch['From Name']]
+    df_bus = df_bus.drop_duplicates(subset="Name")
+
     for _, row in df_bus.iterrows():
         row_node = Bus.from_row(row)
         base_graph.add_node(row_node)
@@ -75,7 +79,7 @@ def build_graph(sheet_path: str) -> Network:
     for _, row in df_branch.iterrows():
         row_edge = Edge.from_row(row)
         base_graph.add_edge(row_edge)
-
+    
     return base_graph
 
 
@@ -114,6 +118,40 @@ def search_depth(
 
     nodes.remove(start_node)
     return nodes, edges
+
+
+def find_comp_size(net: Network, node: str) -> int:
+    """
+    Simple helper method to calculate the size of the connected component in a network
+    containing an input node, accounting for parallel edges.
+
+    Inputs:
+        - net: An input Network object
+        - node: An input Bus name in the network.
+    
+    Output:
+        - The size of the connected component. 
+    """
+    visited = set()
+    size = 0
+
+    queue = deque()
+    queue.append(node)
+
+    while queue:
+        n = queue.popleft()
+        if n in visited:
+            continue
+
+        visited.add(n)
+        size += 1
+
+        for edge in net.get_neighbors(n):
+            neighbor = edge.node1 if edge.node1.name != n else edge.node2
+            print(neighbor.name)
+            queue.append(neighbor.name)
+    
+    return size
 
 
 def compare_sets(list1: List, list2: List, verbose=False) -> float:
@@ -224,7 +262,7 @@ def similiarity(net1: Network, node1: str, net2: Network, node2: str, depth: int
     return sum(a * b for a, b in zip(scores, weights))
 
 
-def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0.65):
+def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr: Dict[str, str], tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0):
     """
     A recursive algorithm to populate a set of mappings by starting from a ground truth of matching
     nodes. Recurses in a 'breadth-first' manner - begins by attempting to match the input nodes'
@@ -242,9 +280,7 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
     Output:
         Returns nothing, but populates the input curr mapping.
     """ 
-    if node_1 == "WILLOW 1":
-        return
-    
+    print(node_1 + " " + node_2)
     neighbors_1 = list(search_depth(net_1, node_1, 1)[0])
     neighbors_2 = list(search_depth(net_2, node_2, 1)[0])
     
@@ -252,14 +288,20 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
         other_1 = find_other_neighbor(neighbors_1, curr, visited)
         other_2 = find_other_neighbor(neighbors_2, curr, visited)
 
-        if other_1.name in visited and other_2.name in visited:
+        if other_1.name in visited and other_2.name in visited or other_1.name in curr or other_2.name in curr.values():
             return
         
         visited.add(other_1.name)
         visited.add(other_2.name)
-    
-        neighbor_node = Node(other_1.name + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
-        tree_nodes.append(neighbor_node)
+
+        if len(net_1.get_neighbors(other_1.name)) != 2 and len(net_2.get_neighbors(other_2.name)) != 2:
+            sim_score = similiarity(net_1, other_1.name, net_2, other_2.name, 2)
+            neighbor_node = Node(other_1.name + " " + other_2.name + "\n " + str(round(sim_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+            tree_nodes.append(neighbor_node)
+
+        else:
+            neighbor_node = Node(other_1.name + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+            tree_nodes.append(neighbor_node)
 
         map_populate(net_1, other_1.name, net_2, other_2.name, curr, tree_nodes, visited, float('inf'))
     
@@ -268,19 +310,38 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
             return
         
         other_1 = find_other_neighbor(neighbors_1, curr, visited)
-        neighbor_node = Node(other_1.name + " " + node_2 + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
-        visited.add(other_1.name)
-        tree_nodes.append(neighbor_node)
 
+        if other_1.name in visited:
+            return
+        
+        if len(net_1.get_neighbors(other_1.name)) != 2:
+            sim_score = similiarity(net_1, other_1.name, net_2, node_2, 2)
+            neighbor_node = Node(other_1.name + " " + node_2 + "\n " + str(round(sim_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+            tree_nodes.append(neighbor_node)            
+
+        else:    
+            neighbor_node = Node(other_1.name + " " + node_2 + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+            tree_nodes.append(neighbor_node)
+
+        visited.add(other_1.name)
         map_populate(net_1, other_1.name, net_2, node_2, curr, tree_nodes, visited, float('inf'))
     
     elif len(neighbors_2) == 2:
         if node_1 in curr:
             return 
         other_2 = find_other_neighbor(neighbors_2, curr, visited)
-        neighbor_node = Node(node_1 + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
-        visited.add(other_2.name)
-        tree_nodes.append(neighbor_node)
+
+        if other_2.name in visited:
+            return
+        
+        if len(net_2.get_neighbors(other_2.name)) != 2:
+            sim_score = similiarity(net_1, node_1, net_2, other_2.name, 2)
+            neighbor_node = Node(node_1 + " " + other_2.name + "\n " + str(round(sim_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+            tree_nodes.append(neighbor_node)            
+
+        else:    
+            neighbor_node = Node(node_1 + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
+            tree_nodes.append(neighbor_node)
 
         map_populate(net_1, node_1, net_2, other_2.name, curr, tree_nodes, visited, float('inf'))
     
@@ -305,12 +366,10 @@ def map_populate(net_1: Network, node_1: str, net_2: Network, node_2: Bus, curr:
                         curr[crr_match.name] = wecc_match.name
 
                         if len(search_depth(net_1, crr_match.name, 1)[0]) == 2 and len(search_depth(net_2, wecc_match.name, 1)[0]) == 2:
-                            #Add in the node!
                             idx = find_node(tree_nodes, node_1 + " " + node_2)
                             neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n ", parent=tree_nodes[idx])
                             tree_nodes.append(neighbor_node)
                         else:
-                            # Add in the node!
                             idx = find_node(tree_nodes, node_1 + " " + node_2)
                             neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[idx])
                             tree_nodes.append(neighbor_node)
@@ -323,24 +382,29 @@ CRR_Network = build_graph(CRR_sheet)
 WECC_Network = build_graph(WECC_sheet)
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 
-gt_1 = "MIDWAY10"
-gt_2 = "MIDWAY"
+gt_1 = "BUCKLE 1"
+gt_2 = "BUCKLEY"
 visited = set()
 
 curr_mapping = {gt_1: gt_2}
 tree_nodes = [Node(gt_1 + " " + gt_2 + "\n 1.0")]
 
 map_populate(CRR_Network, gt_1, WECC_Network, gt_2, curr_mapping, tree_nodes, visited, 1.0)
-
-for key, val in curr_mapping.items():
-    print(key + " " + val)
-
-print(len(tree_nodes))
 DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("recursive_bus_traversal.png")
 
+"""c = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
+pge_crr = []
 
-"""pge_crr = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
-pge_wecc = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", ["PG AND E", 'SOCALIF'])
+for node in c:
+    if len(CRR_Network.get_neighbors(node)) != 2:
+        pge_crr.append(node)
+
+w = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", ["PG AND E", 'SOCALIF'])
+pge_wecc = []
+
+for wecc_node in w:
+    if len(WECC_Network.get_neighbors(wecc_node)) != 2:
+        pge_wecc.append(wecc_node)
 
 output_df = pd.DataFrame()
 crr_nodes = []
@@ -360,7 +424,7 @@ output_df['Similarity'] = similarities
 np_sims = np.reshape(similarities, (len(pge_crr), len(pge_wecc)))
 optimal_matching(pge_crr, pge_wecc, np_sims, verbose=True)
 
-output_df.to_csv("./../Input Data/Similiarity Table.csv", index=False)"""
+output_df.to_csv("./Network Topology/Input Data/Similiarity Table.csv", index=False)"""
 
 # Output Summary Statistics
 end_time = time.time()
