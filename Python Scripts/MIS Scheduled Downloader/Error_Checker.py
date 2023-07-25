@@ -18,7 +18,7 @@ scriptPath = "\"//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Li
 code_descriptions = {"200" : "Successful Request", "404": "Not Found", "500": "Out Of Memory", "502": "Bad Gateway"}
 
 missing_folders = []
-days_back = 2
+days_back = 1
 chunk_size = 6
 
 log_file = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
@@ -126,6 +126,7 @@ for folder_name in handled_500:
 
 html_result += "".join(missing_folder_strings)
 html_result += "</ul>"
+missing_folders = list(set(missing_folders))
 folder_string = " ".join(missing_folders)
 
 cmd_string = f"{pythonPath} {scriptPath} -r {folder_string} -c 4"
@@ -187,7 +188,7 @@ msg['Subject'] = "MIS Scheduled Download Error Checking Report"
 sender = 'Stephen.Xu@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com']
+receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)

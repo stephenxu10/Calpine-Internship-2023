@@ -53,11 +53,26 @@ def set_node_color(node: Node):
 
     sim_score = float(score)
 
-    if sim_score > 0.65:
+    if sim_score > 0.5:
         return "color=red"
 
     else:
         return "color=black"
+
+def descending_score_idxs(row_idxs: List[int], col_idxs: List[int], scores) -> List[int]:
+    corresponding_scores = []
+
+    for i in range(0, len(row_idxs)):
+        row = row_idxs[i]
+        col = col_idxs[i]
+
+        if row < len(scores) and col < len(scores[0]):
+            corresponding_scores.append((i, scores[row_idxs[i]][col_idxs[i]]))
+    
+    corresponding_scores = sorted(corresponding_scores, key=lambda x: x[1], reverse=True)
+
+    return [t[0] for t in corresponding_scores]
+
 
 def levenshtein(x: str, y: str, c_i: float = 1.0, c_d: float = 1.0, c_s: float = 1.0) -> float:
     """
