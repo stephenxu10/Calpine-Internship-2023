@@ -71,12 +71,10 @@ def build_graph(sheet_path: str, version: int) -> Network:
 
     for _, row in df_branch.iterrows():
         if version == 1:
-            #if row['From Zone Name'] in ["BPA-43"] or row['To Zone Name'] in ["BPA-43"]:
             row_edge = Edge.from_row(row)
             base_graph.add_edge(row_edge)
         
         elif version == 2:
-           #if row['From Area Name'] in ["NORTHWEST"] or row['To Area Name'] in ["NORTHWEST"]:
             row_edge = Edge.from_row(row)
             base_graph.add_edge(row_edge)
 
@@ -184,7 +182,8 @@ def similiarity(net1: Network, node1: str, num1: int, net2: Network, node2: str,
     """
     Overall function that evaluates the similarity between any two nodes
     from two different networks. Computes a weighted average between
-    the loseness of the nodes' names, bus IDs, and topologies. 
+    the closeness of the nodes' names, bus IDs, and topologies. Best suited for comparing
+    two non-tap buses.
 
     Inputs:
         - net1, net2: The two input networks.
@@ -379,7 +378,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
             return
         
         if len(net_1.get_neighbors(other_1.name, other_1.number)) != 2:
-            sim_score = smart_similarity(net_1, other_1.name, other_1.number, node_1, num1, net_2, node_2, num2, "", "", 2, False)
+            sim_score = smart_similarity(net_1, other_1.name, other_1.number, node_1, num1, net_2, node_2, num2, "", "", 2)
             neighbor_node = Node(other_1.name + " " + node_2 + "\n " + str(round(sim_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
             tree_nodes.append(neighbor_node)
             map_populate(net_1, other_1.name, other_1.number, net_2, node_2, num2, curr, tree_nodes, visited, sim_score)            
@@ -400,7 +399,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
             return
         
         if len(net_2.get_neighbors(other_2.name, other_2.number)) != 2:
-            sim_score = smart_similarity(net_1, node_1, num1, "", "", net_2, other_2.name, other_2.number, node_2, num2, 2, False)
+            sim_score = smart_similarity(net_1, node_1, num1, "", "", net_2, other_2.name, other_2.number, node_2, num2, 2)
             neighbor_node = Node(node_1 + " " + other_2.name + "\n " + str(round(sim_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
             tree_nodes.append(neighbor_node)
             map_populate(net_1, node_1, num1, net_2, other_2.name, other_2.number, curr, tree_nodes, visited, sim_score)            
@@ -419,7 +418,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
             curr[node_1] = node_2
             for crr_n in neighbors_1:
                 for wecc_n in neighbors_2:   
-                    similarities.append(smart_similarity(net_1, crr_n.name, crr_n.number, node_1, num1, net_2, wecc_n.name, wecc_n.number, node_2, num2, 2, False))
+                    similarities.append(smart_similarity(net_1, crr_n.name, crr_n.number, node_1, num1, net_2, wecc_n.name, wecc_n.number, node_2, num2, 2))
 
             # Find the optimal matching between the CRR neighbors and WECC neighbors.
             np_sims = np.reshape(similarities, (len(neighbors_1), len(neighbors_2)))
@@ -466,10 +465,10 @@ WECC_Network = build_graph(WECC_sheet, 2)
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
 # WECC_Network.remove_edge("LOSBANOS", "L.BANS M")
 
-gt_1 = "MIDWAY10"
-num_1 = 30060
-gt_2 = "MIDWAY"
-num_2 = 30060
+gt_1 = "LUGO   6"
+num_1 = 24086
+gt_2 = "LUGO"
+num_2 = 24086
 visited = set()
 
 curr_mapping = {gt_1: gt_2}
