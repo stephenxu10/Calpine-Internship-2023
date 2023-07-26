@@ -10,7 +10,7 @@ are compared and scored based on three criteria:
 These three criteria combine to give an approximate similiarity score from 0 to 1. For the end result,
 a mapping is generated between the two sets of buses. 
 
-Currently maps 500 Nom KV Buses from WECC to CRR.
+Currently maps 500 Nom KV Buses from WECC to CRR. 
 """
 import os
 import pandas as pd
@@ -270,6 +270,53 @@ def smart_similarity(net_1: Network, node_1: str, num_1: int, parent_1: str, par
         new_name_1, new_number_1 = find_non_parent(neighbors_1, parent_1, par_num_1)
         new_name_2, new_number_2 = find_non_parent(neighbors_2, parent_2, par_num_2)
         return smart_similarity(net_1, new_name_1, new_number_1, node_1, num_2, net_2, new_name_2, new_number_2, node_2, num_2, depth)
+    
+
+def brute_force(CRR: Network, WECC: Network):
+    """
+    A brute-force function that finds the similarity between each pair of non-tap buses and
+    computes the optimal matching.
+
+    This is brute force, after all, so run sparingly. If there are N tap buses, this
+    algorithm runs the similarity function O(N^2) times, which is much worse compared to
+    the recursive map_populate, which runs the function O(N) times.
+
+    Outputs the resulting comparisons to a CSV and prints the optimal matching.
+    """
+
+    c = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
+    pge_crr = []
+
+    for node in c:
+        if len(CRR.get_neighbors(node)) != 2:
+            pge_crr.append(node)
+
+    w = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", ["PG AND E", 'SOCALIF'])
+    pge_wecc = []
+
+    for wecc_node in w:
+        if len(WECC.get_neighbors(wecc_node)) != 2:
+            pge_wecc.append(wecc_node)
+
+    output_df = pd.DataFrame()
+    crr_nodes = []
+    wecc_nodes = []
+    similarities = []
+
+    for crr in pge_crr:
+        for wecc in pge_wecc:   
+            crr_nodes.append(crr)
+            wecc_nodes.append(wecc)
+            similarities.append(similiarity(CRR, crr, WECC, wecc, depth=2))
+
+    output_df['CRR Buses'] = crr_nodes
+    output_df['WECC Buses'] = wecc_nodes
+    output_df['Similarity'] = similarities
+
+    np_sims = np.reshape(similarities, (len(pge_crr), len(pge_wecc)))
+    optimal_matching(pge_crr, pge_wecc, np_sims, verbose=True)
+
+    output_df.to_csv("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Similarity Table.csv", index=False)
 
 
 def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2: Bus, num2: int, curr: Dict[str, str], tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0.5):
@@ -321,9 +368,9 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
             visited.add(other_2.name)
             map_populate(net_1, other_1.name, other_1.number, net_2, other_2.name, other_2.number, curr, tree_nodes, visited, float('inf'))
     
+    # When one of the buses is a tap bus, find its unvisited neighbor and recurse on it. 
     elif len(neighbors_1) == 2:
         if node_2 in curr.values():
-            print(curr)
             return
         
         other_1 = find_other_neighbor(neighbors_1, curr, visited)
@@ -388,7 +435,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
                     crr_match = neighbors_1[row]
                     wecc_match = neighbors_2[col]
 
-                    # Only recuse if the matches have not been visited yet.
+                    # Only recurse if the matches have not been visited yet.
                     if crr_match.name not in curr and wecc_match.name not in curr.values() and wecc_match.name not in visited and crr_match.name not in visited:
                         if len(search_depth(net_1, crr_match.name, crr_match.number, 1)[0]) != 2 and len(search_depth(net_2, wecc_match.name, wecc_match.number, 1)[0]) != 2:
                             curr[crr_match.name] = wecc_match.name
@@ -434,40 +481,6 @@ DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("./Traversals
 print(len(curr_mapping))
 for node in curr_mapping:
     print(node + " " + curr_mapping[node])
-
-"""c = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
-pge_crr = []
-
-for node in c:
-    if len(CRR_Network.get_neighbors(node)) != 2:
-        pge_crr.append(node)
-
-w = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", ["PG AND E", 'SOCALIF'])
-pge_wecc = []
-
-for wecc_node in w:
-    if len(WECC_Network.get_neighbors(wecc_node)) != 2:
-        pge_wecc.append(wecc_node)
-
-output_df = pd.DataFrame()
-crr_nodes = []
-wecc_nodes = []
-similarities = []
-
-for crr in pge_crr:
-    for wecc in pge_wecc:   
-        crr_nodes.append(crr)
-        wecc_nodes.append(wecc)
-        similarities.append(similiarity(CRR_Network, crr, WECC_Network, wecc, depth=2))
-
-output_df['CRR Buses'] = crr_nodes
-output_df['WECC Buses'] = wecc_nodes
-output_df['Similarity'] = similarities
-
-np_sims = np.reshape(similarities, (len(pge_crr), len(pge_wecc)))
-optimal_matching(pge_crr, pge_wecc, np_sims, verbose=True)
-
-output_df.to_csv("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Similarity Table.csv", index=False)"""
 
 # Output Summary Statistics
 end_time = time.time()
