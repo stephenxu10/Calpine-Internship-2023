@@ -13,11 +13,10 @@ a mapping is generated between the two sets of buses.
 Currently maps 500 Nom KV Buses from WECC to CRR.
 """
 import os
-import sys
 import pandas as pd
 import numpy as np
 import time
-from anytree import Node, RenderTree
+from anytree import Node
 from anytree.exporter import DotExporter
 from collections import deque
 
@@ -26,7 +25,7 @@ os.chdir("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Ag
 from Graph import Network
 from Node import Bus
 from Edge import Edge
-from utils import levenshtein, optimal_matching, name_compare, find_node, set_node_color, find_other_neighbor, descending_score_idxs
+from utils import levenshtein, optimal_matching, name_compare, find_node, set_node_color, find_other_neighbor, descending_score_idxs, find_non_parent
 from typing import *
 
 # Global parameters & variables
@@ -77,10 +76,10 @@ def build_graph(sheet_path: str, version: int) -> Network:
             base_graph.add_edge(row_edge)
         
         elif version == 2:
-            #if row['From Area Name'] in ["NORTHWEST"] or row['To Area Name'] in ["NORTHWEST"]:
+           #if row['From Area Name'] in ["NORTHWEST"] or row['To Area Name'] in ["NORTHWEST"]:
             row_edge = Edge.from_row(row)
             base_graph.add_edge(row_edge)
-    
+
     return base_graph
 
 
@@ -230,42 +229,92 @@ def similiarity(net1: Network, node1: str, num1: int, net2: Network, node2: str,
     return sum(a * b for a, b in zip(scores, weights))
 
 
+def smart_similarity(net_1: Network, node_1: str, num_1: int, parent_1: str, par_num_1: int, net_2: Network, node_2: str, num_2: str, parent_2: str, par_num_2: int, depth: int) -> float:
+    """
+    A "smarter" similarity metric intended for use when traversing through map populate. Unlike the original similarity function, 
+    this method accounts for scenarios when a tap bus is being compared to a 'hub' bus. The high-level logic is as follows:
+        - If the input buses are both hubs, compare them as usual through the similarity function above.
+        - If one bus is a hub while the other is a tap, continue iterating through the tap bus until a hub is reached. Compare
+          those two once the hub is reached.
+        - If both buses are tap buses, compare their corresponding neighbors.
+
+    Inputs:
+        - net_1, net_2: The two input networks
+        - node_1, num_1, parent_1, par_num_1: The input node in the first network and its parent
+        - node_2, num_2, parent_2, par_num_2: The input node in the second network and its parent
+        - depth: The depth to compare for similarity
+    
+    Output:
+        - A similarity score from 0 to 1 that gives the proximity between the two input nodes.
+    """
+    neighbors_1 = list(search_depth(net_1, node_1, num_1, 1)[0])
+    neighbors_2 = list(search_depth(net_2, node_2, num_2, 1)[0])
+
+    # Base Case - Both nodes are hub buses
+    if len(neighbors_1) != 2 and len(neighbors_2) != 2:
+        res = similiarity(net_1, node_1, num_1, net_2, node_2, num_2, depth)
+        return res
+        
+    # Case 2 - The first node is a tap, the second is a hub
+    elif len(neighbors_1) == 2 and len(neighbors_2) != 2:
+        new_name_1, new_number_1 = find_non_parent(neighbors_1, parent_1, par_num_1)
+        return smart_similarity(net_1, new_name_1, new_number_1, node_1, num_1, net_2, node_2, num_2, parent_2, par_num_2, depth)
+    
+    # Case 3 - The first node is a tap, the second is a hub
+    elif len(neighbors_1) != 2 and len(neighbors_2) == 2:
+        new_name_2, new_number_2 = find_non_parent(neighbors_2, parent_2, par_num_2)
+        return smart_similarity(net_1, node_1, num_1, parent_1, par_num_1, net_2, new_name_2, new_number_2, node_2, num_2, depth)
+
+    # Case 4 - Both nodes are Tap Buses
+    else:
+        new_name_1, new_number_1 = find_non_parent(neighbors_1, parent_1, par_num_1)
+        new_name_2, new_number_2 = find_non_parent(neighbors_2, parent_2, par_num_2)
+        return smart_similarity(net_1, new_name_1, new_number_1, node_1, num_2, net_2, new_name_2, new_number_2, node_2, num_2, depth)
+
+
 def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2: Bus, num2: int, curr: Dict[str, str], tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0.5):
     """
     A recursive algorithm to populate a set of mappings by starting from a ground truth of matching
-    nodes. Recurses in a 'breadth-first' manner - begins by attempting to match the input nodes'
-    first layer of neighbors and recurses on similar neighbors.
+    nodes. Recurses in a 'depth-first' manner - begins by attempting to match the input nodes'
+    first layer of neighbors and recurses on their similar neighbors.
 
     Terminates when the length of the mapping exceeds the input limit.
 
     Inputs:
-        - net_1, node_1, net_2, node_2: The corresponding nodes from each network. node_1 and node_2
+        - net_1, node_1, num1, net_2, node_2, num2: The corresponding node & numbers from each network. node_1 and node_2
           are assumed to be strong matches.
         - curr: The current mapping of matches.
-        - threshold: Only accept nodes with a similarity above this threshold. 0.85 by default.
-        - limit: Terminate when the length of mapping exceeds this. 10 by default.
-    
+        - visited: The current visited set of Tap Buses
+        - threshold: Only accept nodes with a similarity above this threshold. 0.5 by default.
+        - sim: The similarity score between node_1 and node_2. Infinity if either node is a tap bus.
+
     Output:
         Returns nothing, but populates the input curr mapping.
-    """ 
-    print(node_1 + " " + node_2 + " " + str(sim))
+    """
+    print(node_1 + " " + node_2 + " " + str(sim)) 
+    # Grab the immediate neighbors of each input node.
     neighbors_1 = list(search_depth(net_1, node_1, num1, 1)[0])
     neighbors_2 = list(search_depth(net_2, node_2, num2, 1)[0])
     
+    # If both nodes are tap buses, recuse on the unvisited neighbors.
     if len(neighbors_1) == 2 and len(neighbors_2) == 2:
         other_1 = find_other_neighbor(neighbors_1, curr, visited)
         other_2 = find_other_neighbor(neighbors_2, curr, visited)
 
+        # If we have already examined the other neighbors, there is no reason to revisit them.
         if other_1.name in visited and other_2.name in visited or other_1.name in curr or other_2.name in curr.values():
             return
 
+        # If the new pair of neighbors are both non-tap buses, calculate their similarity and recuse on them.
         if len(net_1.get_neighbors(other_1.name, other_1.number)) != 2 and len(net_2.get_neighbors(other_2.name, other_2.number)) != 2:
             sim_score = similiarity(net_1, other_1.name, other_1.number, net_2, other_2.name, other_2.number, 2)
             neighbor_node = Node(other_1.name + " " + other_2.name + "\n " + str(round(sim_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
             tree_nodes.append(neighbor_node)
             map_populate(net_1, other_1.name, other_1.number, net_2, other_2.name, other_2.number, curr, tree_nodes, visited, sim_score)
 
+        # Otherwise, recurse on the neighbors and indicate that one is a tap bus.
         else:
+            # No similarity in the node name means that one of the nodes is a tap bus.
             neighbor_node = Node(other_1.name + " " + other_2.name + "\n ", parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
             tree_nodes.append(neighbor_node)
             visited.add(other_1.name)
@@ -274,6 +323,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
     
     elif len(neighbors_1) == 2:
         if node_2 in curr.values():
+            print(curr)
             return
         
         other_1 = find_other_neighbor(neighbors_1, curr, visited)
@@ -282,7 +332,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
             return
         
         if len(net_1.get_neighbors(other_1.name, other_1.number)) != 2:
-            sim_score = similiarity(net_1, other_1.name, other_1.number, net_2, node_2, num2, 2)
+            sim_score = smart_similarity(net_1, other_1.name, other_1.number, node_1, num1, net_2, node_2, num2, "", "", 2, False)
             neighbor_node = Node(other_1.name + " " + node_2 + "\n " + str(round(sim_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
             tree_nodes.append(neighbor_node)
             map_populate(net_1, other_1.name, other_1.number, net_2, node_2, num2, curr, tree_nodes, visited, sim_score)            
@@ -303,7 +353,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
             return
         
         if len(net_2.get_neighbors(other_2.name, other_2.number)) != 2:
-            sim_score = similiarity(net_1, node_1, num1, net_2, other_2.name, other_2.number, 2)
+            sim_score = smart_similarity(net_1, node_1, num1, "", "", net_2, other_2.name, other_2.number, node_2, num2, 2, False)
             neighbor_node = Node(node_1 + " " + other_2.name + "\n " + str(round(sim_score, 3)), parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
             tree_nodes.append(neighbor_node)
             map_populate(net_1, node_1, num1, net_2, other_2.name, other_2.number, curr, tree_nodes, visited, sim_score)            
@@ -314,17 +364,21 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
             visited.add(other_2.name)
             map_populate(net_1, node_1, num1, net_2, other_2.name, other_2.number, curr, tree_nodes, visited, float('inf'))
     
+    # Otherwise, both input nodes are hub buses.
     else:
+        # Compute the matrix of similarities between all pairs of neighbors.
         similarities = []
         if sim > threshold:
             curr[node_1] = node_2
             for crr_n in neighbors_1:
                 for wecc_n in neighbors_2:   
-                    similarities.append(similiarity(CRR_Network, crr_n.name, crr_n.number, WECC_Network, wecc_n.name, wecc_n.number, depth=2))
+                    similarities.append(smart_similarity(net_1, crr_n.name, crr_n.number, node_1, num1, net_2, wecc_n.name, wecc_n.number, node_2, num2, 2, False))
 
+            # Find the optimal matching between the CRR neighbors and WECC neighbors.
             np_sims = np.reshape(similarities, (len(neighbors_1), len(neighbors_2)))
             _, row_indices, col_indices = optimal_matching(neighbors_1, neighbors_2, np_sims)
 
+            # Iterate in a greedy manner - explore the most fruitful matches first.
             for idx in descending_score_idxs(row_indices, col_indices, np_sims):
                 row = row_indices[idx]
                 col = col_indices[idx]
@@ -334,9 +388,10 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
                     crr_match = neighbors_1[row]
                     wecc_match = neighbors_2[col]
 
+                    # Only recuse if the matches have not been visited yet.
                     if crr_match.name not in curr and wecc_match.name not in curr.values() and wecc_match.name not in visited and crr_match.name not in visited:
-                        curr[crr_match.name] = wecc_match.name
                         if len(search_depth(net_1, crr_match.name, crr_match.number, 1)[0]) != 2 and len(search_depth(net_2, wecc_match.name, wecc_match.number, 1)[0]) != 2:
+                            curr[crr_match.name] = wecc_match.name
                             idx = find_node(tree_nodes, node_1 + " " + node_2)
                             neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n" + str(round(similarity_score, 3)), parent=tree_nodes[idx])
                             tree_nodes.append(neighbor_node)
@@ -349,6 +404,12 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
                             neighbor_node = Node(crr_match.name + " " + wecc_match.name + "\n ", parent=tree_nodes[idx])
                             tree_nodes.append(neighbor_node)
 
+                            if len(net_1.get_neighbors(crr_match.name, crr_match.number)) == 2 and crr_match.name not in visited:
+                                visited.add(crr_match.name)
+                            
+                            if len(net_2.get_neighbors(wecc_match.name, wecc_match.number)) == 2 and wecc_match.name not in visited:
+                                visited.add(wecc_match.name)
+
                             # Recurse on the neighbors.
                             map_populate(net_1, crr_match.name, crr_match.number, net_2, wecc_match.name, wecc_match.number, curr, tree_nodes, visited, float('inf'))
 
@@ -356,6 +417,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
 CRR_Network = build_graph(CRR_sheet, 1)
 WECC_Network = build_graph(WECC_sheet, 2)
 CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
+# WECC_Network.remove_edge("LOSBANOS", "L.BANS M")
 
 gt_1 = "MIDWAY10"
 num_1 = 30060
@@ -367,10 +429,11 @@ curr_mapping = {gt_1: gt_2}
 tree_nodes = [Node(gt_1 + " " + gt_2 + "\n 1.0")]
 
 map_populate(CRR_Network, gt_1, num_1, WECC_Network, gt_2, num_2, curr_mapping, tree_nodes, visited, 1.0)
-print(len(curr_mapping))
-print(len(visited))
 DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("./Traversals/overall_traversal.png")
 
+print(len(curr_mapping))
+for node in curr_mapping:
+    print(node + " " + curr_mapping[node])
 
 """c = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
 pge_crr = []

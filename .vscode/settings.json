@@ -3,5 +3,5 @@
     "python.terminal.activateEnvironment": true,
     "git.ignoreLimitWarning": true,
     "editor.fontSize": 13,
-    "editor.rulers": [150]
+    "editor.rulers": [250]
 }

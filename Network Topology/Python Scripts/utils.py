@@ -41,6 +41,13 @@ def find_other_neighbor(neighbors: Set, curr: Dict, visited):
         return neighbors[1]
     else:
         return neighbors[0]
+    
+
+def find_non_parent(neighbors: List, parent_name: str, parent_num: int):
+    if neighbors[0].name == parent_name and neighbors[0].number == parent_num:
+        return neighbors[1].name, neighbors[1].number
+    
+    return neighbors[0].name, neighbors[0].number
 
 def set_node_color(node: Node):
     """
