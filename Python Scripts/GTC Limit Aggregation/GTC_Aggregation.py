@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import glob
 import numpy as np
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 import time
 from io import StringIO
@@ -212,12 +212,12 @@ if not os.path.isfile(final_output_path):
 else:
     current_data = pd.read_csv(final_output_path, low_memory=False)
     current_year = datetime.now().year
-    current_date = datetime.now().strftime("%m/%d")
+    current_date = (datetime.now() - timedelta(days=10)).strftime("%m/%d")
 
     new_current = aggregate_year(current_year, current_date)
 
     if len(new_current) > 0:
-        new_current = filter_raw_data(new_current, "today")
+        new_current = filter_raw_data(new_current, current_date)
         current_data = pd.concat([current_data, new_current], axis=0)
         current_data = current_data.drop_duplicates()
         current_data.to_csv(final_output_path, index=False)

@@ -181,6 +181,7 @@ def name_compare(x: str, y: str) -> float:
         return 0.3
     
     # Otherwise, neither string has any underscores - use the edit distance
+    y = y.replace("_", "")
     return max(levenshtein(x, y), levenshtein(y, x))
 
 
@@ -221,8 +222,7 @@ def optimal_matching(set1: List, set2: List, similarity_scores, verbose=False) -
         for row, col in zip(row_indices, col_indices):
             if row < len(set1) and col < len(set2):
                 similarity_score = similarity_matrix[row, col]
-                if similarity_score > 0.6:
-                    print(f"1: {set1[row]}, 2: {set2[col]}, Similarity Score: {similarity_score}")
+                print(f"1: {set1[row]}, 2: {set2[col]}, Similarity Score: {similarity_score}")
 
     # Adjust the similarity score for size differences
     overall_similarity *= (min(len(set1), len(set2)) / max_size)

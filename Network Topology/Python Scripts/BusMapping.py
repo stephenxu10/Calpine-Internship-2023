@@ -30,8 +30,8 @@ from typing import *
 
 # Global parameters & variables
 start_time = time.time()
-CRR_sheet = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Input Data/CRR Buses and Branches.xlsx"
-WECC_sheet = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Input Data/WECC Buses and Branches.xlsx"
+CRR_sheet = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/More Nodes/CRR Sheet.xlsx"
+WECC_sheet = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/More Nodes/WECC Sheet.xlsx"
 
 def extract_nodes(sheet_path: str, from_name: str, to_name: str, zone: List[str]) -> List[str]:
     """
@@ -64,17 +64,20 @@ def build_graph(sheet_path: str, version: int) -> Network:
     base_graph = Network()
     df_branch = pd.read_excel(sheet_path, sheet_name="Branch")
     df_bus = pd.read_excel(sheet_path, sheet_name="Bus")
+    CAISO_wecc = ['PG AND E']
 
     for _, row in df_bus.iterrows():
-        row_node = Bus.from_row(row)
-        base_graph.add_node(row_node)
+        if row['Nom kV'] == 230:
+            if version == 1 and row['Zone Num'] == 4:
+                row_node = Bus.from_row(row)
+                base_graph.add_node(row_node)
+            
+            elif version == 2 and row['Area Name'] in CAISO_wecc:
+                row_node = Bus.from_row(row)
+                base_graph.add_node(row_node)  
 
     for _, row in df_branch.iterrows():
-        if version == 1:
-            row_edge = Edge.from_row(row)
-            base_graph.add_edge(row_edge)
-        
-        elif version == 2:
+        if row['From Nom kV'] == 230 and row['To Nom kV'] == 230:
             row_edge = Edge.from_row(row)
             base_graph.add_edge(row_edge)
 
@@ -268,7 +271,7 @@ def smart_similarity(net_1: Network, node_1: str, num_1: int, parent_1: str, par
     else:
         new_name_1, new_number_1 = find_non_parent(neighbors_1, parent_1, par_num_1)
         new_name_2, new_number_2 = find_non_parent(neighbors_2, parent_2, par_num_2)
-        return smart_similarity(net_1, new_name_1, new_number_1, node_1, num_2, net_2, new_name_2, new_number_2, node_2, num_2, depth)
+        return smart_similarity(net_1, new_name_1, new_number_1, node_1, num_1, net_2, new_name_2, new_number_2, node_2, num_2, depth)
     
 
 def brute_force(CRR: Network, WECC: Network):
@@ -283,18 +286,18 @@ def brute_force(CRR: Network, WECC: Network):
     Outputs the resulting comparisons to a CSV and prints the optimal matching.
     """
 
-    c = extract_nodes(CRR_sheet, "From Zone Name", "To Zone Name", ["PGAE-30", "SCE-24"])
+    c = CRR.graph.keys()
     pge_crr = []
 
     for node in c:
-        if len(CRR.get_neighbors(node)) != 2:
+        if len(CRR.get_neighbors(node.name, node.number)) != 2 and len(CRR.get_neighbors(node.name, node.number)) != 0:
             pge_crr.append(node)
 
-    w = extract_nodes(WECC_sheet, "From Area Name", "To Area Name", ["PG AND E", 'SOCALIF'])
+    w = WECC.graph.keys()
     pge_wecc = []
 
     for wecc_node in w:
-        if len(WECC.get_neighbors(wecc_node)) != 2:
+        if len(WECC.get_neighbors(wecc_node.name, wecc_node.number)) != 2 and len(WECC.get_neighbors(wecc_node.name, wecc_node.number)) != 0:
             pge_wecc.append(wecc_node)
 
     output_df = pd.DataFrame()
@@ -302,11 +305,13 @@ def brute_force(CRR: Network, WECC: Network):
     wecc_nodes = []
     similarities = []
 
+    print(len(pge_crr))
+    print(len(pge_wecc))
     for crr in pge_crr:
         for wecc in pge_wecc:   
-            crr_nodes.append(crr)
-            wecc_nodes.append(wecc)
-            similarities.append(similiarity(CRR, crr, WECC, wecc, depth=2))
+            crr_nodes.append(crr.name)
+            wecc_nodes.append(wecc.name)
+            similarities.append(similiarity(CRR, crr.name, crr.number, WECC, wecc.name, wecc.number, depth=2))
 
     output_df['CRR Buses'] = crr_nodes
     output_df['WECC Buses'] = wecc_nodes
@@ -315,7 +320,7 @@ def brute_force(CRR: Network, WECC: Network):
     np_sims = np.reshape(similarities, (len(pge_crr), len(pge_wecc)))
     optimal_matching(pge_crr, pge_wecc, np_sims, verbose=True)
 
-    output_df.to_csv("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Similarity Table.csv", index=False)
+    output_df.to_csv("//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/CAISO 230 Table.csv", index=False)
 
 
 def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2: Bus, num2: int, curr: Dict[str, str], tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0.5):
@@ -462,20 +467,20 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
                 
 CRR_Network = build_graph(CRR_sheet, 1)
 WECC_Network = build_graph(WECC_sheet, 2)
-CRR_Network.remove_edge("MIDWAY10", "ZP26SL 1")
-# WECC_Network.remove_edge("LOSBANOS", "L.BANS M")
 
-gt_1 = "LUGO   6"
-num_1 = 24086
-gt_2 = "LUGO"
-num_2 = 24086
+# brute_force(CRR_Network, WECC_Network)
+
+gt_1 = "CROKET 3"
+num_1 = 30437
+gt_2 = "CROCKETT"
+num_2 = 30437
 visited = set()
 
 curr_mapping = {gt_1: gt_2}
 tree_nodes = [Node(gt_1 + " " + gt_2 + "\n 1.0")]
 
 map_populate(CRR_Network, gt_1, num_1, WECC_Network, gt_2, num_2, curr_mapping, tree_nodes, visited, 1.0)
-DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("./Traversals/overall_traversal.png")
+DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("./Traversals/CAISO-230.png")
 
 print(len(curr_mapping))
 for node in curr_mapping:
