@@ -4,7 +4,7 @@ Some utility methods for the project
 import numpy as np
 from scipy.optimize import linear_sum_assignment
 from anytree import Node
-from typing import List, Dict, Tuple, Union, Set
+from typing import List, Dict, Tuple, Union
 import re
 
 def num_proximity(num1: float, num2: float) -> float:
@@ -33,11 +33,11 @@ def find_node(nodes: List[Node], target: str) -> Union[int, None]:
     
     return None
 
-def find_other_neighbor(neighbors: Set, curr: Dict, visited):
-    if(neighbors[0].name in curr or neighbors[0].name in curr.values()):
+def find_other_neighbor(neighbors: List, curr: Dict, visited):
+    if neighbors[0].name in curr or neighbors[0].name in curr.values():
         return neighbors[1]
     
-    if (neighbors[0].name in visited):
+    if neighbors[0].name in visited:
         return neighbors[1]
     else:
         return neighbors[0]
@@ -60,7 +60,7 @@ def set_node_color(node: Node):
 
     sim_score = float(score)
 
-    if sim_score > 0.5:
+    if sim_score > 0.6:
         return "color=red"
 
     else:
@@ -141,7 +141,7 @@ def isSubsequence(substring: str, string: str) -> bool:
 def name_compare(x: str, y: str) -> float:
     """
     Helper method to compare two input Bus Names. Returns a float in [0, 1] that represents
-    their similiarity.
+    their similarity.
     
     Strips numbers from each string and compares them through their Edit Distance. Also
     accounts for a special case when a string is in the format XX_YY_##
@@ -189,7 +189,7 @@ def optimal_matching(set1: List, set2: List, similarity_scores, verbose=False) -
     """
     A Helper method that implements the Hungarian Algorithm for the Assignment Problem. 
     Given two sets of elements and a similarity score mapping, this algorithm returns the optimal Bipartite matching 
-    between the sets that maximizes the sum of their similiarity scores.
+    between the sets that maximizes the sum of their similarity scores.
 
     The procedure is slightly modified for our purposes. We enforce a matching penalty
     if the two sets have different size, as shown in the code.
@@ -203,7 +203,7 @@ def optimal_matching(set1: List, set2: List, similarity_scores, verbose=False) -
     Output:
     Returns a tuple of three elements
         - overall_similarity: The average similarity from the optimal matching
-        - row_indicies, col_indices: List of Ints that give the coordinates of the specific matching
+        - row_indices, col_indices: List of Ints that give the coordinates of the specific matching
     """
 
     # Determine the maximum size of the sets
@@ -229,6 +229,7 @@ def optimal_matching(set1: List, set2: List, similarity_scores, verbose=False) -
 
     # print(f"Overall Similarity Score: {overall_similarity}")
     return overall_similarity, row_indices, col_indices
+
 
 if __name__ == "__main__":
     # Example sets and similarity scores
