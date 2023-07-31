@@ -1,5 +1,4 @@
 import pandas as pd
-from datetime import datetime
 import os
 import time
 import concurrent.futures
@@ -91,9 +90,15 @@ def analyze_sheet(sheet_name: str) -> pd.DataFrame:
     merged_df = pd.merge(forecast, resource, right_on=date_key, left_on='Operating Day', how="inner")
     merged_df = merged_df.filter(regex='^(?!Unnamed)')
 
-    merged_df = merged_df.rename(
-        columns={date_key: "MARKETDAY", "Operating Hour": "HOURENDING"}
-    )
+    if version == 1:
+        merged_df = merged_df.rename(
+            columns={date_key: "MARKETDAY", "Operating Hour": "HOURENDING"}
+        )
+
+    else:
+        merged_df = merged_df.rename(
+            columns={"Operating Day": "MARKETDAY", "Operating Hour": "HOURENDING"}
+        )   
     # Create estimated capacity and curtailment factor columns
     merged_df["RT Est. Cap Factor"] = (
         merged_df[output_key] / merged_df["System-Wide Capacity"]
@@ -101,18 +106,16 @@ def analyze_sheet(sheet_name: str) -> pd.DataFrame:
     merged_df["RT Est. Curt Factor"] = (
         merged_df["RT Est. Curtailments"] / merged_df["System-Wide Capacity"]
     )
+
     if version == 1:
         merged_df["Load-Solar Difference"] = (
             merged_df["Ercot Load (MW)"] - merged_df[output_key]
         )
     
     else:
-        merged_df["Load-Wind Difference"] = (
-            merged_df["Ercot Load (MW)"] - merged_df[output_key]
-        )
+        merged_df["Load-Wind Difference"] = merged_df["Ercot Load (MW)"] - merged_df[output_key]
         market_dates = merged_df.pop('MARKETDAY')
         merged_df.insert(0, 'MARKETDAY', market_dates)
-
     return merged_df
 
 
@@ -192,7 +195,7 @@ merged = pd.merge(
 )
 
 if version == 2:
-    merged = merged.drop(columns=['Operating Day'])
+    merged = merged.drop(columns=['Date'])
 
 merged.to_csv(output_path, index=False)
 

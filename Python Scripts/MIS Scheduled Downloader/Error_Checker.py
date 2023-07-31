@@ -22,6 +22,7 @@ days_back = 1
 chunk_size = 6
 
 log_file = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
+freqs = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/frequencies.txt"
 offset = 0
 yesterday = (date.today() - timedelta(days=days_back+offset)).strftime('%Y-%m-%d')
 today = (date.today() - timedelta(days=offset)).strftime('%Y-%m-%d')
@@ -34,6 +35,9 @@ full_mapping = dict(zip(df_excel['Folder Name'], zip(df_excel['Type Id'], df_exc
 # Read from the invalid requests error log
 with open(log_file, "r") as log:
     rows = log.read().split("\n")
+
+with open(freqs, "r") as f:
+    frequencies = f.read().split("\n")
 
 hour = "06"
 intended_chunks = days_back * 24 / chunk_size
@@ -78,10 +82,11 @@ result_df['Report ID'] = reportIDs
 result_df['Description'] = descriptions
 result_df['Status Code'] = codes
 
-result_df = result_df.drop_duplicates()
+result_df = result_df.drop_duplicates(subset=['Folder Name'])
 result_df['sort_key'] = result_df[result_df.columns[0]].str.split('_', expand=True)[0].astype(int)
 result_df = result_df.sort_values(by='sort_key')
 result_df = result_df.drop(columns='sort_key')
+# result_df['Expected Frequency'] = frequencies
 
 status_count = {}
 for _, row in result_df.iterrows():
@@ -188,7 +193,7 @@ msg['Subject'] = "MIS Scheduled Download Error Checking Report"
 sender = 'Stephen.Xu@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
+receivers = ['Stephen.Xu@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
