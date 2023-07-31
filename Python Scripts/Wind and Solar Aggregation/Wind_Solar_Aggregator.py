@@ -28,11 +28,13 @@ date_key = "Operating Day" if version == 1 else "Date"
 start_time = time.time()
 solar_base = "//pzpwcmfs01/ca/11_Transmission Analysis/ERCOT/04 - Monthly Updates/101 - Misc/01 - General/Wind Forecast Monthly"
 output_path = (
-    "./../../Data/Wind and Solar Aggregates/ERCOT_Solar_Curtailment_WMWG.csv"
+    "//pzpwcmfs01/ca/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Wind and Solar Aggregates/ERCOT_Solar_Curtailment_WMWG.csv"
     if version == 1
-    else "./../../Data/Wind and Solar Aggregates/ERCOT_Wind_Curtailment_WMWG.csv"
+    else "//pzpwcmfs01/ca/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Wind and Solar Aggregates/ERCOT_Wind_Curtailment_WMWG.csv"
 )
 credential_path = "//pzpwcmfs01/ca/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
+
+overall_solar = ['Operating Day', 'System-Wide Capacity', 'CenterEast Capacity', 'FarEast Capacity', 'FarWest Capacity', 'NorthWest Capacity', 'SouthEast Capacity']
 
 nodes = ["HB_NORTH", "HB_WEST", "HB_SOUTH", "HB_HOUSTON"]
 node_url_string = ",".join(nodes)
@@ -64,7 +66,7 @@ def analyze_sheet(sheet_name: str) -> pd.DataFrame:
     print(sheet_name)
 
     if version == 1:
-        cols = "A:B"
+        cols = "A:H"
         HA_sheet = "HA System-Wide STPPF"
 
     else:
@@ -77,17 +79,17 @@ def analyze_sheet(sheet_name: str) -> pd.DataFrame:
     )
     resource = resource[pd.notna(resource[date_key])]
 
+    if version == 1:
+        resource = resource.reindex(columns=overall_solar)
+
     # Read the Hour Ahead (HA) sheet
     forecast = pd.read_excel(
-        full_path, sheet_name=HA_sheet, skiprows=9, usecols="A:M"
+        full_path, sheet_name=HA_sheet, skiprows=9, usecols="A:L"
     )
+
     # Merge together the two DataFrames and rearrange the columns
     merged_df = pd.merge(forecast, resource, right_on=date_key, left_on='Operating Day', how="inner")
-    columns = merged_df.columns.tolist()
     merged_df = merged_df.filter(regex='^(?!Unnamed)')
-    if version == 1:
-        columns = columns[:1] + columns[2:] + columns[1:2]
-        merged_df = merged_df[columns]
 
     merged_df = merged_df.rename(
         columns={date_key: "MARKETDAY", "Operating Hour": "HOURENDING"}
@@ -99,10 +101,18 @@ def analyze_sheet(sheet_name: str) -> pd.DataFrame:
     merged_df["RT Est. Curt Factor"] = (
         merged_df["RT Est. Curtailments"] / merged_df["System-Wide Capacity"]
     )
+    if version == 1:
+        merged_df["Load-Solar Difference"] = (
+            merged_df["Ercot Load (MW)"] - merged_df[output_key]
+        )
+    
+    else:
+        merged_df["Load-Wind Difference"] = (
+            merged_df["Ercot Load (MW)"] - merged_df[output_key]
+        )
+        market_dates = merged_df.pop('MARKETDAY')
+        merged_df.insert(0, 'MARKETDAY', market_dates)
 
-    merged_df["Load-Solar Difference"] = (
-        merged_df["Ercot Load (MW)"] - merged_df[output_key]
-    )
     return merged_df
 
 
@@ -120,7 +130,7 @@ def process_file(file_name):
 historical_solar = os.listdir(solar_base)
 
 # Use ThreadPoolExecutor to parallelize the file processing procedure
-with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
+with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
     executor.map(process_file, historical_solar)
 
 merged = pd.concat(overall_dfs, axis=0)

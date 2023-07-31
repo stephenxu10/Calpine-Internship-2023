@@ -27,7 +27,7 @@ start_time = time.time()
 max_workers = 5
 
 # How many days we look back for data collection.
-days_back = 2
+days_back = 1
 
 # How many hours to look back for OOM Exception Handling.
 chunk_size = 6
@@ -38,9 +38,9 @@ yesterday = (date.today() - timedelta(days=days_back+offset)).strftime('%Y-%m-%d
 today = (date.today() - timedelta(days=offset)).strftime('%Y-%m-%d')
 
 # Current temporary storage for downloaded files
-destination_folder = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS 2023\\"
+# destination_folder = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS 2023\\"
 
-# destination_folder = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\MIS Scheduled Downloads\\"
+destination_folder = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\MIS Scheduled Downloads\\"
 
 # Text file for invalid request numbers
 invalid_rid = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
