@@ -9,7 +9,6 @@ Daily
 Daily
 Daily
 Daily
-Daily
 Hourly
 5-Minute
 5-Minute
@@ -75,6 +74,8 @@ Daily
 Weekly
 Weekly
 5-Minute
+Hourly
+Daily
 Hourly
 Daily
 Daily

@@ -18,7 +18,7 @@ scriptPath = "\"//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Li
 code_descriptions = {"200" : "Successful Request", "404": "Not Found", "500": "Out Of Memory", "502": "Bad Gateway"}
 
 missing_folders = []
-days_back = 1
+days_back = 2
 chunk_size = 6
 
 log_file = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
@@ -86,7 +86,7 @@ result_df = result_df.drop_duplicates(subset=['Folder Name'])
 result_df['sort_key'] = result_df[result_df.columns[0]].str.split('_', expand=True)[0].astype(int)
 result_df = result_df.sort_values(by='sort_key')
 result_df = result_df.drop(columns='sort_key')
-# result_df['Expected Frequency'] = frequencies
+result_df['Expected Frequency'] = frequencies
 
 status_count = {}
 for _, row in result_df.iterrows():
@@ -193,7 +193,7 @@ msg['Subject'] = "MIS Scheduled Download Error Checking Report"
 sender = 'Stephen.Xu@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com']
+receivers = ['Stephen.Xu@calpine.com','Pranil.Walke@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
