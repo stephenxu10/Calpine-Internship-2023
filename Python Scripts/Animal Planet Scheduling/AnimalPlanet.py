@@ -39,25 +39,43 @@ def scrape_tv_schedule(url) -> pd.DataFrame:
     episode_names = []
     seasons = []
     episode_nums = []
+    descriptions = []
 
+    # Grab the raw HTML content for the schedule table
     schedule_elements = soup.find("tbody")
 
-    for row in schedule_elements.find_all("tr"):
+    # Parse each row of the table
+    for row in schedule_elements.find_all("tr"): 
+        # Parse each cell to extract time, show name, and episode name
         cells = row.find_all("td")
         times.append(cells[0].text.strip())
         show_names = cells[1].text.strip().split("-")
         shows.append(show_names[0].strip().split("\n")[0])
         episode_names.append(show_names[0].strip().split("\n")[1])
         
+        # Grab the season and episode number, if available
         if len(show_names) >= 2:
             stripped_season_info = show_names[1].strip()
             seasons.append(stripped_season_info[7])
             episode_idx = stripped_season_info.index("Episode")
-            episode_nums.append(stripped_season_info[episode_idx + 8])
+            episode_nums.append(stripped_season_info[episode_idx + 8: episode_idx + 10])
         
         else:
             seasons.append("N/A")
             episode_nums.append("N/A")
+        
+        # Grab the description of the episode
+        des_url = row.find("a").get('href')
+        des_response = requests.get(des_url)
+
+        if des_response.status_code == 200:
+            soup = BeautifulSoup(des_response.content, "html.parser")
+            description = soup.find_all("p")[1].text
+            descriptions.append(description)
+        
+        else:
+            descriptions.append("")
+
 
     res = pd.DataFrame()
     res['Time'] = times
@@ -65,6 +83,7 @@ def scrape_tv_schedule(url) -> pd.DataFrame:
     res['Episode Name'] = episode_names
     res['Season'] = seasons
     res['Episode #'] = episode_nums
+    res['Synopsis'] = descriptions
 
     return res
 
@@ -84,7 +103,6 @@ body += '<html><body>' + tv_schedule.to_html(index=False) + '</body></html>'
 msg = MIMEMultipart('alternative')
 msg['Subject'] = "Animal Planet Daily Schedule!"
 sender = 'Stephen.Xu@calpine.com'
-
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)

@@ -1,4 +1,3 @@
-import ast
 import itertools
 import os
 import warnings
@@ -32,6 +31,7 @@ south_central = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural 
 
 # Dataset Number
 dataset = 2359
+
 # The number of days we look back
 days_back = 90
 
@@ -153,7 +153,7 @@ def fetch_gas_data(pipeline: str, flow_point: Set[str], days_behind: int, datase
             return pd.read_csv(StringIO(r.text))
 
         else:
-            print("not found!")
+            print(pipeline)
             return
 
 
@@ -204,6 +204,3 @@ for key in processed_paths:
 # Merge together the queried data and output it to a CSV
 merged_df = pd.concat(merge, axis=0)
 merged_df.to_csv(output_path, index=False)
-
-# find_recent_capacities(merged_df).to_csv(output_path, sheet_name="Capacity", index=False)
-
