@@ -42,7 +42,7 @@ def date_difference_string(td):
     if days_difference > 0:
         return f"Delayed {days_difference} days"
     elif days_difference < 0:
-        return f"Sooner by {abs(days_difference)} days"
+        return f"Earlier by {abs(days_difference)} days"
     else:
         return "No change in dates"
 

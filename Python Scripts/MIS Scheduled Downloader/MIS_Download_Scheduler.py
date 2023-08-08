@@ -40,6 +40,7 @@ today = (date.today() - timedelta(days=offset)).strftime('%Y-%m-%d')
 # Current temporary storage for downloaded files
 destination_folder = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS 2023\\"
 
+# Folder to use for testing
 # destination_folder = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\MIS Scheduled Downloads\\"
 
 # Text file for invalid request numbers
