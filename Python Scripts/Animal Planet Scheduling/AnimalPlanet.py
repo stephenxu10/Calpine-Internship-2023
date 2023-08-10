@@ -54,8 +54,16 @@ def scrape_tv_schedule(url) -> pd.DataFrame:
         episode_names.append(show_names[0].strip().split("\n")[1])
         
         # Grab the season and episode number, if available
-        if len(show_names) >= 2:
+        if len(show_names) == 2:
             stripped_season_info = show_names[1].strip()
+            seasons.append(stripped_season_info[7])
+            episode_idx = stripped_season_info.index("Episode")
+            episode_nums.append(stripped_season_info[episode_idx + 8: episode_idx + 10])
+        
+        elif len(show_names) == 3:
+            episode_names.pop()
+            episode_names.append(show_names[0].strip().split("\n")[1] + "-" + show_names[1].strip())
+            stripped_season_info = show_names[2].strip()
             seasons.append(stripped_season_info[7])
             episode_idx = stripped_season_info.index("Episode")
             episode_nums.append(stripped_season_info[episode_idx + 8: episode_idx + 10])
