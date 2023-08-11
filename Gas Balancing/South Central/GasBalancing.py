@@ -10,6 +10,9 @@ from io import StringIO
 
 """
 Blaine's original code: Y:\5_Trans Analysis\Models\Development\Python\Scripts\SouthCentralGasBalancePython.py
+
+Stephen Personal: stephenming228@gmail.com
+        Cell: 617-256-7766
 """
 
 # Ignore warnings.
@@ -26,7 +29,6 @@ pipeline_mapping = {row['Gas Pipeline Name']: row['Gas Pipeline ID'] for _, row 
                     pd.read_excel(mapping_path).iterrows()}
 
 output_path = "./Aggregated_BalanceSheets.csv"
-
 south_central = "\\\\pzpwcmfs01\\CA\\1_Market Analysis\\Trading\\Desk - Natural Gas\\Copy Of SouthCentral Balance.xlsx"
 
 # Dataset Number
@@ -153,7 +155,7 @@ def fetch_gas_data(pipeline: str, flow_point: Set[str], days_behind: int, datase
             return pd.read_csv(StringIO(r.text))
 
         else:
-            print(pipeline)
+            print(pipeline + " " + str(flow_point))
             return
 
 

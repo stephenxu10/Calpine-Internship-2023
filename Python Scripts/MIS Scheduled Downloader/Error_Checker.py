@@ -190,10 +190,10 @@ body += f"""<h3 style="font-weight: normal;">Table Summary of Findings:</h3>
 
 msg = MIMEMultipart('alternative')
 msg['Subject'] = "MIS Scheduled Download Error Checking Report"
-sender = 'Stephen.Xu@calpine.com'
+sender = 'transmission.yesapi@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com','Pranil.Walke@calpine.com']
+receivers = ['transmission@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
