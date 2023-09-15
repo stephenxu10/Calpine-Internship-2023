@@ -370,7 +370,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
         if other_1.name in visited and other_2.name in visited or other_1.name in curr or other_2.name in curr.values():
             return
 
-        # If the new pair of neighbors are both non-tap buses, calculate their similarity and recuse on them.
+        # If the new pair of neighbors are both non-tap buses, calculate their similarity and recurse on them.
         if len(net_1.get_neighbors(other_1.name, other_1.number)) != 2 and len(
                 net_2.get_neighbors(other_2.name, other_2.number)) != 2:
             sim_score = similarity(net_1, other_1.name, other_1.number, net_2, other_2.name, other_2.number, 2)

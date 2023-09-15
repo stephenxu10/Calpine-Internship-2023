@@ -27,7 +27,7 @@ start_time = time.time()
 max_workers = 5
 
 # How many days we look back for data collection.
-days_back = 2
+days_back = 1
 
 # How many hours to look back for OOM Exception Handling.
 chunk_size = 6

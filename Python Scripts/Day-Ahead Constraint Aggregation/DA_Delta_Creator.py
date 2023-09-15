@@ -1,14 +1,14 @@
 import zipfile
-from io import StringIO
+from io import StringIO, BytesIO
 import json
 from itertools import product
-
 import requests
 import warnings
 from typing import Dict, Tuple, List, Union
 import pandas as pd
 from collections import defaultdict
 import time
+from datetime import date
 from datetime import timedelta, datetime
 import os
 
@@ -22,7 +22,7 @@ Currently, this script does not generate an aggregated CSV like in ./../Real-Tim
 it generates the summary JSON like before. The overall workflow is as follows:
     1) Query Yes Energy to extract the set of Settlement Points that we are interested in.
     2) Query Yes Energy again to create/update the pre-processed yearly DA web data.
-    3) Convert and aggregate all unread data from the CA drive using the pre-processed mapping.
+    3) Convert and aggregate all unread data from ERCOT API for the last 14 days using the pre-processed mapping.
     4) Post-process the aggregated data into a summary JSON.
     5) Use this summarized JSON to generate the Delta Table and output it to a CSV.
 
@@ -34,14 +34,13 @@ warnings.simplefilter("ignore")
 start_time = time.time()
 year = 2023
 
-zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\55_DSF"
 json_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/" + str(year) + "_web_data.json"
 json_summary = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/processed_" + str(year) + "_summary.json"
-delta_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv" if year != 2023 else "\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_2023.csv"
+delta_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/DA/ERCOT?"
-days_back = 2
+days_back = 14
 
 with open(credential_path, "r") as credentials:
     auth = tuple(credentials.read().split())
@@ -100,6 +99,36 @@ def process_mapping(start_date: str, end_date: str) -> Union[
         res[date][hour][facility_name].append((contingency, peak_type))
 
     return res
+
+def grab_latest_data(l_d: str, l_h: str, u_d: str, u_h: str) -> pd.DataFrame():
+    """
+    Queries the latest 14 days of data through ERCOT API and aggregates the results
+    into one large DataFrame.
+
+    Returns this resulting DataFrame.
+    """
+    merged = []
+    file_type = "csv"
+    ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId=13089&marketParticipantId=CRRAH&startTime={l_d}T{l_h}:00:00&endTime={u_d}T{u_h}:00:00&unzipFiles=false"
+
+    print(ercot_url)
+
+    response = requests.get(ercot_url, verify=False)
+    if response.status_code == 200:
+        zip_d = zipfile.ZipFile(BytesIO(response.content))
+        
+        with zip_d as zip_data:
+            for file_name in zip_data.namelist():
+                if file_type in file_name:
+                    inner_data = BytesIO(zip_data.read(file_name))
+                    with zipfile.ZipFile(inner_data, 'r') as inner_zip:
+                        with inner_zip.open(inner_zip.namelist()[0]) as inner_csv:
+                            merged.append(pd.read_csv(inner_csv))
+    else:
+        print(response.status_code)
+    
+    return merged
+
 
 def findDesired(mapping: Dict, row) -> Tuple[str, str]:
     """
@@ -191,7 +220,6 @@ def process_csv(existing_data: Dict, yes_mapping: Dict, raw_data: pd.DataFrame):
             existing_data[row['SettlementPoint']][deliveryDate][parsedHour].append((contingency, fullConstraint, peak, shiftFactor, shadowShift))
     # Progress-checking print statement
     print("Finished " + deliveryDate)
-    return existing_data
 
 
 def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame, None]:
@@ -256,29 +284,21 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
     return res
 
 """
-Procedure to store the pre-processed data as JSONs in the parent directory's
+Procedure to store the pre-processed data as JSONs in the grandparent directory's
 Data subfolder. Querying a entire year of data from Yes Energy every single time can be costly, so
 this improves performance a tad. 
 
 Each JSON data file also contains a "Latest Date Queried" field, which stores
 the latest date in MM/DD format queried from the website.
 """
+lower_bound = (date.today() - timedelta(days=days_back)).strftime('%Y-%m-%d')
+today = (date.today()).strftime('%Y-%m-%d')
 mapping = {}
-lower_bound = ""
 
 # If the JSON file does not already exist, query all available data and create the JSON file
 if not os.path.isfile(json_path):
     # Grab all available data from the year.
     mapping = dict(process_mapping("12/31/" + str(year - 1), "12/31/" + str(year)))
-
-    # If the year parameter is not the current year, we've grabbed everything
-    if year != datetime.now().year:
-        mapping["Latest Date Queried"] = "12/31"
-
-    # Otherwise, if we are working with current data, the latest date queried is today.
-    else:
-        mapping["Latest Date Queried"] = datetime.now().strftime("%m/%d")
-
     json_data = json.dumps(mapping)
 
     with open(json_path, "w") as file:
@@ -289,11 +309,7 @@ elif year == datetime.now().year:
     with open(json_path, "r") as file:
         mapping = json.load(file)
 
-    latest_date = mapping["Latest Date Queried"]
-    lower_bound = datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y") - timedelta(days=days_back)
-    new_data = dict(process_mapping(str(lower_bound.date()), "today"))
-    mapping.update(new_data)
-    mapping["Latest Date Queried"] = datetime.now().strftime("%m/%d")
+    mapping = dict(process_mapping(lower_bound, "today"))
 
     with open(json_path, "w") as file:
         json.dump(mapping, file)
@@ -307,26 +323,15 @@ else:
 """
 Now that we have the mapping, we can begin converting and aggregating the data.
 """
-yearly_zip_files = os.listdir(zip_base)
+ercot_df = grab_latest_data(lower_bound, "01", today, "01")
 
-try:
-    with open(json_summary) as js_sum:
-        existing_sum = json.load(js_sum)
+existing_sum = {}
 
-except (json.JSONDecodeError, FileNotFoundError):
-    existing_sum = {}
-
-for zip_file in yearly_zip_files:
-    zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")
-    
-    if zip_date >= lower_bound:
-        with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
-            df_csv = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
-            existing_data = process_csv(existing_sum, mapping, df_csv)
+for inner_df in ercot_df:
+    process_csv(existing_sum, mapping, inner_df)
 
 with open(json_summary, "w") as json_sum:
     json_sum.write(json.dumps(existing_sum))
-
 
 """
 Create the Delta Table using the newly updated summary dictionary.

@@ -18,7 +18,7 @@ scriptPath = "\"//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Li
 code_descriptions = {"200" : "Successful Request", "404": "Not Found", "500": "Out Of Memory", "502": "Bad Gateway"}
 
 missing_folders = []
-days_back = 2
+days_back = 1
 chunk_size = 6
 
 log_file = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Python Scripts/MIS Scheduled Downloader/request_summary.txt"
