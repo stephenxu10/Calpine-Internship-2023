@@ -36,7 +36,7 @@ year = 2023
 
 json_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/" + str(year) + "_web_data.json"
 json_summary = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/processed_" + str(year) + "_summary.json"
-delta_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv"
+delta_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv" if year != 2023 else "\\pzpwtabapp01\Ercot"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/DA/ERCOT?"

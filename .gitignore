@@ -8,3 +8,6 @@ Gas Balancing/Aggregated_SC_EV_2.xlsx
 Data/Hourly Generation Data/ERCOT_LMP_Gas_HR.csv
 Data/Hourly Generation Data/Hourly_Central_Gen.xlsx
 Data/Hourly Generation Data/ERCOT_LMP_HR_Cleaned.xlsx
+__pycache__/
+.idea/
+.vscode/
