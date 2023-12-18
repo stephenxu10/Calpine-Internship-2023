@@ -3,5 +3,8 @@
     "python.terminal.activateEnvironment": true,
     "git.ignoreLimitWarning": true,
     "editor.fontSize": 13,
-    "editor.rulers": [250]
+    "editor.rulers": [
+        250
+    ],
+    "python.REPL.enableREPLSmartSend": false
 }

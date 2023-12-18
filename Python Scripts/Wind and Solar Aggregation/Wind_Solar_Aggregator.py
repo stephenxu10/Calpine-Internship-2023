@@ -149,6 +149,7 @@ id_url = (
     + node_url_string
     + ""
 )
+print(id_url)
 id_req = requests.get(id_url, auth=auth)
 df_ids = pd.read_csv(StringIO(id_req.text))
 

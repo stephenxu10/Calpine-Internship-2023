@@ -182,7 +182,14 @@ def name_compare(x: str, y: str) -> float:
     
     # Otherwise, neither string has any underscores - use the edit distance
     y = y.replace("_", "")
-    return max(levenshtein(x, y), levenshtein(y, x))
+
+    comp =  max(levenshtein(x, y), levenshtein(y, x))
+
+    if x[0] == y[0]:
+        return (2 + comp) / 3
+
+    else:
+        return comp
 
 
 def optimal_matching(set1: List, set2: List, similarity_scores, verbose=False) -> Tuple[float, List[int], List[int]]:

@@ -19,6 +19,8 @@ import time
 from anytree import Node
 from anytree.exporter import DotExporter
 from collections import deque
+from multiprocessing import Pool
+from joblib import Parallel, delayed
 
 os.chdir(
     "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/Python Scripts")
@@ -80,7 +82,7 @@ def build_graph(sheet_path: str, version: int) -> Network:
                 base_graph.add_node(row_node)
 
     for _, row in df_branch.iterrows():
-        if row['From Nom kV'] == 230 and row['To Nom kV'] == 230:
+        if row['From Nom kV'] == 230 or row['To Nom kV'] == 230:
             row_edge = Edge.from_row(row)
             base_graph.add_edge(row_edge)
 
@@ -187,7 +189,7 @@ def topology_comp(net1: Network, node1: str, num1: int, net2: Network, node2: st
 
 
 def similarity(net1: Network, node1: str, num1: int, net2: Network, node2: str, num2: int, depth: int,
-               weights=(0.35, 0.25, 0.4), verbose=False) -> float:
+               weights=(0.4, 0.20, 0.4), verbose=False) -> float:
     """
     Overall function that evaluates the similarity between any two nodes
     from two different networks. Computes a weighted average between
@@ -283,6 +285,13 @@ def smart_similarity(net_1: Network, node_1: str, num_1: int, parent_1: str, par
         return smart_similarity(net_1, new_name_1, new_number_1, node_1, num_1, net_2, new_name_2, new_number_2, node_2,
                                 num_2, depth)
 
+def calculate_similarity(crr, c, wecc, w):
+    crr_node_name = c.name
+    wecc_node_name = w.name
+    similarity_score = similarity(crr, c.name, c.number, wecc, w.name, w.number, depth=1)
+    print(crr_node_name + " " + wecc_node_name)
+    return (crr_node_name, wecc_node_name, similarity_score)
+
 
 def brute_force(crr: Network, wecc: Network):
     """
@@ -310,26 +319,23 @@ def brute_force(crr: Network, wecc: Network):
         if len(wecc.get_neighbors(wecc_node.name, wecc_node.number)) != 2 and len(
                 wecc.get_neighbors(wecc_node.name, wecc_node.number)) != 0:
             pge_wecc.append(wecc_node)
+    print(str(len(pge_crr)) + " " + str(len(pge_wecc)))
+    # Prepare the data for multiprocessing
+    all_combinations = [(crr, c, wecc, w) for c in pge_crr for w in pge_wecc if c.name[0] == w.name[0]]
+    results = Parallel(n_jobs=-1)(delayed(calculate_similarity)(*args) for args in all_combinations)
 
+    # Extract the results
+    crr_nodes, wecc_nodes, similarities = zip(*results)
     output_df = pd.DataFrame()
-    crr_nodes = []
-    wecc_nodes = []
-    similarities = []
-
-    print(len(pge_crr))
-    print(len(pge_wecc))
-    for crr in pge_crr:
-        for wecc in pge_wecc:
-            crr_nodes.append(crr.name)
-            wecc_nodes.append(wecc.name)
-            similarities.append(similarity(crr, crr.name, crr.number, wecc, wecc.name, wecc.number, depth=2))
 
     output_df['CRR Buses'] = crr_nodes
     output_df['WECC Buses'] = wecc_nodes
     output_df['Similarity'] = similarities
 
-    np_sims = np.reshape(similarities, (len(pge_crr), len(pge_wecc)))
+    """
+    np_sims = np.reshape(similarities, (len(crr_nodes), len(wecc_nodes)))
     optimal_matching(pge_crr, pge_wecc, np_sims, verbose=True)
+    """
 
     output_df.to_csv(
         "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Network Topology/CAISO 230 Table.csv",
@@ -337,7 +343,7 @@ def brute_force(crr: Network, wecc: Network):
 
 
 def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2: str, num2: int, curr: Dict[str, str],
-                 tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0):
+                 tree_nodes: List[Node], visited: Set[str], sim: float, threshold=0.6):
     """
     A recursive algorithm to populate a set of mappings by starting from a ground truth of matching
     nodes. Recurses in a 'depth-first' manner - begins by attempting to match the input nodes'
@@ -350,7 +356,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
           are assumed to be strong matches.
         - curr: The current mapping of matches.
         - visited: The current visited set of Tap Buses
-        - threshold: Only accept nodes with a similarity above this threshold. 0.5 by default.
+        - threshold: Only accept nodes with a similarity above this threshold. 0.6 by default.
         - sim: The similarity score between node_1 and node_2. Infinity if either node is a tap bus.
 
     Output:
@@ -361,7 +367,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
     neighbors_1 = list(search_depth(net_1, node_1, num1, 1)[0])
     neighbors_2 = list(search_depth(net_2, node_2, num2, 1)[0])
 
-    # If both nodes are tap buses, recuse on the unvisited neighbors.
+    # If both nodes are tap buses, recurse on the unvisited neighbors.
     if len(neighbors_1) == 2 and len(neighbors_2) == 2:
         other_1 = find_other_neighbor(neighbors_1, curr, visited)
         other_2 = find_other_neighbor(neighbors_2, curr, visited)
@@ -373,7 +379,7 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
         # If the new pair of neighbors are both non-tap buses, calculate their similarity and recurse on them.
         if len(net_1.get_neighbors(other_1.name, other_1.number)) != 2 and len(
                 net_2.get_neighbors(other_2.name, other_2.number)) != 2:
-            sim_score = similarity(net_1, other_1.name, other_1.number, net_2, other_2.name, other_2.number, 2)
+            sim_score = similarity(net_1, other_1.name, other_1.number, net_2, other_2.name, other_2.number, 1)
             neighbor_node = Node(other_1.name + " " + other_2.name + "\n " + str(round(sim_score, 3)),
                                  parent=tree_nodes[find_node(tree_nodes, node_1 + " " + node_2)])
             tree_nodes.append(neighbor_node)
@@ -501,30 +507,31 @@ def map_populate(net_1: Network, node_1: str, num1: int, net_2: Network, node_2:
                                          wecc_match.number, curr, tree_nodes, visited, float('inf'))
 
 
-CRR_Network = build_graph(CRR_sheet, 1)
-WECC_Network = build_graph(WECC_sheet, 2)
+if __name__ == "__main__":
+    CRR_Network = build_graph(CRR_sheet, 1)
+    WECC_Network = build_graph(WECC_sheet, 2)
 
-# brute_force(CRR_Network, WECC_Network)
+    brute_force(CRR_Network, WECC_Network) 
 
-gt_1 = "CROKET 3"
-num_1 = 30437
-gt_2 = "CROCKETT"
-num_2 = 30437
-visited = set()
+"""    gt_1 = "RAVENS 2"
+    num_1 = 30703
+    gt_2 = "RAVENSWD"
+    num_2 = 30703
+    visited = set()
 
-curr_mapping = {gt_1: gt_2}
-tree_nodes = [Node(gt_1 + " " + gt_2 + "\n 1.0")]
+    curr_mapping = {gt_1: gt_2}
+    tree_nodes = [Node(gt_1 + " " + gt_2 + "\n 1.0")]
 
-map_populate(CRR_Network, gt_1, num_1, WECC_Network, gt_2, num_2, curr_mapping, tree_nodes, visited, 1.0)
-DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("./Traversals/CAISO_230.png")
+    map_populate(CRR_Network, gt_1, num_1, WECC_Network, gt_2, num_2, curr_mapping, tree_nodes, visited, 1.0)
+    DotExporter(tree_nodes[0], nodeattrfunc=set_node_color).to_picture("./Traversals/CAISO_230.png")
 
-print(len(curr_mapping))
-for node in curr_mapping:
-    print(node + " " + curr_mapping[node])
+    print(len(curr_mapping))
+    for node in curr_mapping:
+        print(node + " " + curr_mapping[node])
 
-# Output Summary Statistics
-end_time = time.time()
-execution_time = end_time - start_time
+    # Output Summary Statistics
+    end_time = time.time()
+    execution_time = end_time - start_time
 
-print("Generation Complete")
-print(f"The script took {execution_time:.2f} seconds to run.")
+    print("Generation Complete")
+    print(f"The script took {execution_time:.2f} seconds to run.")"""

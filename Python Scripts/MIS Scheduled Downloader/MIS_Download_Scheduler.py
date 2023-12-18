@@ -148,9 +148,11 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
         if response.status_code == 200:
             # This statement will execute if an OOM Handler successfully worked on a folder.
             if u_h != l_h:
+                print(f"{reportID} {folder_name} {response.status_code}")
                 invalid_rid.write(f"Folder {folder_name} written to successfully from {l_d} Hour {l_h} to {u_d} Hour {u_h}.\n")
             
             else:
+                print(f"{reportID} {folder_name} {response.status_code}")
                 invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
 
             zip_file = zipfile.ZipFile(BytesIO(response.content))
@@ -162,6 +164,7 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
 
         # Handle the Internal Server Error Exception here. Most likely an OutOfMemory issue.
         elif response.status_code == 500:
+            print(f"{reportID} {folder_name} {response.status_code}\n")
             invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
 
             if handle:
@@ -170,84 +173,85 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
 
         # Most likely a 404 error code - no data is available for today. 
         else:
+            print(f"{reportID} {folder_name} {response.status_code}\n")
             invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
         
     return
 
+if __name__ == "__main__":
+    # Create the folder mapping by reading the Excel sheet.
+    webpage_partial = pd.read_excel(excel_path, sheet_name="List of Webpage", usecols=['Folder Name', 'Type Id', 'New Table Name'])
+    webpage_complete = pd.read_excel(excel_path, sheet_name="List of Webpage_complete", usecols=['Folder Name', 'Type of file'])
 
-# Create the folder mapping by reading the Excel sheet.
-webpage_partial = pd.read_excel(excel_path, sheet_name="List of Webpage", usecols=['Folder Name', 'Type Id', 'New Table Name'])
-webpage_complete = pd.read_excel(excel_path, sheet_name="List of Webpage_complete", usecols=['Folder Name', 'Type of file'])
+    condition = webpage_partial['New Table Name'] != ""
+    dict_partial = dict(zip(webpage_partial.loc[condition, 'Folder Name'], webpage_partial.loc[condition, 'Type Id']))
+    dict_complete = dict(zip(webpage_complete['Folder Name'], webpage_complete['Type of file']))
 
-condition = webpage_partial['New Table Name'] != ""
-dict_partial = dict(zip(webpage_partial.loc[condition, 'Folder Name'], webpage_partial.loc[condition, 'Type Id']))
-dict_complete = dict(zip(webpage_complete['Folder Name'], webpage_complete['Type of file']))
+    full_mapping = {a: (dict_partial[a], dict_complete[a]) for a in dict_partial.keys() & dict_complete.keys()}
+    full_mapping.pop("48_3MRCR")
 
-full_mapping = {a: (dict_partial[a], dict_complete[a]) for a in dict_partial.keys() & dict_complete.keys()}
-full_mapping.pop("48_3MRCR")
+    # List of folders to process
+    folders = full_mapping.keys()
 
-# List of folders to process
-folders = full_mapping.keys()
+    # First, create the subfolders if necessary.
+    for folder in folders:
+        sub_folder = f"{destination_folder}{folder}"
 
-# First, create the subfolders if necessary.
-for folder in folders:
-    sub_folder = f"{destination_folder}{folder}"
-
-    if not os.path.exists(sub_folder):
-        os.makedirs(sub_folder)
+        if not os.path.exists(sub_folder):
+            os.makedirs(sub_folder)
 
 
-# Parse the command-line arguments to determine what actions should be taken.
-arguments = sys.argv
-valid_flag = True
+    # Parse the command-line arguments to determine what actions should be taken.
+    arguments = sys.argv
+    valid_flag = True
 
-if "-r" in arguments:
-    if arguments[-1] != "-r":
-        # Set the chunk size based on if it is given or not.
-        if "-c" in arguments:
-            c_idx = arguments.index("-c")
-            c_size = int(arguments[c_idx + 1])
+    if "-r" in arguments:
+        if arguments[-1] != "-r":
+            # Set the chunk size based on if it is given or not.
+            if "-c" in arguments:
+                c_idx = arguments.index("-c")
+                c_size = int(arguments[c_idx + 1])
+
+            else:
+                c_size = chunk_size
+
+            # Parse all the requested folders.
+            folders_to_download = []
+            index = arguments.index("-r")
+
+            while index < len(arguments) - 1:
+                if arguments[index + 1] == "-c":
+                    break
+                
+                folders_to_download.append(arguments[index+1])
+                index += 1
+
+            # Submit the folders for processing.
+            with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+                futures = [executor.submit(handle_oom_error, full_mapping, folder, full_mapping[folder][0], today, "06", 24, c_size) for folder in folders_to_download]
+
+                # Wait for all futures to complete
+                concurrent.futures.wait(futures)
 
         else:
-            c_size = chunk_size
+            sys.stderr.write(f"usage: {sys.argv[0]} [-c <integer>] [-r] <input folder-names>\n")
+            valid_flag = False
 
-        # Parse all the requested folders.
-        folders_to_download = []
-        index = arguments.index("-r")
-
-        while index < len(arguments) - 1:
-            if arguments[index + 1] == "-c":
-                break
-            
-            folders_to_download.append(arguments[index+1])
-            index += 1
-
-        # Submit the folders for processing.
+    else:
+        # Create a ThreadPoolExecutor with the specified number of workers
         with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-            futures = [executor.submit(handle_oom_error, full_mapping, folder, full_mapping[folder][0], today, "06", 24, c_size) for folder in folders_to_download]
+            # Submit each folder for processing
+            futures = [executor.submit(download_folder, full_mapping, folder, yesterday, "06", today, "06") for folder in folders]
 
             # Wait for all futures to complete
             concurrent.futures.wait(futures)
 
-    else:
-        sys.stderr.write(f"usage: {sys.argv[0]} [-c <integer>] [-r] <input folder-names>\n")
-        valid_flag = False
 
-else:
-    # Create a ThreadPoolExecutor with the specified number of workers
-    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
-        # Submit each folder for processing
-        futures = [executor.submit(download_folder, full_mapping, folder, yesterday, "06", today, "06") for folder in folders]
+    # Output Summary Statistics
+    if valid_flag:
+        end_time = time.time()
+        execution_time = (end_time - start_time)
+        print("Downloading Complete")
+        invalid_rid.write(f"The script took {execution_time:.2f} seconds to run.")
 
-        # Wait for all futures to complete
-        concurrent.futures.wait(futures)
-
-
-# Output Summary Statistics
-if valid_flag:
-    end_time = time.time()
-    execution_time = (end_time - start_time)
-    print("Downloading Complete")
-    invalid_rid.write(f"The script took {execution_time:.2f} seconds to run.")
-
-invalid_rid.close()
+    invalid_rid.close()

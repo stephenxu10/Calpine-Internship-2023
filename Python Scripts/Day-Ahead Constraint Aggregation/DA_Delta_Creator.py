@@ -36,7 +36,7 @@ year = 2023
 
 json_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/" + str(year) + "_web_data.json"
 json_summary = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/processed_" + str(year) + "_summary.json"
-delta_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv" if year != 2023 else "\\pzpwtabapp01\Ercot"
+delta_path = "\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_2023.csv" if year == 2023 else "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/DA/ERCOT?"
@@ -292,7 +292,7 @@ Each JSON data file also contains a "Latest Date Queried" field, which stores
 the latest date in MM/DD format queried from the website.
 """
 lower_bound = (date.today() - timedelta(days=days_back)).strftime('%Y-%m-%d')
-today = (date.today()).strftime('%Y-%m-%d')
+today = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
 mapping = {}
 
 # If the JSON file does not already exist, query all available data and create the JSON file
@@ -309,7 +309,7 @@ elif year == datetime.now().year:
     with open(json_path, "r") as file:
         mapping = json.load(file)
 
-    mapping = dict(process_mapping(lower_bound, "today"))
+    mapping = dict(process_mapping(lower_bound, "today+1"))
 
     with open(json_path, "w") as file:
         json.dump(mapping, file)
