@@ -62,7 +62,8 @@ weights.append(curr)
     
 #%%                       
 """
-Make requests to Yes Energy - aggregate historical data to 'merge_final_history'.
+Make requests to Yes Energy - aggregate historical data to 'merge_final_history'. These requests can take a while, so it's probably better to 
+run these one cell at a time.
 """
 call1 = f"https://services.yesenergy.com/PS/rest/ftr/portfolio/{PortfolioID}/paths.csv?"
 call_one = requests.get(call1, auth=my_auth)
@@ -119,62 +120,49 @@ merge_final_fwd = merge_final[merge_final['Period'] > (datetime.datetime.now())]
 """
 Compute a new DataFrame with the weighted averages of all numerical quantities from merge_final_history
 """
-def weighted_average(group, column):
-    # Only do the grouping if there is data for OFFPEAK, WDPEAK, and WEPEAK.
-    if len(group[column]) == 3:
+def weighted_average(group, averaging_columns):
+    if len(group[averaging_columns[0]]) == 3:
         order = ["OFFPEAK", "WDPEAK", "WEPEAK"]
-        
-        # Align the group to match with the weights
         group = group.sort_values(by='PEAKTYPE', key=lambda x: pd.Categorical(x, categories=order, ordered=True))
         years = group["Period"].dt.year - 2013
         months = group["Period"].dt.month - 1
         
         group_yr = years.iloc[0]
         group_month = months.iloc[0]
-                
-        return np.average(group[column], weights=weights[group_yr][group_month])
 
+        # Find the hourly weights for this group
+        current_weights = weights[group_yr][group_month]
 
-averaging_columns = merge_final_history.columns[6:]
+        # Calculate weighted averages for all columns
+        return group[averaging_columns].apply(lambda col: np.average(col, weights=current_weights))
 
-def add_weighted_averages(df: pd.DataFrame) -> pd.DataFrame:
-    df = df.drop_duplicates()
-    df = df.fillna(0)
+def add_weighted_averages(df, averaging_columns):
+    df = df.drop_duplicates().fillna(0)
 
     # Group by the specified columns
     groups = df.groupby(["Path", "Sourcename", "Sinkname", "HEDGETYPE", "Period"])
 
-    # Initialize an empty DataFrame to store the results
-    averaged_dfs = pd.DataFrame()
+    # Apply the weighted_average function to all groups and all columns
+    weighted_averages = groups.apply(weighted_average, averaging_columns)
 
-    # Iterate through each column, apply the function, and store the results
-    for col in averaging_columns:
-        # Apply the weighted_average function and reset the index
-        weighted_avg_col = groups.apply(lambda g: weighted_average(g, col))
-        weighted_avg_col.name = col 
-        averaged_dfs = pd.concat([averaged_dfs, weighted_avg_col], axis=1)
-
-    # Concatenate the results along the columns
-    averaged_dfs = averaged_dfs.reset_index()
-    rename_mapping =  {"level_0": "Path", "level_1": "Sourcename", "level_2": "Sinkname", "level_3": "HEDGETYPE", "level_4": "Period"}
-    
-    averaged_dfs = averaged_dfs.rename(columns=rename_mapping)
-    averaged_dfs = averaged_dfs.dropna()
-
-    # Adding PEAKTYPE column
-    averaged_dfs["PEAKTYPE"] = "24HR"
+    # Reset index and prepare for concatenation
+    weighted_averages = weighted_averages.reset_index()
+    weighted_averages["PEAKTYPE"] = "24HR"
 
     # Combine with the original DataFrame
-    combined_df = pd.concat([df, averaged_dfs], axis=0)
+    combined_df = pd.concat([df, weighted_averages], axis=0)
     combined_df = combined_df.sort_values(by=["Period", "PEAKTYPE"])
 
     return combined_df
 
 
 #%%
-historical_combined_df = add_weighted_averages(merge_final_history)
+averaging_columns = merge_final_history.columns[6:]
+historical_combined_df = add_weighted_averages(merge_final_history, averaging_columns)
 historical_combined_df.to_csv(outputroot + 'ERCOT_historical_basis_assets.csv', index=False)
+print("Historical Data Finished")
 
 #%%
-future_combined_df = add_weighted_averages(merge_final_fwd)
+future_combined_df = add_weighted_averages(merge_final_fwd, averaging_columns)
 future_combined_df.to_csv(outputroot+'ERCOT_future_basis_assets.csv', index=False)
+print("Future Data Finished")
