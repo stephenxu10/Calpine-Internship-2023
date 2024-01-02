@@ -21,7 +21,6 @@ def grab_raw_lines(raw_file_name: str, start_key: str, end_key: str):
     Returns:
     Extracted data as a string.
     """
-        
     data = ''
     full_path = os.path.join(path_base, raw_file_name)
     start_reading = False
@@ -51,15 +50,27 @@ def parse_raw_file(raw_file_name: str):
     bus_df.rename(columns={bus_df.columns[0]: 'ID', bus_df.columns[1]: 'NAME'}, inplace=True)
     bus_df = bus_df.dropna()
     bus_df['FILE NAME'] = raw_file_name
+    print(bus_df.head())
+    print("=" * 200)
 
     # Obtain the Load Data
     load_raw_lines = grab_raw_lines(raw_file_name, "BEGIN LOAD DATA", "END OF LOAD DATA")
 
     load_io = io.StringIO(load_raw_lines)
     load_df = pd.read_csv(load_io, sep=delimiter_regex, engine='python')
-    load_df.rename(columns={bus_df.columns[0]: 'I'}, inplace=True)
+    load_df.rename(columns={load_df.columns[0]: 'I'}, inplace=True)
     load_df = load_df.dropna()
     load_df['FILE NAME'] = raw_file_name
+
+    load_df = load_df.merge(bus_df[['ID', 'NAME']], left_on='I', right_on='ID', how='left')
+
+    load_df.rename(columns={'NAME': 'BUS NAME'}, inplace=True)
+    load_df.drop('ID', axis=1, inplace=True)
+
+    new_order = ['I', 'BUS NAME'] + [col for col in load_df.columns if col not in ['I', 'BUS NAME']]
+    load_df = load_df[new_order]
     print(load_df.head())
 
-parse_raw_file(sample_file)
+    return bus_df, load_df
+
+bus_df, load_df = parse_raw_file(sample_file)
