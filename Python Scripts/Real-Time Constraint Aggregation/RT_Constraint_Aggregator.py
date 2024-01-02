@@ -7,7 +7,7 @@ from typing import Dict, Tuple, List, Union
 import pandas as pd
 from collections import defaultdict
 import time
-from datetime import timedelta, datetime
+from datetime import timedelta, datetime, date
 import os
 
 """
@@ -21,7 +21,7 @@ warnings.simplefilter("ignore")
 
 # Global Variables and Parameters.
 start_time = time.time()
-year = 2023
+year = date.today().year
 
 # How many days we look back
 days_back = 2

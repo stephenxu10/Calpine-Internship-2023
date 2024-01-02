@@ -2,7 +2,6 @@ import os
 import zipfile
 import time
 import pandas as pd
-from typing import List
 
 
 # Global parameters & variables
@@ -11,9 +10,8 @@ start_time = time.time()
 lower_year = 2019
 upper_year = 2050
 
-# Relative file path of the outputted CSV.
+# Absolute file path of the outputted CSV.
 output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/HRUC Aggregates/HRUC_Aggregate.csv"
-
 
 def process_zip(zip_path: str) -> pd.DataFrame:
     """
@@ -60,6 +58,12 @@ def process_zip(zip_path: str) -> pd.DataFrame:
     return res
 
 def aggregate_year(year: int) -> pd.DataFrame:
+    """
+    Given an input year, this method aggregates all of the CSV files within the zip files in
+    the corresponding MIS subfolder and outputs the result to a DataFrame.
+
+    Returns None if there is no MIS folder for the input year.
+    """
     path_base = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS " + str(year) + "\\91_HRCODR"
 
     if os.path.exists(path_base):
@@ -86,6 +90,7 @@ for yr in range(lower_year, upper_year + 1):
     
 final_merged = pd.concat(merged, axis=0)
 final_merged = final_merged.drop_duplicates()
+final_merged = final_merged.sort_values(by=["Year", "Month", "Day"])
 final_merged.to_csv(output_path, index=False)
 
 end_time = time.time()

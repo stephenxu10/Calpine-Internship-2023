@@ -33,12 +33,17 @@ days_back = 1
 chunk_size = 6
 
 # Yesterday and today's date
-offset = 0
+offset = 1
 yesterday = (date.today() - timedelta(days=offset+days_back)).strftime('%Y-%m-%d')
 today = (date.today() - timedelta(days=offset)).strftime('%Y-%m-%d')
 
-# Current temporary storage for downloaded files
-destination_folder = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS 2023\\"
+# Current storage for downloaded files
+current_year = date.today().year
+destination_folder = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {current_year}\\"
+
+# Should only happen on the new year
+if not os.path.exists(destination_folder):
+    os.makedirs(destination_folder)
 
 # Folder to use for testing
 # destination_folder = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\MIS Scheduled Downloads\\"
@@ -113,7 +118,7 @@ def handle_oom_error(mapping: Dict, folder: str, request: str, start_date: str, 
     handle_oom_error(mapping, folder, request, lower_date, lower_hour, hours_left - back, back)
 
 
-def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: str, l_h: str, u_d: str, u_h: str, handle=True):
+def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: str, l_h: str, u_d: str, u_h: str, handle=True, destination_folder=destination_folder):
     """
     Given a mapping of folder names to (reportID, Type) tuples, a requested folder name,
     and an input date in YYYY-MM-DD or today - x format, this helper method
@@ -148,11 +153,9 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
         if response.status_code == 200:
             # This statement will execute if an OOM Handler successfully worked on a folder.
             if u_h != l_h:
-                print(f"{reportID} {folder_name} {response.status_code}")
                 invalid_rid.write(f"Folder {folder_name} written to successfully from {l_d} Hour {l_h} to {u_d} Hour {u_h}.\n")
             
             else:
-                print(f"{reportID} {folder_name} {response.status_code}")
                 invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
 
             zip_file = zipfile.ZipFile(BytesIO(response.content))
@@ -164,7 +167,6 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
 
         # Handle the Internal Server Error Exception here. Most likely an OutOfMemory issue.
         elif response.status_code == 500:
-            print(f"{reportID} {folder_name} {response.status_code}\n")
             invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
 
             if handle:
@@ -173,7 +175,6 @@ def download_folder(mapping: Dict[str, Tuple[str, str]], folder_name: str, l_d: 
 
         # Most likely a 404 error code - no data is available for today. 
         else:
-            print(f"{reportID} {folder_name} {response.status_code}\n")
             invalid_rid.write(f"{reportID} {folder_name} {response.status_code}\n")
         
     return

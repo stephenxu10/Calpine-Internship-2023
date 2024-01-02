@@ -12,7 +12,7 @@ perioded = '01/01/2026'
 PortfolioID = '759847'
 
 time_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/05 - Schedules/Timeofuse"
-outputroot = "//pzpwcmfs01/ca/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/ERCOT Basis Analysis/ERCOT_historical_basis_assets.csv"
+outputroot = "//pzpwcmfs01/ca/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/ERCOT Basis Analysis/"
 
 month_mapping = {
     "January": 0,
@@ -33,7 +33,7 @@ month_mapping = {
 Aggregate all time of use data through the time_file directory.  This procedure results in a 3D array weights, with
 weights[i] corresponding to the time of use information for year 2013 + i. 
 
-Each weights[i] is a 2D array with weights[i][j] resulting in an array of three elements: OFFPEAk, PEAKWD, PEAKWE,
+Each weights[i] is a 2D array with weights[i][j] resulting in an array of three elements: OFFPEAK, PEAKWD, PEAKWE,
 respectively.
 """
 weights = []
@@ -83,7 +83,6 @@ call_two = requests.get(call2, auth=my_auth)
 df2a = pd.read_csv(StringIO(call_two.text))
 
 #%%   
-
 call2 = f"https://services.yesenergy.com/PS/rest/ftr/portfolio/{PortfolioID}/pathanalysis.csv?hedgetype=Option&items=DA%20congestion,Annual%20Auction%20Seq6,Annual%20Auction%20Seq5,Annual%20Auction%20Seq4,Annual%20Auction%20Seq3,Annual%20Auction%20Seq2,Annual%20Auction%20Seq1,Monthly%20Auction&startdate={periodst}&enddate={perioded}&units=$/MWH"
 print(call2)
 call_two = requests.get(call2, auth=my_auth)
@@ -114,20 +113,19 @@ merge_final['Seq5 PnL'] = merge_final['DA congestion'] - merge_final['Seq5']
 merge_final['Seq6 PnL'] = merge_final['DA congestion'] - merge_final['Seq6']
 
 merge_final_history = merge_final[merge_final['Period'] < datetime.datetime.now()]
+merge_final_fwd = merge_final[merge_final['Period'] > (datetime.datetime.now())]
 
 #%%
 """
 Compute a new DataFrame with the weighted averages of all numerical quantities from merge_final_history
 """
-merge_final_history = merge_final_history.drop_duplicates()
-merge_final_history = merge_final_history.fillna(0)
-
-# Group together the original DataFrame off of Path, HedgeType, and Period
-groups = merge_final_history.groupby(["Path", "Sourcename", "Sinkname", "HEDGETYPE", "Period"])
-
 def weighted_average(group, column):
     # Only do the grouping if there is data for OFFPEAK, WDPEAK, and WEPEAK.
     if len(group[column]) == 3:
+        order = ["OFFPEAK", "WDPEAK", "WEPEAK"]
+        
+        # Align the group to match with the weights
+        group = group.sort_values(by='PEAKTYPE', key=lambda x: pd.Categorical(x, categories=order, ordered=True))
         years = group["Period"].dt.year - 2013
         months = group["Period"].dt.month - 1
         
@@ -136,28 +134,47 @@ def weighted_average(group, column):
                 
         return np.average(group[column], weights=weights[group_yr][group_month])
 
+
 averaging_columns = merge_final_history.columns[6:]
 
-# Initialize an empty DataFrame to store the results
-averaged_dfs = pd.DataFrame()
+def add_weighted_averages(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.drop_duplicates()
+    df = df.fillna(0)
 
-# Iterate through each column, apply the function, and concatenate the results
-for col in averaging_columns:
-    weighted_avg_col = groups.apply(lambda g: weighted_average(g, col))
-    weighted_avg_col.name = col 
-    averaged_dfs = pd.concat([averaged_dfs, weighted_avg_col], axis=1)
+    # Group by the specified columns
+    groups = df.groupby(["Path", "Sourcename", "Sinkname", "HEDGETYPE", "Period"])
+
+    # Initialize an empty DataFrame to store the results
+    averaged_dfs = pd.DataFrame()
+
+    # Iterate through each column, apply the function, and store the results
+    for col in averaging_columns:
+        # Apply the weighted_average function and reset the index
+        weighted_avg_col = groups.apply(lambda g: weighted_average(g, col))
+        weighted_avg_col.name = col 
+        averaged_dfs = pd.concat([averaged_dfs, weighted_avg_col], axis=1)
+
+    # Concatenate the results along the columns
+    averaged_dfs = averaged_dfs.reset_index()
+    rename_mapping =  {"level_0": "Path", "level_1": "Sourcename", "level_2": "Sinkname", "level_3": "HEDGETYPE", "level_4": "Period"}
+    
+    averaged_dfs = averaged_dfs.rename(columns=rename_mapping)
+    averaged_dfs = averaged_dfs.dropna()
+
+    # Adding PEAKTYPE column
+    averaged_dfs["PEAKTYPE"] = "24HR"
+
+    # Combine with the original DataFrame
+    combined_df = pd.concat([df, averaged_dfs], axis=0)
+    combined_df = combined_df.sort_values(by=["Period", "PEAKTYPE"])
+
+    return combined_df
 
 
 #%%
-averaged_dfs = averaged_dfs.reset_index()
-rename_mapping =  {"level_0": "Path", "level_1": "Sourcename", "level_2": "Sinkname", "level_3": "HEDGETYPE", "level_4": "Period"}
-
-averaged_dfs = averaged_dfs.rename(columns=rename_mapping)
-averaged_dfs = averaged_dfs.dropna()
-
-averaged_dfs["PEAKTYPE"] = "24HR"
-combined_df = pd.concat([merge_final_history, averaged_dfs], axis=0)
+historical_combined_df = add_weighted_averages(merge_final_history)
+historical_combined_df.to_csv(outputroot + 'ERCOT_historical_basis_assets.csv', index=False)
 
 #%%
-combined_df = combined_df.sort_values(by=["Period", "PEAKTYPE"])
-combined_df.to_csv(outputroot, index=False)
+future_combined_df = add_weighted_averages(merge_final_fwd)
+future_combined_df.to_csv(outputroot+'ERCOT_future_basis_assets.csv', index=False)

@@ -2,6 +2,7 @@ import json
 from itertools import product
 import requests
 import pandas as pd
+from datetime import date
 import time
 from io import StringIO
 from typing import Dict, Union
@@ -18,12 +19,10 @@ The outputted table is located in the Data subfolder or at \\pzpwtabapp01\Ercot\
 
 # Global Variables and Parameters
 start_time = time.time()
-year = 2023
+year = date.today().year
 
 json_processed = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
-output_path = (
-        "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/Exposure_SCED_" + str(year) + ".csv"
-) if year != 2023 else "\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_2023.csv"
+output_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_{year}.csv"
 
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 

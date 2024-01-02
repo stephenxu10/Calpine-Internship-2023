@@ -1,8 +1,10 @@
 from MIS_Download_Scheduler import download_folder
 import pandas as pd
+import os
 
 # Reference Excel Sheet for all the web data and requirements
 excel_path = "\\\\Pzpwuplancli01\\APP-DATA\\Task Scheduler\\MIS_Download_210125a_v3_via_API.xlsm"
+# d_folder = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\MIS Scheduled Downloads\\"
 
 # Create the folder mapping by reading the Excel sheet.
 webpage_partial = pd.read_excel(excel_path, sheet_name="List of Webpage", usecols=['Folder Name', 'Type Id', 'New Table Name'])
@@ -15,4 +17,7 @@ dict_complete = dict(zip(webpage_complete['Folder Name'], webpage_complete['Type
 full_mapping = {a: (dict_partial[a], dict_complete[a]) for a in dict_partial.keys() & dict_complete.keys()}
 full_mapping.pop("48_3MRCR")
 
-download_folder(full_mapping, "12_GTL", "2023-11-15", "06", "2023-11-16", "06", False)
+folders = full_mapping.keys()
+
+#%%
+download_folder(full_mapping, "130_SSPSF", "2023-11-23", "06", "2023-11-24", "06", False)

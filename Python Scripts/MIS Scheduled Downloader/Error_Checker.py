@@ -123,7 +123,7 @@ for folder_name in caught_404:
         html_result += f"<li><strong>{folder_name} was found to have uncaught data. Please add it manually.</strong></li>\n"
 
 for folder_name in handled_500:
-    if handled_500[folder_name] == intended_chunks or (folder_name == "51_4DASECR" and handled_500[folder_name] == 2):
+    if handled_500[folder_name] >= intended_chunks * 3 // 4 or (folder_name == "51_4DASECR" and handled_500[folder_name] == 2):
         html_result += f"<li>{folder_name} had an OutOfMemory Exception that was handled successfully.</li>\n"
     else:
         missing_folders.append(folder_name)

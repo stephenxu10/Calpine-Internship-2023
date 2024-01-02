@@ -8,7 +8,6 @@ import datetime
 import logging
 from requests.exceptions import HTTPError
 import concurrent.futures
-import pandas as pd
 import warnings
 
 pd.set_option('display.max_colwidth', None)
@@ -25,7 +24,7 @@ As of now, we sleep for 280 seconds in between large data queries.
 """
 # Constants
 CHUNKSIZE = 75
-SLEEP_TIME = 250
+SLEEP_TIME = 160
 OUTPUT_ROOT = '\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\06 - CRR\\01 - General\\Extracts\\'
 ISO = 'ERCOT'
 BASE_URL = "https://services.yesenergy.com/PS/rest/timeseries/"
@@ -131,7 +130,7 @@ def collect_data(node_list, startdate, enddate):
 
     # IMPORTANT: Yes Energy enforces a limit of seven concurrent requests per user. max_workers should
     # never be greater than 7.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
         future_to_df = {executor.submit(fetch_data, params): params for params in params_list}
         for future in concurrent.futures.as_completed(future_to_df):
             df = future.result()

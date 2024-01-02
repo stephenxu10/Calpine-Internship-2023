@@ -32,14 +32,16 @@ warnings.simplefilter("ignore")
 
 # Global Variables and Parameters.
 start_time = time.time()
-year = 2023
+year = date.today().year
 
 json_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/" + str(year) + "_web_data.json"
 json_summary = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/processed_" + str(year) + "_summary.json"
-delta_path = "\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_2023.csv" if year == 2023 else "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/Exposure_DAM_" + str(year) + ".csv"
+delta_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_{year}.csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/DA/ERCOT?"
+
+# Adjust this to change how many days of historical data we want.
 days_back = 14
 
 with open(credential_path, "r") as credentials:
@@ -187,7 +189,7 @@ def process_csv(existing_data: Dict, yes_mapping: Dict, raw_data: pd.DataFrame):
     deliveryDate = raw_data.iloc[0, 0]
 
     for _, row in raw_data.iterrows():
-        parsedHour = row['HourEnding'].split(":")[0]
+        parsedHour = str(int(row['HourEnding'].split(":")[0]))
         contingency = row['ContingencyName'].strip()
         shadowPrice = row['ShadowPrice']
         shiftFactor = row['ShiftFactor']
@@ -202,7 +204,7 @@ def process_csv(existing_data: Dict, yes_mapping: Dict, raw_data: pd.DataFrame):
             
         if nextDate not in yes_mapping:
             continue
-            
+        
         if parsedHour in yes_mapping[deliveryDate]:
             fullConstraint, peak = (findDesired(yes_mapping[nextDate][parsedHour], row)
                                     if parsedHour == '24' 
@@ -264,7 +266,7 @@ def accumulate_data(mapping: Dict, source: str, sink: str) -> Union[pd.DataFrame
                     contin, constr, peak, sf, ss = source_item
                     sink_contin, sink_constr, sink_peak, sink_sf, sink_ss = sink_item
 
-                    # Check if the values match for contingency, const♠raint, and peak type
+                    # Check if the values match for contingency, constraint, and peak type
                     if contin == sink_contin and constr == sink_constr and peak == sink_peak:
                         if abs(sf) > 0.001 and abs(sink_sf) > 0.001:
                             # Append the data to the respective columns
@@ -318,13 +320,10 @@ elif year == datetime.now().year:
 else:
     with open(json_path, "r") as file:
         mapping = json.load(file)
-
-
 """
 Now that we have the mapping, we can begin converting and aggregating the data.
 """
 ercot_df = grab_latest_data(lower_bound, "01", today, "01")
-
 existing_sum = {}
 
 for inner_df in ercot_df:
@@ -359,6 +358,7 @@ df_merged = pd.concat(final_merge, axis=0)
 # Do some post-processing of the data
 df_merged = df_merged.drop_duplicates(
     subset=['Date', 'HourEnding', 'PeakType', 'Constraint', 'Contingency', 'Path'])
+df_merged['Date'] = pd.to_datetime(df_merged['Date'], format='%m/%d/%Y')
 df_merged = df_merged.sort_values(by=['Date', 'HourEnding'])
 df_merged.to_csv(delta_path, index=False)
 
