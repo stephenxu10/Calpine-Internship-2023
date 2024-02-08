@@ -2,7 +2,7 @@ import json
 from itertools import product
 import requests
 import pandas as pd
-from datetime import date
+from datetime import date, timedelta
 import time
 from io import StringIO
 from typing import Dict, Union
@@ -23,6 +23,7 @@ year = date.today().year
 
 json_processed = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
 output_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_{year}.csv"
+last_30_path = "\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_Last_30_Days.csv"
 
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
@@ -124,6 +125,36 @@ df_merged = df_merged.drop_duplicates(
     subset=['Date', 'HourEnding', 'Interval', 'PeakType', 'Constraint', 'Contingency', 'Path'])
 df_merged = df_merged.sort_values(by=['Date', 'HourEnding', 'Interval'])
 df_merged = df_merged[df_merged['PeakType'] != ""]
+df_merged['Date'] = pd.to_datetime(df_merged["Date"], format="%m/%d/%Y")
+
+# Output a file for data in the last thirty days
+today = pd.to_datetime(date.today())  # Convert today to datetime object
+lower_bound = today - timedelta(days=30)
+
+# From January 1st to January 30th
+if lower_bound.year != today.year:
+    last_year = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_{lower_bound.year}.csv"
+    
+    try:
+        df_last = pd.read_csv(last_year)
+        df_last['Date'] = pd.to_datetime(df_last["Date"], format="%m/%d/%Y")
+        df_last = df_last[df_last["Date"] >= lower_bound]
+        df_merged_last_30 = pd.concat([df_last, df_merged])
+
+        df_merged_last_30 = df_merged_last_30.sort_values(by="Date")
+        df_merged_last_30 = df_merged_last_30.drop_duplicates()
+    except IOError:
+        print("Error in reading last year's file")
+
+# From February and Beyond
+else:
+    df_merged_last_30 = df_merged[df_merged["Date"] >= lower_bound]
+
+try:
+    df_merged_last_30.to_csv(last_30_path, index=False)
+except IOError:
+    print("Error in writing to last 30 days' file")
+
 df_merged.to_csv(output_path, index=False)
 
 # Output summary statistics

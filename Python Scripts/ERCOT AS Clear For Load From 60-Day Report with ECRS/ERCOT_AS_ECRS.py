@@ -89,6 +89,7 @@ def fetch_data(params):
     columns.
     """
     call_url = f"{BASE_URL}multiple.csv"
+    print(params)
     df = get_data_from_api(call_url, params)
     if not df.empty:
         print(df.head())
@@ -130,7 +131,7 @@ def collect_data(node_list, startdate, enddate):
 
     # IMPORTANT: Yes Energy enforces a limit of seven concurrent requests per user. max_workers should
     # never be greater than 7.
-    with concurrent.futures.ThreadPoolExecutor(max_workers=6) as executor:
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
         future_to_df = {executor.submit(fetch_data, params): params for params in params_list}
         for future in concurrent.futures.as_completed(future_to_df):
             df = future.result()

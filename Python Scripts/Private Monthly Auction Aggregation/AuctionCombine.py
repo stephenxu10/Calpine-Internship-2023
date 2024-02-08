@@ -28,14 +28,14 @@ output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Lim
 
 # Starting and ending years. By default, this encompasses all years with available data.
 start_year = 2019
-end_year = 2023
+end_year = 2024
 
 # Begin by constructing a dictionary that maps each path to a tuple of its Plant and Size (MW).
 path_to_plant = {}
 nodeToPlantFile = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/01 - General/Extracts/NodePlantMapping.CSV"
 
 def convert(month: int) -> str:
-    if month <= 9:
+    if month <= 13:
         return "0" + str(month)
     else:
         return str(month)

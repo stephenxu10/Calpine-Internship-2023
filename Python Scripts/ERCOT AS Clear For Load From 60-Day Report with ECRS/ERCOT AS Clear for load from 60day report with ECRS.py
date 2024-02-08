@@ -41,8 +41,6 @@ for i in range(node_list_length):
 
 for i in range(0,len(node_list)):
     node_list[i] = ','.join(str(j) for j in node_list[i])
-
-print(node_list)
     
 call3 = "https://services.yesenergy.com/PS/rest/timeseries/multiple.csv?agglevel=hour&startdate="+startdate+"&enddate="+enddate+"&items="+node_list[0]+""
 call_three=requests.get(call3, auth=my_auth)

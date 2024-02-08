@@ -4,11 +4,12 @@ import pandas as pd
 import numpy as np
 from io import StringIO
 import datetime
+from concurrent.futures import ThreadPoolExecutor, as_completed
 import os
 
 my_auth = ('transmission.yesapi@calpine.com', 'texasave717')
 periodst = '01/01/2020'
-perioded = '01/01/2026'
+perioded = '01/01/2027'
 PortfolioID = '759847'
 
 time_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/05 - Schedules/Timeofuse"
@@ -77,20 +78,49 @@ df1['CONTRACTENDDATE'] = pd.to_datetime(df1['CONTRACTENDDATE'])
 
 df1 = df1[['Path', 'SOURCE', 'SINK', 'PEAKTYPE', 'PATHSIZE', 'COSTOVERRIDE', 'CONTRACTSTARTDATE', 'CONTRACTENDDATE', 'HEDGETYPE']]
 
+item_list = ['DA congestion', 'Annual Auction Seq6', 'Annual Auction Seq5', 'Annual Auction Seq4', 'Annual Auction Seq3', 'Annual Auction Seq2', 'Annual Auction Seq1', 'Monthly Auction']
+url = "https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/pathanalysis.csv"
 
-call2 = f"https://services.yesenergy.com/PS/rest/ftr/portfolio/{PortfolioID}/pathanalysis.csv?hedgetype=Obligation&items=DA%20congestion,RT%20LMP,Annual%20Auction%20Seq6,Annual%20Auction%20Seq5,Annual%20Auction%20Seq4,Annual%20Auction%20Seq3,Annual%20Auction%20Seq2,Annual%20Auction%20Seq1,Monthly%20Auction&startdate={periodst}&enddate={perioded}&units=$/MWH"
-print(call2)
-call_two = requests.get(call2, auth=my_auth)
-df2a = pd.read_csv(StringIO(call_two.text))
+def fetch_data(item, hedgetype, periodst, perioded, my_auth, url):
+    params = {
+        'hedgetype': hedgetype,
+        'items': item,
+        'startdate': periodst,
+        'enddate': perioded,
+        'units': '$/MWH'
+    }
+    response = requests.get(url, params=params, auth=my_auth)
+    df_item = pd.read_csv(StringIO(response.text))
+    print(df_item.info())
+    return df_item
 
-#%%   
-call2 = f"https://services.yesenergy.com/PS/rest/ftr/portfolio/{PortfolioID}/pathanalysis.csv?hedgetype=Option&items=DA%20congestion,Annual%20Auction%20Seq6,Annual%20Auction%20Seq5,Annual%20Auction%20Seq4,Annual%20Auction%20Seq3,Annual%20Auction%20Seq2,Annual%20Auction%20Seq1,Monthly%20Auction&startdate={periodst}&enddate={perioded}&units=$/MWH"
-print(call2)
-call_two = requests.get(call2, auth=my_auth)
-df2b = pd.read_csv(StringIO(call_two.text))
+def merge_item_list(hedgetype: str, item_list, periodst, perioded, my_auth, url) -> pd.DataFrame:
+    # Initialize an empty DataFrame for merging
+    merged_df = pd.DataFrame()
+
+    # Using ThreadPoolExecutor to parallelize the requests
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        futures = [executor.submit(fetch_data, item, hedgetype, periodst, perioded, my_auth, url) for item in item_list]
+
+        for future in as_completed(futures):
+            df_item = future.result()
+            if merged_df.empty:
+                merged_df = df_item
+            else:
+                # Merge the fetched DataFrame with the existing merged DataFrame
+                merged_df = pd.merge(merged_df, df_item, how='outer')
+
+    # Remove duplicate columns if any
+    merged_df = merged_df.loc[:, ~merged_df.columns.duplicated()]
+    
+    return merged_df
+    
+df2a = merge_item_list("Obligation", item_list, periodst, perioded, my_auth, url)
+
+#%%
+df2b = merge_item_list("Option", item_list, periodst, perioded, my_auth, url)
 
 df2b.loc[:, 'RT LMP'] = 0
-
 df2 = pd.concat([df2a, df2b], sort=False)
 
 cols_to_date = ['PERIODSTARTDATE', 'PERIODENDDATE']
@@ -122,8 +152,12 @@ Compute a new DataFrame with the weighted averages of all numerical quantities f
 """
 def weighted_average(group, averaging_columns):
     if len(group[averaging_columns[0]]) == 3:
-        order = ["OFFPEAK", "WDPEAK", "WEPEAK"]
-        group = group.sort_values(by='PEAKTYPE', key=lambda x: pd.Categorical(x, categories=order, ordered=True))
+        order = {"OFFPEAK": 1, "WDPEAK": 2, "WEPEAK": 3}
+
+        # Create a new column for sorting
+        group['SortOrder'] = group['PEAKTYPE'].map(order)
+        group = group.sort_values(by='SortOrder')
+
         years = group["Period"].dt.year - 2013
         months = group["Period"].dt.month - 1
         
@@ -134,7 +168,12 @@ def weighted_average(group, averaging_columns):
         current_weights = weights[group_yr][group_month]
 
         # Calculate weighted averages for all columns
-        return group[averaging_columns].apply(lambda col: np.average(col, weights=current_weights))
+        weighted_avg = group[averaging_columns].apply(lambda col: np.average(col, weights=current_weights))
+
+        # Drop the uxiliary 'SortOrder' column
+        group = group.drop(columns=['SortOrder'])
+
+        return weighted_avg
 
 def add_weighted_averages(df, averaging_columns):
     df = df.drop_duplicates().fillna(0)
@@ -158,11 +197,11 @@ def add_weighted_averages(df, averaging_columns):
 
 #%%
 averaging_columns = merge_final_history.columns[6:]
-historical_combined_df = add_weighted_averages(merge_final_history, averaging_columns)
+historical_combined_df = add_weighted_averages(merge_final_history, averaging_columns).dropna(subset=["RT LMP"])
 historical_combined_df.to_csv(outputroot + 'ERCOT_historical_basis_assets.csv', index=False)
 print("Historical Data Finished")
 
 #%%
-future_combined_df = add_weighted_averages(merge_final_fwd, averaging_columns)
+future_combined_df = add_weighted_averages(merge_final_fwd, averaging_columns).dropna(subset=["RT LMP"])
 future_combined_df.to_csv(outputroot+'ERCOT_future_basis_assets.csv', index=False)
 print("Future Data Finished")

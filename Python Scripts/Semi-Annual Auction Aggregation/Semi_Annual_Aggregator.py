@@ -15,10 +15,14 @@ min_year = 2022
 
 # Relative file path of the outputted CSV.
 output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Semi-Annual Auction Data/"
+mapping_path = r"\\pzpwcmfs01\CA\11_Transmission Analysis\ERCOT\501 - Templates\Extracts\NodePlantMapping.csv"
 base_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/06 - CRR/Semi-Annual/"
 
 relevant_folders = ["A-S6", "B-S5", "C-S4", "D-S3", "E-S2", "F-S1"]
 
+# Read in the mapping file
+mapping_df = pd.read_csv(mapping_path)
+path_plant = dict(zip(mapping_df['Path'], mapping_df['Plant']))
 
 def extract_csv(time_frame: str, type: int) -> pd.DataFrame:
     time_path = os.path.join(base_path, time_frame, "Auction")
@@ -75,6 +79,11 @@ for sub_folder in os.listdir(base_path):
         private.append(extract_csv(sub_folder, 1))
 
 merged_private = pd.concat(private, axis=0)
+merged_private['Path'] = merged_private['Source'].astype(str) + "+" + merged_private['Sink'].astype(str)
+plant_column = merged_private['Path'].map(path_plant)
+
+merged_private.insert(11, "Plant", plant_column)
+merged_private.drop(columns=['Path'], inplace=True)
 merged_private.to_csv(output_path + "Private_Auction_Aggregate.csv", index=False)
 
 end_time = time.time()
