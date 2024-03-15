@@ -20,7 +20,7 @@ year = date.today().year
 pd.set_option('display.max_columns', 500)
 
 DAYS_BACK = 30
-LIMIT = 0.001
+LIMIT = 0.005
 mis_path = "//Pzpwuplancli01/Uplan/ERCOT"
 delta_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_Last_{DAYS_BACK}_Days.csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
