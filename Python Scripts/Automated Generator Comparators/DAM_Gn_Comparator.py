@@ -15,14 +15,12 @@ and reads each CSV (if valid), and outputs the comparison results to a new text 
 
 Be sure to change the global date/hour parameters immediately below to compare the desired files.
 """
+
 # Global parameters and variables. For convenience, the first_date & time should be before the second_date & time.
 first_date = "03/14/2019"  # Must be in MM/DD/YYYY format
 first_hour = 16  # Must be between 1 and 24 (inclusive)
 second_date = "06/16/2023"  # Must be in MM/DD/YYYY format
 second_hour = 16  # Must be between 1 and 24 (inclusive)
-
-# Flag that determines if the script should generate a text file summary in addition to the CSV
-text_flag = True
 
 start_time = time.time()
 path_base = "\\\\Pzpwuplancli01\\Uplan\\ERCOT"
@@ -106,105 +104,47 @@ def find_generator_data(date: str, hour: int) -> Union[pd.DataFrame, None]:
         print(f"The input date ({date}) is not in the desired MM/DD/YYYY format.")
         return
 
-
-def compare_data(df1: pd.DataFrame, df2: pd.DataFrame):
+def compare_statuses(df1: pd.DataFrame, df2: pd.DataFrame, date1: str, date2: str):
     """
-    Given two DataFrames of generator data, this method compares the generator names and
-    service status and outputs a tuple of four sets that give the following information:
-        - which (name, status) pairs are the same from the first date to second date.
-        - which generator statuses have changed from first date to second date.
-        - which generators are unique to the first & second DataFrames
-
     Inputs:
-        - df1, df2: The two Pandas DataFrames that give generator data.
+        - df1, df2: The two Pandas DataFrames that give line data.
 
     Output:
-        - sharedPairs - the set that gives (name, status) pairs that are the same from date1 to date2
-        - uniqueFirst, uniqueSecond - the generators unique to the first, second DataFrames
-        - changed - (name, int) pairs that indicate change from date1 to date2.
-            - 0: changed from In-Service to Out-Of-Service
-            - 1: changed from Out-Of-Service to In-Service
+        - A DataFrame showing the changes in their statuses
     """
+    status_key = "Generator"
+    df1.columns = [col.strip() for col in df1.columns]
+    df2.columns = [col.strip() for col in df2.columns]
 
-    first_statuses = dict(zip(df1[df1.columns[5]], df1[df1.columns[6]]))
-    second_statuses = dict(zip(df2[df2.columns[5]], df2[df2.columns[6]]))
+    df1 = df1[['Generator Name', f'{status_key} Status']]
+    df2 = df2[['Generator Name', f'{status_key} Status']]
 
-    sharedPairs = set()
-    uniqueFirst = set()
-    uniqueSecond = set()
-    changed = set()
+    merged_df = pd.merge(df1, df2, on='Generator Name', suffixes=('_1', '_2'), how='outer')
 
-    for gen_name in first_statuses:
-        if gen_name in second_statuses:
-            if first_statuses[gen_name] == second_statuses[gen_name]:
-                sharedPairs.add((gen_name, first_statuses[gen_name]))
+    def describe_change(row):
+        status_1 = row[f'{status_key} Status_1']
+        status_2 = row[f'{status_key} Status_2']
+        if pd.notnull(status_1) and pd.notnull(status_2):
+            if status_1 == status_2:
+                if status_1 == "In-Service":
+                    return "No Change"
+                else:
+                    return "Still Out-Of-Service"
             else:
-                changed.add((gen_name, 0 if first_statuses[gen_name] == 'In-Service' else 1))
+                return "Changed"
+        elif pd.isnull(status_1):
+            return "Missing-In-First"
+        elif pd.isnull(status_2):
+            return "Missing-In-Second"
 
-        else:
-            uniqueFirst.add((gen_name, first_statuses[gen_name]))
+    merged_df['Description'] = merged_df.apply(describe_change, axis=1)
+    merged_df.rename(columns={ f'{status_key} Status_1': f"{date1} Status",  f'{status_key} Status_2': f"{date2} Status"}, inplace=True)
 
-    for remaining in second_statuses:
-        if remaining not in first_statuses:
-            uniqueSecond.add((remaining, second_statuses[remaining]))
+    merged_df = merged_df[merged_df['Description'] != "No Change"]
+    merged_df = merged_df.sort_values(by=['Description'])
+    merged_df.fillna('', inplace=True)
 
-    return sharedPairs, uniqueFirst, uniqueSecond, changed
-
-
-"""
-Combines the summary results into a new Pandas DataFrame.
-"""
-def write_results(share, un_first, un_second, changes, date1, date2) -> pd.DataFrame:
-    # Read from the input sets and construct the output columns
-    gen_names = []
-    first_statuses = []
-    second_statuses = []
-    descriptors = []
-
-    # Record all the changed statuses
-    for unit, stat in changes:
-        gen_names.append(unit)
-        first_statuses.append("In-Service" if stat == 0 else "Out-Of-Service")
-        second_statuses.append("Out-Of-Service" if stat == 0 else "In-Service")
-        descriptors.append("Changed")
-
-    # Record all generators only in the first date.
-    for unit, stat in un_first:
-        gen_names.append(unit)
-        first_statuses.append(stat)
-        second_statuses.append("")
-        descriptors.append("Missing-In-Today")
-
-    # Record all generators only in the second date.
-    for unit, stat in un_second:
-        gen_names.append(unit)
-        first_statuses.append("")
-        second_statuses.append(stat)
-        descriptors.append("Missing-From-Yesterday")
-
-    # Record shared data and prioritize adding the Out-Of-Service generators first.
-    for unit, stat in share:
-        if stat == 'Out-Of-Service':
-            gen_names.append(unit)
-            first_statuses.append(stat)
-            second_statuses.append(stat)
-            descriptors.append("Shared-In-Both")
-
-    for unit, stat in share:
-        if stat == 'In-Service':
-            gen_names.append(unit)
-            first_statuses.append(stat)
-            second_statuses.append(stat)
-            descriptors.append("Shared-In-Both")
-
-    # Write the columns to a new DataFrame.
-    result = pd.DataFrame()
-    result['Generator Name '] = gen_names
-    result[f" {date2} Status "] = second_statuses
-    result[f" {date1} Status "] = first_statuses
-    result['Description'] = descriptors
-
-    return result
+    return merged_df    
 
 
 if __name__ == "__main__":
@@ -226,53 +166,8 @@ if __name__ == "__main__":
 
     else:
         if df_first is not None and df_second is not None:
-            shared, first, second, change = compare_data(df_first, df_second)
-
-            df_csv = write_results(shared, first, second, change, first_date, second_date)
+            df_csv = compare_statuses(df_first, df_second, first_date, second_date)
             df_csv.to_csv(output_csv, index=False)
-
-            if text_flag:
-                with open(output_txt, 'w') as file:
-                    file.write(f"Comparison Results from {first_date}, Hour {first_hour} to {second_date}, Hour {second_hour}\n")
-                    file.write("\n")
-
-                    # Output the changed generators
-                    header = f"The following generator statuses have changed from from {first_date}, Hour {first_hour} to {second_date}, Hour {second_hour}\n"
-                    file.write(header)
-                    file.write("=" * (len(header) + 1) + "\n")
-
-                    for name, status in change:
-                        if status == 0:
-                            file.write(f"{name} has changed from In-Service to Out-Of-Service \n")
-                        else:
-                            file.write(f"{name} has changed from Out-Of-Service to In-Service \n")
-
-                    file.write("\n")
-                    # Output the unique to first
-                    header = f"The following generator statuses are unique to {first_date}, Hour {first_hour}'s data.\n"
-                    file.write(header)
-                    file.write("=" * (len(header) + 1) + "\n")
-
-                    for name, status in first:
-                        file.write(name + " " + status + "\n")
-
-                    file.write("\n")
-                    # Output the unique to second
-                    header = f"The following generator statuses are unique to {second_date}, Hour {second_hour}'s data.\n"
-                    file.write(header)
-                    file.write("=" * (len(header) + 1) + "\n")
-
-                    for name, status in second:
-                        file.write(name + " " + status + "\n")
-
-                    file.write("\n")
-                    # Output all the shared data
-                    header = f"The following generator statuses are shared between the two input dates. \n"
-                    file.write(header)
-                    file.write("=" * (len(header) + 1) + "\n")
-
-                    for name, status in shared:
-                        file.write(name + " " + status + "\n")
         else:
             success = False
 

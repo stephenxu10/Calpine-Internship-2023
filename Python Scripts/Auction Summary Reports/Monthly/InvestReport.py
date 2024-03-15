@@ -68,7 +68,7 @@ def aggregate_weights(time_path, month_mapping):
     weights.append(curr)
     return weights
 
-def find_and_preprocess(node_path, path_base):
+def find_and_preprocess(node_path, weights, path_base):
     node_plant_df = pd.read_csv(node_path)
     plant_mapping = dict(zip(node_plant_df['Path'], node_plant_df['Plant']))
     
@@ -118,12 +118,11 @@ def find_and_preprocess(node_path, path_base):
     
     # Add in the Timeofuse hours
     auction_df["Hours"] = auction_df['TimeOfUse'].map(time_of_use_mapping)
-    
     return auction_df, time_of_use_mapping
 
 
 weights = aggregate_weights(TIME_PATH, month_mapping)
-auction_df, time_of_use_mapping = find_and_preprocess(NODE_PLANT_MAPPING, PATH_BASE)
+auction_df, time_of_use_mapping = find_and_preprocess(NODE_PLANT_MAPPING, weights, PATH_BASE)
 
 """
 Obtain the MW Data
@@ -170,6 +169,6 @@ multi_index_columns = pd.MultiIndex.from_tuples([
 ])
 
 merged_df.columns = multi_index_columns
-merged_df.to_csv(OUTPUT_PATH + "/invest_report_1.csv")
+merged_df.to_csv(OUTPUT_PATH + "/invest_report.csv")
 
 

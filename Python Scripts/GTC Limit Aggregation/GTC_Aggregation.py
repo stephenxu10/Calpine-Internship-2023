@@ -12,38 +12,24 @@ from typing import Union
 This Python script aims to aggregate Generic Transmission Constraints across all years. Furthermore,
 the script queries Yes Energy to accumulate, filter, and reshape the raw data.
 
+If you desire to add more nodes/names to the output, be sure to update the GTC Mapping located at 
+mapping_root. 
+
 Running this script will append the current day's data to "./../../Data/GTC Aggregates/GTC_Aggregator.csv".
 Should finish running in about 10 seconds.
 """
 
 # Global Variables and Parameters.
 start_time = time.time()
-min_year = 2019
+min_year = 2020
 max_year = 2050
 
-desired_names = [
-    "RV_RH",
-    "WESTEX",
-    "VALEXP",
-    "N_TO_H",
-    "PNHNDL",
-    "NELRIO",
-    "NE_LOB",
-    "MCCAMY",
-    "VALIMP",
-    "EASTEX",
-    "BEARKT",
-    "CULBSN",
-    "ZAPSTR",
-    "WILBRN",
-    "WHARTN",
-    "HMLTN"
-]
-
 ercot_root = "\\\\Pzpwuplancli01\\Uplan\\ERCOT\\"
-mapping_root = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\06 - CRR\\02 - Summary\\MappingDocument\\"
+mapping_root = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\06 - CRR\\02 - Summary\\MappingDocument\\GTC_Mapping.csv"
 credential_path = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\credentials.txt"
 final_output_path = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\GTC Aggregates\\GTC_Aggregator.csv"
+
+desired_names = pd.read_csv(mapping_root)['NAME']
 
 with open(credential_path, "r") as credentials:
     my_auth = tuple(credentials.read().split())
@@ -100,11 +86,10 @@ def aggregate_year(year: int, start: str = "01/01") -> pd.DataFrame:
         yearly_df_list = [pd.read_excel(file) for file in constraint_files]
 
     else:
-        yearly_df_list = [
-            pd.read_excel(file)
-            for file in constraint_files
-            if extract_date(file) != "" and extract_date(file) >= start
-        ]
+        yearly_df_list = []
+        for file in constraint_files:
+            if extract_date(file) != "" and extract_date(file) >= start:
+                yearly_df_list.append(pd.read_excel(file))
 
     if len(yearly_df_list) == 0:
         return pd.DataFrame()
@@ -135,7 +120,7 @@ def filter_raw_data(raw_merged: pd.DataFrame, start_date: str) -> pd.DataFrame:
         - A finalized DataFrame in the desired format.
     """
     # First, reshape the raw data
-    df_mapping = pd.read_csv(mapping_root + "GTC_Mapping.csv")
+    df_mapping = pd.read_csv(mapping_root)
     DAM_data = raw_merged[raw_merged["NAME"].str.contains("DAM")].copy()
     DAM_data.loc[:, "NAME"] = DAM_data["NAME"].str.replace("\nDAM", "")
     RT_data = raw_merged[~raw_merged["NAME"].str.contains("DAM")]
@@ -205,14 +190,14 @@ if not os.path.isfile(final_output_path):
     raw_merged = pd.concat(
         [aggregate_year(year) for year in range(min_year, max_year + 1)], axis=0
     )
-    df_final = filter_raw_data(raw_merged, "01/01/2019")
+    df_final = filter_raw_data(raw_merged, "01/01/2020")
     df_final.to_csv(final_output_path, index=False)
 
 # Otherwise, assume the Data has been recently updated - update up today's data.
 else:
     current_data = pd.read_csv(final_output_path, low_memory=False)
     current_year = datetime.now().year
-    current_date = (datetime.now() - timedelta(days=10)).strftime("%m/%d")
+    current_date = (datetime.now() - timedelta(days=30)).strftime("%m/%d")
 
     new_current = aggregate_year(current_year, current_date)
 

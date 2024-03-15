@@ -22,7 +22,7 @@ nearest positive RT Limit above.
 
 final_output_path = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\GTC Aggregates\\GTC_Aggregator.csv"
 error_output_path = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Data\\GTC Aggregates\\GTC_Error_Log.csv"
-log_path = "./errorLog.txt"
+log_path = "\\\\pzpwcmfs01\\CA\\11_Transmission Analysis\\ERCOT\\101 - Misc\\CRR Limit Aggregates\\Python Scripts\\GTC Limit Aggregation\\errorLog.txt"
 
 
 def find_missing_dates(df, date_column):

@@ -97,34 +97,61 @@ def process_mapping(start_date: str, end_date: str) -> Union[
 
     return res
 
-def grab_latest_data(l_d: str, l_h: str, u_d: str, u_h: str) -> pd.DataFrame():
-    """
-    Queries the latest 14 days of data through ERCOT API and aggregates the results
-    into one large DataFrame.
 
-    Returns this resulting DataFrame.
-    """
+def split_time_range(start_date: str, start_hour: str, end_date: str, end_hour: str, chunks: int=3):
+    """Split the time range into smaller chunks."""
+    start_datetime = datetime.strptime(f"{start_date} {start_hour}", "%Y-%m-%d %H")
+    end_datetime = datetime.strptime(f"{end_date} {end_hour}", "%Y-%m-%d %H")
+    
+    # Calculate total duration and split into chunks
+    total_duration = end_datetime - start_datetime
+    chunk_duration = total_duration / chunks
+    
+    time_ranges = []
+    for i in range(chunks):
+        chunk_start = start_datetime + i * chunk_duration
+        chunk_end = chunk_start + chunk_duration
+        if i == chunks - 1:
+            # Ensure the last chunk ends exactly at the end_datetime
+            chunk_end = end_datetime
+        time_ranges.append((chunk_start, chunk_end))
+    
+    return time_ranges
+
+def query_ercot_data(start_datetime, end_datetime):
+    """Perform a query to the ERCOT API for the given datetime range."""
     merged = []
     file_type = "csv"
-    ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId=13089&marketParticipantId=CRRAH&startTime={l_d}T{l_h}:00:00&endTime={u_d}T{u_h}:00:00&unzipFiles=false"
-
-    print(ercot_url)
-
-    response = requests.get(ercot_url, verify=False)
+    ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId=13089&marketParticipantId=CRRAH&startTime={start_datetime.strftime('%Y-%m-%dT%H:00:00')}&endTime={end_datetime.strftime('%Y-%m-%dT%H:00:00')}&unzipFiles=false"
+    
+    print(ercot_url) 
+    
+    response = requests.get(ercot_url, verify=False)  
     if response.status_code == 200:
-        zip_d = zipfile.ZipFile(BytesIO(response.content))
-        
-        with zip_d as zip_data:
-            for file_name in zip_data.namelist():
+        zip_data = zipfile.ZipFile(BytesIO(response.content))
+        with zip_data as z:
+            for file_name in z.namelist():
                 if file_type in file_name:
-                    inner_data = BytesIO(zip_data.read(file_name))
+                    inner_data = BytesIO(z.read(file_name))
                     with zipfile.ZipFile(inner_data, 'r') as inner_zip:
                         with inner_zip.open(inner_zip.namelist()[0]) as inner_csv:
-                            merged.append(pd.read_csv(inner_csv))
+                            df_chunk = pd.read_csv(inner_csv)
+                            merged.append(df_chunk)
     else:
         print(response.status_code)
     
     return merged
+
+def grab_latest_data(l_d: str, l_h: str, u_d: str, u_h: str) -> pd.DataFrame:
+    """Queries a certain range of data through ERCOT API in chunks and aggregates the results into one DataFrame."""
+    time_ranges = split_time_range(l_d, l_h, u_d, u_h)
+    all_data = []
+    
+    for start_dt, end_dt in time_ranges:
+        chunk_data = query_ercot_data(start_dt, end_dt)
+        all_data.extend(chunk_data)
+    
+    return all_data
 
 
 def findDesired(mapping: Dict, row) -> Tuple[str, str]:

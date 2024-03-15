@@ -72,8 +72,8 @@ with zipfile.ZipFile(zip_data, 'r') as zip_file:
             df_tomo = pd.read_csv(csv_tomo)
 
 # Use previous helper methods to compare the generator data between the two DataFrames
-shared, first, second, change = DAM_Gn_Comparator.compare_data(df_today, df_tomo)
-df_csv = DAM_Gn_Comparator.write_results(shared, first, second, change, today, tomorrow)
+df_csv = DAM_Gn_Comparator.compare_statuses(df_today, df_tomo, today, tomorrow)
+change = df_csv[df_csv['Description'] == 'Changed']
 
 body = ""
 if len(change) == 0:
