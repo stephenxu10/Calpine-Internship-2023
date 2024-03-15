@@ -2,11 +2,13 @@ import zipfile
 from io import StringIO, BytesIO
 import requests
 import warnings
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from typing import Dict, Tuple, List, Union
 import pandas as pd
 from collections import defaultdict
 import concurrent.futures
 import time
+import os
 from datetime import date
 from datetime import timedelta, datetime
 
@@ -17,8 +19,9 @@ start_time = time.time()
 year = date.today().year
 pd.set_option('display.max_columns', 500)
 
-DAYS_BACK = 10
-LIMIT = 0.01
+DAYS_BACK = 30
+LIMIT = 0.001
+mis_path = "//Pzpwuplancli01/Uplan/ERCOT"
 delta_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_Last_{DAYS_BACK}_Days.csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
@@ -31,7 +34,7 @@ call1 = "https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/paths.csv?"
 r = requests.get(call1, auth=auth)
 paths_df = pd.read_csv(StringIO(r.text))
 unique_nodes = pd.concat([paths_df["SINK"],paths_df['SOURCE']]).unique()
-
+paths_df["PATH"] = paths_df['SOURCE'].astype(str) + "+" + paths_df['SINK']
 
 def grab_yes_data(start_date: str, end_date: str) -> pd.DataFrame:
     """
@@ -128,7 +131,7 @@ def grab_ercotapi_data(l_d: str, l_h: str, u_d: str, u_h: str) -> pd.DataFrame:
             print(response.status_code)
             return pd.DataFrame()
         
-        print("done!")
+        print("Success!")
         return pd.concat(merged, axis=0)
     
     time_ranges = split_time_range(l_d, l_h, u_d, u_h)
@@ -144,6 +147,62 @@ def grab_ercotapi_data(l_d: str, l_h: str, u_d: str, u_h: str) -> pd.DataFrame:
     
     # Concatenate all DataFrames into a single DataFrame
     return pd.concat(all_data, axis=0)
+
+def process_zip_file(zip_path: str, limit: float) -> pd.DataFrame:
+    """
+    Process a single zip file to extract the DataFrame according to specified logic.
+    """
+    with zipfile.ZipFile(zip_path, 'r') as z:
+        csv_file = [f for f in z.namelist() if f.endswith('.csv')][0]
+        with z.open(csv_file) as csv_f:
+            drop_columns = ["Constraint_ID", "Repeated_Hour_Flag"]
+            df_chunk = pd.read_csv(csv_f)
+            
+            df_chunk = df_chunk.drop(columns=drop_columns)
+            df_chunk = df_chunk[df_chunk['Settlement_Point'].isin(unique_nodes)]
+            df_chunk = df_chunk[abs(df_chunk['Shift_Factor']) > LIMIT]
+
+            # Add the HourEnding column
+            if len(df_chunk) > 0:
+                datetime_obj = datetime.strptime(df_chunk.iloc[0, 0], "%m/%d/%Y %H:%M:%S")
+                next_hour = (datetime_obj + timedelta(hours=1)).strftime("%H")
+
+                if next_hour == "00":
+                    next_hour = "24"
+
+                next_hour = next_hour.lstrip('0')
+                hourEnding = [next_hour] * len(df_chunk)
+                df_chunk.insert(1, "Hour_Ending", hourEnding)
+            
+            return df_chunk
+        
+    return pd.DataFrame()
+
+def aggregate_network_files(year: int, limit: float) -> pd.DataFrame:
+    yearly_base = os.path.join(mis_path, f"MIS {year}/130_SSPSF")
+    if os.path.exists(yearly_base):
+        yearly_zip_files = [os.path.join(yearly_base, file) for file in os.listdir(yearly_base) if file.endswith('.zip')]
+        
+        # Use ThreadPoolExecutor to process files in parallel
+        with ThreadPoolExecutor() as executor:  # Adjust max_workers based on your environment
+            future_to_zip = {executor.submit(process_zip_file, zip_file, limit): zip_file for zip_file in yearly_zip_files}
+            
+            results = []
+            for future in as_completed(future_to_zip):
+                zip_file = future_to_zip[future]
+                try:
+                    data = future.result()
+                    results.append(data)
+                except Exception as exc:
+                    print(f'{zip_file} generated an exception: {exc}')
+                    
+            if results:
+                aggregated_data = pd.concat(results, ignore_index=True)
+                aggregated_data.sort_values(by=['SCED_Time_Stamp', 'Hour_Ending'], inplace=True)
+                print(f"Finished {year}")
+                return aggregated_data
+            else:
+                return pd.DataFrame()
 
 def merge_paths_ercot(paths_df, ercot_df) -> pd.DataFrame:
     # Assuming SCED_Time_Stamp is already a datetime in ercot_df; if not, convert it upfront
@@ -167,19 +226,22 @@ def merge_paths_ercot(paths_df, ercot_df) -> pd.DataFrame:
 
     return final_df
 
-#%%
 lower_bound = (date.today() - timedelta(days=DAYS_BACK)).strftime('%m/%d/%Y')
 today = (date.today() + timedelta(days=1)).strftime('%m/%d/%Y')
 
 yes_df = grab_yes_data(lower_bound, today)
-lower_bound = (date.today() - timedelta(days=DAYS_BACK)).strftime('%Y-%m-%d')
+network_df = aggregate_network_files(2024, LIMIT)
+network_df = network_df[network_df['SCED_Time_Stamp'] >= lower_bound]
+
+lower_bound = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
 today = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
 
-#%%
 ercotapi_df = grab_ercotapi_data(lower_bound, "01", today, "01")
+ercotapi_df = pd.concat([network_df, ercotapi_df])
+ercotapi_df = ercotapi_df.drop_duplicates()
+
 merged_df = merge_paths_ercot(paths_df, ercotapi_df)
 
-#%%
 # Merge in the Shadow Prices
 merged_df['Contingency_Name'] = merged_df['Contingency_Name'].astype(str)
 merged_df['DATETIME'] = pd.to_datetime(merged_df['DATETIME']) 
@@ -204,7 +266,10 @@ filtered_df = filtered_df[['Date', 'HOURENDING',  'Interval', 'Path', 'Constrain
 filtered_df['$ Cong MWH'] = (filtered_df['Source SF'] - filtered_df['Sink SF']) * filtered_df['ShadowPrice']
 filtered_df = filtered_df.drop_duplicates()
 
+filtered_df = filtered_df[filtered_df["Path"].isin(paths_df['PATH'])]
+filtered_df = filtered_df.dropna(subset=['$ Cong MWH']).drop(columns=['ShadowPrice'])
 filtered_df.to_csv(delta_path, index=False)
+
 # Output summary statistics
 end_time = time.time()
 execution_time = (end_time - start_time)

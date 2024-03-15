@@ -75,15 +75,27 @@ with zipfile.ZipFile(zip_data, 'r') as zip_file:
 df_csv = DAM_Gn_Comparator.compare_statuses(df_today, df_tomo, today, tomorrow)
 change = df_csv[df_csv['Description'] == 'Changed']
 
+unknown, known = DAM_Gn_Comparator.merge_with_mapping(df_csv)
+
 body = ""
 if len(change) == 0:
     body += '<html><p> No generator statuses have changed from yesterday to today. <br> </p></html>'
 
-body += '<html><body>' + df_csv.to_html(index=False) + '</body></html>'
+body += '<html><body>' + known.to_html(index=False) + '</body></html>'
 
 msg = MIMEMultipart('alternative')
 msg['Subject'] = "Daily DAM Generator Comparison Results"
-sender = 'Transmission.Yesapi@calpine.com'
+sender = 'Stephen.Xu@calpine.com'
+
+"""
+Update the unknown mapping text file.
+"""
+output_root = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Gen_Ln_Xf Comparisons/Unknown Mappings"
+if len(unknown) == 0:
+    body += '<html><p> No unknown mappings were found. <br> </p></html>'
+
+else:
+    unknown.to_csv(output_root + "/output.csv", index=False)
 
 # Edit this line to determine who receives the email.
 receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
@@ -92,6 +104,6 @@ part2 = MIMEText(body, 'html')
 msg.attach(part2)
 
 smtpObj = smtplib.SMTP(host="relay.calpine.com")
-smtpObj.sendmail(sender, receivers, msg.as_string())
 
+smtpObj.sendmail(sender, receivers, msg.as_string())
 smtpObj.quit()
