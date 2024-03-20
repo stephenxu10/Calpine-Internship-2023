@@ -1,4 +1,31 @@
 import pandas as pd
+import numpy as np
+
+def pre_process_branch(df: pd.DataFrame) -> pd.DataFrame:
+    df.loc[(df['From PSS/E KV']==df['To PSS/E KV']) & ((df['From PSS/E KV'] == 0)), 'Expanded Branch Name'] = df['Branch Name']
+    df.loc[(df['From PSS/E KV'] == df['To PSS/E KV']) & (df['From PSS/E KV'] != 0), 'Expanded Branch Name'] = (df['From Station Name/PSS/E Bus Name'].astype(str).str.strip() + '-' +
+                                                                                                            df['To Station Name/PSS/E Bus Name'].astype(str) + ' ' +
+                                                                                                            df['From PSS/E KV'].astype(str) + 'KV ' +
+                                                                                                            df['Branch Name'].astype(str))
+
+    df.loc[(df['From PSS/E KV'] != df['To PSS/E KV']) & (df['From PSS/E KV'] != 0), 'Expanded Branch Name'] = (df['From Station Name/PSS/E Bus Name'].astype(str).str.strip() + ' ' +
+                                                                                                            df['From PSS/E KV'].astype(str) + 'KV ' +
+                                                                                                            df['Branch Name'].astype(str))
+
+
+    condition = (df['From PSS/E KV'] != df['To PSS/E KV']) & (df['From PSS/E KV'] != 0)
+    df['Expanded Branch Name'] = np.where(
+        condition,
+        np.where(
+            pd.notna(df['From Station Name/PSS/E Bus Name']) & pd.notna(df['From PSS/E KV']),
+            df['From Station Name/PSS/E Bus Name'].astype(str) + ' ' + df['From PSS/E KV'].astype(str) + 'KV ' + df['Branch Name'],
+            df['Branch Name']
+        ),
+        df['Expanded Branch Name']  # Keeps the existing value if the condition is False
+    )
+    
+    df.drop(columns=['From Station Name/PSS/E Bus Name', 'From PSS/E KV', 'To Station Name/PSS/E Bus Name', 'To PSS/E KV', 'Branch Name'], inplace=True)
+    return df
 
 def compare_statuses(df1: pd.DataFrame, df2: pd.DataFrame, date1: str, date2: str, line: bool=True):
     """
@@ -12,10 +39,13 @@ def compare_statuses(df1: pd.DataFrame, df2: pd.DataFrame, date1: str, date2: st
     df1.columns = [col.strip() for col in df1.columns]
     df2.columns = [col.strip() for col in df2.columns]
 
-    df1 = df1[['Branch Name', f'{status_key} Status']]
-    df2 = df2[['Branch Name', f'{status_key} Status']]
+    df1 = pre_process_branch(df1)
+    df2 = pre_process_branch(df2)
 
-    merged_df = pd.merge(df1, df2, on='Branch Name', suffixes=('_1', '_2'), how='outer')
+    df1 = df1[['Expanded Branch Name', f'{status_key} Status']]
+    df2 = df2[['Expanded Branch Name', f'{status_key} Status']]
+
+    merged_df = pd.merge(df1, df2, on='Expanded Branch Name', suffixes=('_1', '_2'), how='outer')
 
     def describe_change(row):
         status_1 = row[f'{status_key} Status_1']
@@ -25,7 +55,7 @@ def compare_statuses(df1: pd.DataFrame, df2: pd.DataFrame, date1: str, date2: st
                 if status_1 == "In-Service":
                     return "No Change"
                 else:
-                    return "Still Out-Of-Service"
+                    return "No Change"
             else:
                 return "Changed"
         elif pd.isnull(status_1):
@@ -46,11 +76,11 @@ def compare_rates(df1: pd.DataFrame, df2: pd.DataFrame, date1: str, date2: str, 
     df2.columns = [col.strip() for col in df2.columns]
 
     # Select only the necessary columns
-    df1 = df1[['Branch Name', key]]
-    df2 = df2[['Branch Name', key]]
+    df1 = df1[['Expanded Branch Name', key]]
+    df2 = df2[['Expanded Branch Name', key]]
 
     # Perform inner merge
-    merged_df = pd.merge(df1, df2, on='Branch Name', suffixes=('_1', '_2'), how='inner')
+    merged_df = pd.merge(df1, df2, on='Expanded Branch Name', suffixes=('_1', '_2'), how='inner')
     merged_df['Percent Change'] = abs(merged_df[f'{key}_1'] - merged_df[f'{key}_2']) / ((merged_df[f'{key}_1'] + merged_df[f'{key}_2']) / 2) * 100
     filtered_df = merged_df[merged_df['Percent Change'] >= 15]
 

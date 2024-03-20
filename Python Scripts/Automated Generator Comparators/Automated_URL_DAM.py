@@ -48,6 +48,12 @@ content = r.content
 
 # zip_data is a nested zip file - it should contain a list of historical MIS ZIP files in [lower, upper]
 zip_data = BytesIO(content)
+current_month = datetime.datetime.now().month
+
+if 4 <= current_month <= 10:  # April to October
+    gn_key = "_Gn_016"
+else:
+    gn_key = "_Gn_008"
 
 with zipfile.ZipFile(zip_data, 'r') as zip_file:
     # We intend for zip_file to hold exactly two ZIPs - one for today and one for tomorrow.
@@ -59,18 +65,18 @@ with zipfile.ZipFile(zip_data, 'r') as zip_file:
 
     # Locate the generator CSV for Hour 16 today
     with zipfile.ZipFile(today_data, 'r') as first_zip_file:
-        csv_now = [x for x in first_zip_file.namelist() if "_Gn_016" in x][0]
+        csv_now = [x for x in first_zip_file.namelist() if gn_key in x][0]
         
         with first_zip_file.open(csv_now) as csv_today:
             df_today = pd.read_csv(csv_today)
 
     # Locate the generator CSV for Hour 16 tomorrow.
     with zipfile.ZipFile(tomo_data, 'r') as second_zip_file:
-        csv_tomorrow = [x for x in second_zip_file.namelist() if "_Gn_016" in x][0]
+        csv_tomorrow = [x for x in second_zip_file.namelist() if gn_key in x][0]
 
         with second_zip_file.open(csv_tomorrow) as csv_tomo:
             df_tomo = pd.read_csv(csv_tomo)
-
+            
 # Use previous helper methods to compare the generator data between the two DataFrames
 df_csv = DAM_Gn_Comparator.compare_statuses(df_today, df_tomo, today, tomorrow)
 change = df_csv[df_csv['Description'] == 'Changed']
@@ -85,7 +91,7 @@ body += '<html><body>' + known.to_html(index=False) + '</body></html>'
 
 msg = MIMEMultipart('alternative')
 msg['Subject'] = "Daily DAM Generator Comparison Results"
-sender = 'Stephen.Xu@calpine.com'
+sender = 'transmission.yesapi@calpine.com'
 
 """
 Update the unknown mapping text file.
@@ -95,10 +101,13 @@ if len(unknown) == 0:
     body += '<html><p> No unknown mappings were found. <br> </p></html>'
 
 else:
-    unknown.to_csv(output_root + "/output.csv", index=False)
+    body += '<html><p> Unknown mappings were found. Go to <strong> //pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Gen_Ln_Xf Comparisons/Unknown Mappings </strong> for the latest unmatched records. <br> </p></html>'
+    df_curr = pd.read_csv(output_root + "/output.csv")
+    combined = pd.concat([unknown, df_curr]).drop_duplicates()
+    combined.to_csv(output_root + "/output.csv", index=False)
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
+receivers = ['Stephen.Xu@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
