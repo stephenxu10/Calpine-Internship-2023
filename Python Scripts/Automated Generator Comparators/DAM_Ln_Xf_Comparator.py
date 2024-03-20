@@ -2,14 +2,17 @@ import pandas as pd
 import numpy as np
 
 def pre_process_branch(df: pd.DataFrame) -> pd.DataFrame:
+    df['From PSS/E KV'] = df['From PSS/E KV'].round().astype(int)
+    df['To PSS/E KV'] = df['To PSS/E KV'].round().astype(int)
+
     df.loc[(df['From PSS/E KV']==df['To PSS/E KV']) & ((df['From PSS/E KV'] == 0)), 'Expanded Branch Name'] = df['Branch Name']
     df.loc[(df['From PSS/E KV'] == df['To PSS/E KV']) & (df['From PSS/E KV'] != 0), 'Expanded Branch Name'] = (df['From Station Name/PSS/E Bus Name'].astype(str).str.strip() + '-' +
                                                                                                             df['To Station Name/PSS/E Bus Name'].astype(str) + ' ' +
-                                                                                                            df['From PSS/E KV'].astype(str) + 'KV ' +
+                                                                                                            df['From PSS/E KV'].astype(str) + ' KV ' +
                                                                                                             df['Branch Name'].astype(str))
 
     df.loc[(df['From PSS/E KV'] != df['To PSS/E KV']) & (df['From PSS/E KV'] != 0), 'Expanded Branch Name'] = (df['From Station Name/PSS/E Bus Name'].astype(str).str.strip() + ' ' +
-                                                                                                            df['From PSS/E KV'].astype(str) + 'KV ' +
+                                                                                                            df['From PSS/E KV'].astype(str) + ' KV ' +
                                                                                                             df['Branch Name'].astype(str))
 
 
@@ -81,8 +84,8 @@ def compare_rates(df1: pd.DataFrame, df2: pd.DataFrame, date1: str, date2: str, 
 
     # Perform inner merge
     merged_df = pd.merge(df1, df2, on='Expanded Branch Name', suffixes=('_1', '_2'), how='inner')
-    merged_df['Percent Change'] = abs(merged_df[f'{key}_1'] - merged_df[f'{key}_2']) / ((merged_df[f'{key}_1'] + merged_df[f'{key}_2']) / 2) * 100
-    filtered_df = merged_df[merged_df['Percent Change'] >= 15]
+    merged_df['Percent Change'] = (merged_df[f'{key}_1'] - merged_df[f'{key}_2']) / ((merged_df[f'{key}_1'] + merged_df[f'{key}_2']) / 2) * 100
+    filtered_df = merged_df[abs(merged_df['Percent Change']) >= 15]
 
     filtered_df.rename(columns={ f'{key}_1': f"{date1}  {key}",  f'{key}_2': f"{date2 } {key}"}, inplace=True)
     

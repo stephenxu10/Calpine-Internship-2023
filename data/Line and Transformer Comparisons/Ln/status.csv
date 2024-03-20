@@ -1,88 +1,77 @@
-Expanded Branch Name,03/20/2024 Status,03/21/2024 Status,Description
-LOSTPINE-LOSTPI   345.0KV LOST_PI2_1                      ,In-Service,Out-Of-Service,Changed
-LOSTPINE-DUNLAP   345.0KV CKT_3130_1                      ,In-Service,Out-Of-Service,Changed
-HKBRY-DFWBE    138.0KV 1150__A                         ,In-Service,Out-Of-Service,Changed
-HKBRY-DFWBE    138.0KV 1140__E                         ,In-Service,Out-Of-Service,Changed
-KRWSW-LWSSW    345.0KV 35010__A                        ,In-Service,Out-Of-Service,Changed
-BRTLT-GRNGR    69.0KV 2470__A                         ,In-Service,Out-Of-Service,Changed
-STEELE_S-SMETANA  138.0KV SMETANA_STEELE_1                ,In-Service,Out-Of-Service,Changed
-PYR-KIO_SWYD 345.0KV PYR_LINE_1                      ,In-Service,Out-Of-Service,Changed
-EDISON   345.0KV EDISON_XC1_1                    ,In-Service,Out-Of-Service,Changed
-EDISON   345.0KV EDISON_XC2_1                    ,In-Service,Out-Of-Service,Changed
-CWPOD-DELSW    138.0KV 6138__A                         ,In-Service,Out-Of-Service,Changed
-ANDNR-MSTNG    138.0KV 6094__C                         ,In-Service,Out-Of-Service,Changed
-BAKESW-WAYMARK  345.0KV BAKESW_WAYMAR1_1                ,In-Service,Out-Of-Service,Changed
-HIGHLAS-RAYBURN  69.0KV RAY_HIGH_1                      ,Out-Of-Service,In-Service,Changed
-R2-CALAVERS 138.0KV N3_R2_1                         ,Out-Of-Service,In-Service,Changed
-Z0-CALAVERS 138.0KV N3_Z0_1                         ,Out-Of-Service,In-Service,Changed
-IBLT1    138.0KV 1150__D                         ,Out-Of-Service,In-Service,Changed
-IBLT1-IRVBL    138.0KV 1150__B                         ,Out-Of-Service,In-Service,Changed
-IBLT1-DFWD2    138.0KV 1150__E                         ,Out-Of-Service,In-Service,Changed
-DFWD1-DFWD2    138.0KV 1150__I                         ,Out-Of-Service,In-Service,Changed
-DFWD1-IRVNR    138.0KV 1150__C                         ,Out-Of-Service,In-Service,Changed
-TRCNR-WTRML    345.0KV 215__A                          ,Out-Of-Service,In-Service,Changed
-TOKSW-OGSES    345.0KV 264__A                          ,Out-Of-Service,In-Service,Changed
-TWINBU-RAMBLER  345.0KV RAMBLER_GENTIE_1                ,Out-Of-Service,In-Service,Changed
-SANMGSW-HINDES   138.0KV HINDES_SANMGS1_1                ,Out-Of-Service,In-Service,Changed
-STRATTON-BISHOP   69.0KV BISHOP_STRATT1_1                ,Out-Of-Service,In-Service,Changed
-FREERS-HOLANDS  69.0KV HOL_FREE_1                      ,Out-Of-Service,In-Service,Changed
-BAYLOR_T-BMRTN    69.0KV BAYLOR_BMRTN1_1                 ,Out-Of-Service,In-Service,Changed
-BAYLOR_T-MUNDAYST 69.0KV BAYLOR_MUNDAY1_1                ,Out-Of-Service,In-Service,Changed
-ED       138.1KV ED_TAP92_1                      ,,In-Service,Missing-In-First
-JCHRSTL  138.0KV JC_DC_PH2_1                     ,,In-Service,Missing-In-First
-JCHRSTL  138.0KV JC_DC_PH3_1                     ,,In-Service,Missing-In-First
-CERRORIC-VINSON   138.0KV CERROR_VINSO1_1                 ,,Out-Of-Service,Missing-In-First
-CERRORIC-PECAN_BY 138.0KV CERROR_PECAN1_1                 ,,Out-Of-Service,Missing-In-First
-LIGSW    138.0KV SR8920_1                        ,,In-Service,Missing-In-First
-OERSTED  345.0KV ORSTED_XC1_1                    ,,In-Service,Missing-In-First
-OERSTED  345.0KV ORSTED_XC2_1                    ,,In-Service,Missing-In-First
-OERSTED  345.1KV 224T558_1                       ,,In-Service,Missing-In-First
-OERSTED  345.1KV 248T559_1                       ,,In-Service,Missing-In-First
-RCKYROAD-STILES   138.0KV RKYROAD_STILES_1                ,,In-Service,Missing-In-First
-ASHERTON-BIG_WELL 138.0KV ASHERT_BIG_WE1_1                ,,In-Service,Missing-In-First
-SMITH    69.0KV EDROY_SMITH1_1                  ,,In-Service,Missing-In-First
-INGLESID-ARANSASP 138.0KV ARANSA_INGLES1_1                ,,In-Service,Missing-In-First
-RAILROAD-BENTSEN  138.0KV BENTS_FRTER_1A_1                ,,In-Service,Missing-In-First
-DILLEYSW-BIG_WELL 138.0KV BIG_WE_DILLEY1_1                ,,In-Service,Missing-In-First
-S_BATES-NBATSVS  69.0KV NBA_S_BA_1                      ,,In-Service,Missing-In-First
-ROCKPORT-ARANSASP 138.0KV ARANSA_ROCKPO1_1                ,,In-Service,Missing-In-First
-GREGORY-ARANSASP 69.0KV ARANSA_GREGOR1_1                ,,In-Service,Missing-In-First
-LEONAS-NBATSVS  69.0KV LEO_NBAT_1                      ,,In-Service,Missing-In-First
-MATHIS-EDROY    69.0KV EDROY_MATHIS1_1                 ,,In-Service,Missing-In-First
-FRIO-DERBYS   69.0KV FRIOAEP_DERBY_1                 ,,In-Service,Missing-In-First
-ODEMSAND-EDROY    69.0KV EDROY_ODEMSA1_1                 ,,Out-Of-Service,Missing-In-First
-MORROWSW-PEARSALL 138.0KV PEARSAL_MRRWSW_1                ,,Out-Of-Service,Missing-In-First
-DILLEYS-DERBYS   69.0KV DER_DILL_1                      ,,In-Service,Missing-In-First
-S_MCALLN-BENTSEN  138.0KV BENTSE_S_MCAL1_1                ,,In-Service,Missing-In-First
-SEAWALL-ARANSASP 69.0KV ARANSA_SEAWAL1_1                ,,In-Service,Missing-In-First
-ED       138.0KV ED_TAP92_1                      ,In-Service,,Missing-In-Second
-JCHRSTL  138.1KV JC_DC_PH2_1                     ,In-Service,,Missing-In-Second
-JCHRSTL  138.1KV JC_DC_PH3_1                     ,In-Service,,Missing-In-Second
-OERSTED  345.0KV 224T558_1                       ,In-Service,,Missing-In-Second
-OERSTED  345.0KV 248T559_1                       ,In-Service,,Missing-In-Second
-STILES-RCKYROAD 138.0KV RKYROAD_STILES_1                ,In-Service,,Missing-In-Second
-ARANSASP-GREGORY  69.0KV ARANSA_GREGOR1_1                ,In-Service,,Missing-In-Second
-ARANSASP-SEAWALL  69.0KV ARANSA_SEAWAL1_1                ,In-Service,,Missing-In-Second
-ARANSASP-ROCKPORT 138.0KV ARANSA_ROCKPO1_1                ,In-Service,,Missing-In-Second
-ARANSASP-INGLESID 138.0KV ARANSA_INGLES1_1                ,In-Service,,Missing-In-Second
-EDROY    69.1KV EDROY_SMITH1_1                  ,In-Service,,Missing-In-Second
-EDROY-MATHIS   69.0KV EDROY_MATHIS1_1                 ,In-Service,,Missing-In-Second
-BENTSEN-RAILROAD 138.0KV BENTS_FRTER_1A_1                ,In-Service,,Missing-In-Second
-BENTSEN-S_MCALLN 138.0KV BENTSE_S_MCAL1_1                ,In-Service,,Missing-In-Second
-DERBYS-DILLEYS  69.0KV DER_DILL_1                      ,In-Service,,Missing-In-Second
-DERBYS-FRIO     69.0KV FRIOAEP_DERBY_1                 ,In-Service,,Missing-In-Second
-BIG_WELL-DILLEYSW 138.0KV BIG_WE_DILLEY1_1                ,In-Service,,Missing-In-Second
-BIG_WELL-ASHERTON 138.0KV ASHERT_BIG_WE1_1                ,In-Service,,Missing-In-Second
-NBATSVS-S_BATES  69.0KV NBA_S_BA_1                      ,In-Service,,Missing-In-Second
-NBATSVS-LEONAS   69.0KV LEO_NBAT_1                      ,In-Service,,Missing-In-Second
-BRAUNIG-Z5       138.0KV U2_Z5_1                         ,Out-Of-Service,,Missing-In-Second
-HLD-NIMROD   69.0KV NIMROD_HLD_OLD_1                ,Out-Of-Service,,Missing-In-Second
-HLD-RISNGSTR 69.0KV RIS_HLD_1                       ,Out-Of-Service,,Missing-In-Second
-RISNGSTR-NIMROD   69.0KV RIS_NIMR_OLD_1                  ,Out-Of-Service,,Missing-In-Second
-RISNGSTR-NIMROD   69.0KV RISN_NIMR_2                     ,Out-Of-Service,,Missing-In-Second
-RWLTP-ROWLT    138.0KV 1630__I                         ,Out-Of-Service,,Missing-In-Second
-LIGSW    138.1KV SR8920_1                        ,Out-Of-Service,,Missing-In-Second
-BALLINGE-FTCHADBT 138.0KV BALLIN_FTCHAD1_1                ,Out-Of-Service,,Missing-In-Second
-NNTRL-WLFTP    69.0KV 6705__Z                         ,Out-Of-Service,,Missing-In-Second
-NNTRL-WLFTP    69.0KV 6705__C                         ,Out-Of-Service,,Missing-In-Second
-EDROY-ODEMSAND 69.0KV EDROY_ODEMSA1_1                 ,Out-Of-Service,,Missing-In-Second
+Expanded Branch Name,03/21/2024 Status,03/20/2024 Status,Description
+HIGHLAS-RAYBURN  69 KV RAY_HIGH_1                      ,In-Service,Out-Of-Service,Changed
+R2-CALAVERS 138 KV N3_R2_1                         ,In-Service,Out-Of-Service,Changed
+Z0-CALAVERS 138 KV N3_Z0_1                         ,In-Service,Out-Of-Service,Changed
+IBLT1-LIGSW    138 KV 1150__D                         ,In-Service,Out-Of-Service,Changed
+IBLT1-IRVBL    138 KV 1150__B                         ,In-Service,Out-Of-Service,Changed
+IBLT1-DFWD2    138 KV 1150__E                         ,In-Service,Out-Of-Service,Changed
+DFWD1-DFWD2    138 KV 1150__I                         ,In-Service,Out-Of-Service,Changed
+DFWD1-IRVNR    138 KV 1150__C                         ,In-Service,Out-Of-Service,Changed
+TRCNR-WTRML    345 KV 215__A                          ,In-Service,Out-Of-Service,Changed
+LIGSW-LIGSW    138 KV SR8920_1                        ,In-Service,Out-Of-Service,Changed
+TOKSW-OGSES    345 KV 264__A                          ,In-Service,Out-Of-Service,Changed
+TWINBU-RAMBLER  345 KV RAMBLER_GENTIE_1                ,In-Service,Out-Of-Service,Changed
+SANMGSW-HINDES   138 KV HINDES_SANMGS1_1                ,In-Service,Out-Of-Service,Changed
+STRATTON-BISHOP   69 KV BISHOP_STRATT1_1                ,In-Service,Out-Of-Service,Changed
+FREERS-HOLANDS  69 KV HOL_FREE_1                      ,In-Service,Out-Of-Service,Changed
+BAYLOR_T-BMRTN    69 KV BAYLOR_BMRTN1_1                 ,In-Service,Out-Of-Service,Changed
+BAYLOR_T-MUNDAYST 69 KV BAYLOR_MUNDAY1_1                ,In-Service,Out-Of-Service,Changed
+LOSTPINE-DUNLAP   345 KV CKT_3130_1                      ,Out-Of-Service,In-Service,Changed
+LOSTPINE-LOSTPI   345 KV LOST_PI2_1                      ,Out-Of-Service,In-Service,Changed
+HKBRY-DFWBE    138 KV 1140__E                         ,Out-Of-Service,In-Service,Changed
+HKBRY-DFWBE    138 KV 1150__A                         ,Out-Of-Service,In-Service,Changed
+KRWSW-LWSSW    345 KV 35010__A                        ,Out-Of-Service,In-Service,Changed
+BRTLT-GRNGR    69 KV 2470__A                         ,Out-Of-Service,In-Service,Changed
+STEELE_S-SMETANA  138 KV SMETANA_STEELE_1                ,Out-Of-Service,In-Service,Changed
+PYR-KIO_SWYD 345 KV PYR_LINE_1                      ,Out-Of-Service,In-Service,Changed
+EDISON-EDISON   345 KV EDISON_XC1_1                    ,Out-Of-Service,In-Service,Changed
+EDISON-EDISON   345 KV EDISON_XC2_1                    ,Out-Of-Service,In-Service,Changed
+CWPOD-DELSW    138 KV 6138__A                         ,Out-Of-Service,In-Service,Changed
+ANDNR-MSTNG    138 KV 6094__C                         ,Out-Of-Service,In-Service,Changed
+BAKESW-WAYMARK  345 KV BAKESW_WAYMAR1_1                ,Out-Of-Service,In-Service,Changed
+BRAUNIG-Z5       138 KV U2_Z5_1                         ,,Out-Of-Service,Missing-In-First
+HLD-NIMROD   69 KV NIMROD_HLD_OLD_1                ,,Out-Of-Service,Missing-In-First
+HLD-RISNGSTR 69 KV RIS_HLD_1                       ,,Out-Of-Service,Missing-In-First
+RISNGSTR-NIMROD   69 KV RIS_NIMR_OLD_1                  ,,Out-Of-Service,Missing-In-First
+RISNGSTR-NIMROD   69 KV RISN_NIMR_2                     ,,Out-Of-Service,Missing-In-First
+RWLTP-ROWLT    138 KV 1630__I                         ,,Out-Of-Service,Missing-In-First
+BALLINGE-FTCHADBT 138 KV BALLIN_FTCHAD1_1                ,,Out-Of-Service,Missing-In-First
+STILES-RCKYROAD 138 KV RKYROAD_STILES_1                ,,In-Service,Missing-In-First
+NNTRL-WLFTP    69 KV 6705__Z                         ,,Out-Of-Service,Missing-In-First
+NNTRL-WLFTP    69 KV 6705__C                         ,,Out-Of-Service,Missing-In-First
+ARANSASP-GREGORY  69 KV ARANSA_GREGOR1_1                ,,In-Service,Missing-In-First
+ARANSASP-SEAWALL  69 KV ARANSA_SEAWAL1_1                ,,In-Service,Missing-In-First
+ARANSASP-ROCKPORT 138 KV ARANSA_ROCKPO1_1                ,,In-Service,Missing-In-First
+ARANSASP-INGLESID 138 KV ARANSA_INGLES1_1                ,,In-Service,Missing-In-First
+EDROY-SMITH    69 KV EDROY_SMITH1_1                  ,,In-Service,Missing-In-First
+EDROY-MATHIS   69 KV EDROY_MATHIS1_1                 ,,In-Service,Missing-In-First
+EDROY-ODEMSAND 69 KV EDROY_ODEMSA1_1                 ,,Out-Of-Service,Missing-In-First
+BENTSEN-RAILROAD 138 KV BENTS_FRTER_1A_1                ,,In-Service,Missing-In-First
+BENTSEN-S_MCALLN 138 KV BENTSE_S_MCAL1_1                ,,In-Service,Missing-In-First
+DERBYS-DILLEYS  69 KV DER_DILL_1                      ,,In-Service,Missing-In-First
+DERBYS-FRIO     69 KV FRIOAEP_DERBY_1                 ,,In-Service,Missing-In-First
+BIG_WELL-DILLEYSW 138 KV BIG_WE_DILLEY1_1                ,,In-Service,Missing-In-First
+BIG_WELL-ASHERTON 138 KV ASHERT_BIG_WE1_1                ,,In-Service,Missing-In-First
+NBATSVS-S_BATES  69 KV NBA_S_BA_1                      ,,In-Service,Missing-In-First
+NBATSVS-LEONAS   69 KV LEO_NBAT_1                      ,,In-Service,Missing-In-First
+OERSTED-OERSTED  345 KV ORSTED_XC1_1                    ,In-Service,,Missing-In-Second
+OERSTED-OERSTED  345 KV ORSTED_XC2_1                    ,In-Service,,Missing-In-Second
+RCKYROAD-STILES   138 KV RKYROAD_STILES_1                ,In-Service,,Missing-In-Second
+ASHERTON-BIG_WELL 138 KV ASHERT_BIG_WE1_1                ,In-Service,,Missing-In-Second
+SMITH-EDROY    69 KV EDROY_SMITH1_1                  ,In-Service,,Missing-In-Second
+INGLESID-ARANSASP 138 KV ARANSA_INGLES1_1                ,In-Service,,Missing-In-Second
+RAILROAD-BENTSEN  138 KV BENTS_FRTER_1A_1                ,In-Service,,Missing-In-Second
+DILLEYSW-BIG_WELL 138 KV BIG_WE_DILLEY1_1                ,In-Service,,Missing-In-Second
+S_BATES-NBATSVS  69 KV NBA_S_BA_1                      ,In-Service,,Missing-In-Second
+ROCKPORT-ARANSASP 138 KV ARANSA_ROCKPO1_1                ,In-Service,,Missing-In-Second
+GREGORY-ARANSASP 69 KV ARANSA_GREGOR1_1                ,In-Service,,Missing-In-Second
+LEONAS-NBATSVS  69 KV LEO_NBAT_1                      ,In-Service,,Missing-In-Second
+MATHIS-EDROY    69 KV EDROY_MATHIS1_1                 ,In-Service,,Missing-In-Second
+FRIO-DERBYS   69 KV FRIOAEP_DERBY_1                 ,In-Service,,Missing-In-Second
+DILLEYS-DERBYS   69 KV DER_DILL_1                      ,In-Service,,Missing-In-Second
+S_MCALLN-BENTSEN  138 KV BENTSE_S_MCAL1_1                ,In-Service,,Missing-In-Second
+SEAWALL-ARANSASP 69 KV ARANSA_SEAWAL1_1                ,In-Service,,Missing-In-Second
+CERRORIC-VINSON   138 KV CERROR_VINSO1_1                 ,Out-Of-Service,,Missing-In-Second
+CERRORIC-PECAN_BY 138 KV CERROR_PECAN1_1                 ,Out-Of-Service,,Missing-In-Second
+ODEMSAND-EDROY    69 KV EDROY_ODEMSA1_1                 ,Out-Of-Service,,Missing-In-Second
+MORROWSW-PEARSALL 138 KV PEARSAL_MRRWSW_1                ,Out-Of-Service,,Missing-In-Second

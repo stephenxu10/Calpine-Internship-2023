@@ -7,6 +7,7 @@ import pandas as pd
 from datetime import date, timedelta
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from email.mime.application import MIMEApplication
 import smtplib
 import datetime
 import DAM_Ln_Xf_Comparator
@@ -64,20 +65,14 @@ with zipfile.ZipFile(zip_data, 'r') as zip_file:
             df_tomo = pd.read_csv(csv_tomo)
 
 output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Line and Transformer Comparisons/Xf"
-df_status_comp = DAM_Ln_Xf_Comparator.compare_statuses(df_today, df_tomo, today, tomorrow, False)
+df_status_comp = DAM_Ln_Xf_Comparator.compare_statuses(df_tomo, df_today, tomorrow, today, False)
 df_status_comp.to_csv(output_path + "./status.csv", index=False)
-df_rate_a = DAM_Ln_Xf_Comparator.compare_rates(df_today, df_tomo, today, tomorrow, 'RATEA')
+df_rate_a = DAM_Ln_Xf_Comparator.compare_rates(df_tomo, df_today, tomorrow, today, 'RATEA')
 df_rate_a.to_csv(output_path + "./RATEA.csv", index=False)
-df_rate_b = DAM_Ln_Xf_Comparator.compare_rates(df_today, df_tomo, today, tomorrow, 'RATEB')
+df_rate_b = DAM_Ln_Xf_Comparator.compare_rates(df_tomo, df_today, tomorrow, today, 'RATEB')
 df_rate_b.to_csv(output_path + "./RATEB.csv", index=False)
 
 body = ""
-change = df_status_comp[df_status_comp['Description'] == 'Changed']
-if len(change) == 0:
-    body += '<html><p> No transformer statuses have changed from yesterday to today. <br> </p></html>'
-
-body += '<html><body>' + df_status_comp.to_html(index=False) + '</body></html>'
-
 if len(df_rate_a) == 0:
     body += '<html><p> No RATEA values have changed significantly from yesterday to today. <br> </p></html>'
 
@@ -93,15 +88,30 @@ else:
     body += '<html><p> The following RATEB values have changed significantly from yesterday to today: <br> </p></html>'
     body += '<html><body>' + df_rate_b.to_html(index=False) + '</body></html>'
 
+change = df_status_comp[df_status_comp['Description'] == 'Changed']
+if len(change) == 0:
+    body += '<html><p> No transformer statuses have changed from yesterday to today. <br> </p></html>'
+
+body += '<html><body>' + df_status_comp.to_html(index=False) + '</body></html>'
+
 msg = MIMEMultipart('alternative')
 msg['Subject'] = "Daily DAM Transformer Comparison Results"
 sender = 'transmission.yesapi@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com']
+receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
+
+# Attach the CSV file
+with open(output_path + "/status.csv", "rb") as file:
+    part = MIMEApplication(
+        file.read(),
+        Name="df_status_comp.csv"
+    )
+part['Content-Disposition'] = 'attachment; filename="status_comparison.csv"'
+msg.attach(part)
 
 smtpObj = smtplib.SMTP(host="relay.calpine.com")
 
