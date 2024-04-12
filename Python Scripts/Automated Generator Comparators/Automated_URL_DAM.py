@@ -10,6 +10,7 @@ from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import smtplib
 import DAM_Gn_Comparator
+import datetime 
 
 """
 This Python tool aims to automate the comparison between today and yesterday's DAM Generator data 
@@ -82,32 +83,31 @@ df_csv = DAM_Gn_Comparator.compare_statuses(df_today, df_tomo, today, tomorrow)
 change = df_csv[df_csv['Description'] == 'Changed']
 
 unknown, known = DAM_Gn_Comparator.merge_with_mapping(df_csv)
+known.rename(columns={"Generator in Load Zone": "Load Zone"}, inplace=True)
 
 body = ""
-if len(change) == 0:
-    body += '<html><p> No generator statuses have changed from yesterday to today. <br> </p></html>'
+body += '<html><p> Generator Availability as reported by ERCOT DA Filed reported at 5am. <br> </p></html>'
 
 body += '<html><body>' + known.to_html(index=False) + '</body></html>'
 
 msg = MIMEMultipart('alternative')
-msg['Subject'] = "Daily DAM Generator Comparison Results"
+msg['Subject'] = "ERCOT Generator Availability Comparison for HE16"
 sender = 'transmission.yesapi@calpine.com'
 
 """
 Update the unknown mapping text file.
 """
 output_root = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Gen_Ln_Xf Comparisons/Unknown Mappings"
-if len(unknown) == 0:
-    body += '<html><p> No unknown mappings were found. <br> </p></html>'
 
-else:
-    body += '<html><p> Unknown mappings were found. Go to <strong> //pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Gen_Ln_Xf Comparisons/Unknown Mappings </strong> for the latest unmatched records. <br> </p></html>'
+if len(unknown) != 0:
+    # body += '<html><p> Unknown mappings were found. Go to <strong> //pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/MIS Gen_Ln_Xf Comparisons/Unknown Mappings </strong> for the latest unmatched records. <br> </p></html>'
     df_curr = pd.read_csv(output_root + "/output.csv")
     combined = pd.concat([unknown, df_curr]).drop_duplicates()
     combined.to_csv(output_root + "/output.csv", index=False)
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com']
+receivers = ['Transmission@calpine.com', 'Jackie.Sparling@calpine.com', 'Rick.Moreno@calpine.com', 'Nicholas.Flato@calpine.com']
+# receivers = ['Stephen.Xu@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)

@@ -106,6 +106,25 @@ def aggregate_year(year: int, start: str = "01/01") -> pd.DataFrame:
     print("Finished " + str(year))
     return merged_df
 
+def find_new_rows(curr_df, pre_df):
+    """
+    Finds rows in curr_df that do not exist in pre_df.
+
+    Parameters:
+    - curr_df: The current DataFrame.
+    - pre_df: The preexisting DataFrame.
+
+    Returns:
+    - A DataFrame containing rows that are unique to curr_df.
+    """
+    # Ensure the DataFrames have the same columns for a fair comparison
+    common_columns = ['MARKETDAY', 'NAME', 'HOURENDING']
+    merged_df = pd.merge(curr_df[common_columns], pre_df[common_columns], indicator=True, how='outer')
+
+    # Filter rows that are unique to curr_df
+    new_rows = merged_df[merged_df['_merge'] == 'left_only'].drop('_merge', axis=1)
+
+    return new_rows
 
 def filter_raw_data(raw_merged: pd.DataFrame, start_date: str) -> pd.DataFrame:
     """
@@ -150,7 +169,7 @@ def filter_raw_data(raw_merged: pd.DataFrame, start_date: str) -> pd.DataFrame:
     url_string = ",".join(str(j) for j in url_string)
 
     # Query Yes Energy again using this URL string to grab the Real-Time Limits
-    enddate = "today+1"
+    enddate = "today-1"
     query_two = f"https://services.yesenergy.com/PS/rest/timeseries/multiple.csv?agglevel=hour&startdate={start_date}&enddate={enddate}&items={url_string}"
     call_two = requests.get(query_two, auth=my_auth)
     df_rt = pd.read_csv(StringIO(call_two.text))
@@ -183,7 +202,6 @@ def filter_raw_data(raw_merged: pd.DataFrame, start_date: str) -> pd.DataFrame:
 
     return df_final
 
-
 # If the output path does not exist, aggregate and convert all the data.
 if not os.path.isfile(final_output_path):
     # Aggregate and process the raw data from the drive.
@@ -197,15 +215,19 @@ if not os.path.isfile(final_output_path):
 else:
     current_data = pd.read_csv(final_output_path, low_memory=False)
     current_year = datetime.now().year
-    current_date = (datetime.now() - timedelta(days=30)).strftime("%m/%d")
+    current_date = (datetime.now() - timedelta(days=10)).strftime("%m/%d")
 
     new_current = aggregate_year(current_year, current_date)
 
     if len(new_current) > 0:
         new_current = filter_raw_data(new_current, current_date)
-        current_data = pd.concat([current_data, new_current], axis=0)
-        current_data = current_data.drop_duplicates()
-        current_data.to_csv(final_output_path, index=False)
+        curr_data = pd.concat([current_data, new_current], axis=0)
+        modified_data = curr_data.drop_duplicates(subset=['MARKETDAY', 'NAME', 'HOURENDING'], keep='last')
+        
+        new_rows = find_new_rows(current_data, modified_data)
+        print(new_rows)
+        
+        modified_data.to_csv(final_output_path, index=False)
 
 # Output summary statistics
 end_time = time.time()

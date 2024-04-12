@@ -99,7 +99,7 @@ msg['Subject'] = "Daily DAM Transformer Comparison Results"
 sender = 'transmission.yesapi@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
+receivers = ['Stephen.Xu@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)

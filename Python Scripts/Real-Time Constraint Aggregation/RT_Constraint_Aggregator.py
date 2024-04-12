@@ -26,9 +26,6 @@ year = date.today().year
 # How many days we look back
 days_back = 2
 
-# Flag that determines if we would like to update the RT_Constraint table as well.
-table_flag = False
-
 zip_base = f"\\\\Pzpwuplancli01\\Uplan\\ERCOT\\MIS {year}\\130_SSPSF"
 json_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/current_" + str(year) + "_web_data.json"
 json_summary = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
@@ -302,9 +299,10 @@ yearly_zip_files = os.listdir(zip_base)
 # If the output CSV does not exist, convert all CSVs within the requested year and write to output_path
 if not os.path.isfile(output_path):
     for zip_file in yearly_zip_files:
-        with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
-            df_csv = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
-            merge.append(convert_csv(df_csv, mapping))
+        if zip_file.endswith("_csv.zip"):
+            with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
+                df_csv = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
+                merge.append(convert_csv(df_csv, mapping))
 
     merged_df = pd.DataFrame(pd.concat(merge, axis=0))
     merged_df['Shadow_Price'] = pd.to_numeric(merged_df['Shadow_Price'], errors='coerce')
@@ -322,20 +320,18 @@ if not os.path.isfile(output_path):
 
     post_process(existing_sum, merged_df)
 
-    if table_flag:
-        merged_df.to_csv(output_path, index=False)
-
 # Otherwise, if the output CSV does exist, only update if requested year is the current year
 elif year == datetime.now().year:
     latest_date = datetime.strptime(latest_date + "/" + str(year), "%m/%d/%Y")
     for zip_file in yearly_zip_files:
-        zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")
+        if zip_file.endswith("_csv.zip"):
+            zip_date = datetime.strptime(zip_file[34:36] + "/" + zip_file[36:38] + "/" + str(year), "%m/%d/%Y")
 
-        # Convert all newly added CSVs since the last aggregation
-        if zip_date >= latest_date - timedelta(days=days_back):
-            with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
-                df_csv = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
-                merge.append(convert_csv(df_csv, mapping))
+            # Convert all newly added CSVs since the last aggregation
+            if zip_date >= latest_date - timedelta(days=days_back):
+                with zipfile.ZipFile(os.path.join(zip_base, zip_file), "r") as zip_path:
+                    df_csv = pd.read_csv(zip_path.open(zip_path.namelist()[0]))
+                    merge.append(convert_csv(df_csv, mapping))
 
     # Append the new data to the existing data
     merged_df = pd.DataFrame(pd.concat(merge, axis=0))
@@ -349,17 +345,6 @@ elif year == datetime.now().year:
         existing_sum = {}
 
     post_process(existing_sum, merged_df)
-    # Post-processing of the data
-    if table_flag:
-        current_data = pd.read_csv(output_path)
-        combined_data = pd.concat([current_data, merged_df], axis=0)
-        combined_data['Shadow_Price'] = pd.to_numeric(combined_data['Shadow_Price'], errors='coerce')
-        combined_data = combined_data[combined_data['Shadow_Price'] > 0]
-        combined_data = combined_data.drop_duplicates(subset=['SCED_Time_Stamp', 'Hour_Ending',
-                                                              'Contingency_Name', 'Settlement_Point'], keep='last')
-
-        combined_data = combined_data.sort_values(by=['SCED_Time_Stamp', 'Hour_Ending'])
-        combined_data.to_csv(output_path, index=False)
 
 # Output summary statistics
 end_time = time.time()

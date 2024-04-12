@@ -3,9 +3,7 @@ from io import StringIO, BytesIO
 import requests
 import warnings
 from concurrent.futures import ThreadPoolExecutor, as_completed
-from typing import Dict, Tuple, List, Union
 import pandas as pd
-from collections import defaultdict
 import concurrent.futures
 import time
 import os
@@ -20,9 +18,10 @@ year = date.today().year
 pd.set_option('display.max_columns', 500)
 
 DAYS_BACK = 30
-LIMIT = 0.005
+LIMIT = 0.001
 mis_path = "//Pzpwuplancli01/Uplan/ERCOT"
 delta_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_Last_{DAYS_BACK}_Days.csv"
+# delta_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/ERCOT_SCED_TEST.csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
@@ -30,11 +29,22 @@ yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?
 with open(credential_path, "r") as credentials:
     auth = tuple(credentials.read().split())
 
+# Extract the set of all nodes that we are interested in
+nodes_req = requests.get("https://services.yesenergy.com/PS/rest/collection/node/2697330", auth=auth)
+
+if nodes_req.status_code == 200:
+    node_names = pd.read_html(StringIO(nodes_req.text))
+    unique_nodes = set(node_names[0]['PNODENAME'].unique())
+
+else:
+    print("Request to obtain node values failed.")
+
 call1 = "https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/paths.csv?"
 r = requests.get(call1, auth=auth)
 paths_df = pd.read_csv(StringIO(r.text))
-unique_nodes = pd.concat([paths_df["SINK"],paths_df['SOURCE']]).unique()
-paths_df["PATH"] = paths_df['SOURCE'].astype(str) + "+" + paths_df['SINK']
+paths_df['PATH'] = paths_df['SOURCE'] + '+' + paths_df['SINK']
+paths_df = paths_df[['PATH', 'SOURCE', 'SINK']]
+paths_df = paths_df.drop_duplicates()
 
 def grab_yes_data(start_date: str, end_date: str) -> pd.DataFrame:
     """
@@ -71,7 +81,7 @@ def grab_yes_data(start_date: str, end_date: str) -> pd.DataFrame:
 def grab_ercotapi_data(l_d: str, l_h: str, u_d: str, u_h: str) -> pd.DataFrame:
     """Queries a certain range of data through ERCOT API in chunks and aggregates the results into one DataFrame."""
     
-    def split_time_range(start_date: str, start_hour: str, end_date: str, end_hour: str, chunks: int=3):
+    def split_time_range(start_date: str, start_hour: str, end_date: str, end_hour: str, chunks: int=1):
         """Split the time range into smaller chunks."""
         start_datetime = datetime.strptime(f"{start_date} {start_hour}", "%Y-%m-%d %H")
         end_datetime = datetime.strptime(f"{end_date} {end_hour}", "%Y-%m-%d %H")
@@ -148,7 +158,7 @@ def grab_ercotapi_data(l_d: str, l_h: str, u_d: str, u_h: str) -> pd.DataFrame:
     # Concatenate all DataFrames into a single DataFrame
     return pd.concat(all_data, axis=0)
 
-def process_zip_file(zip_path: str, limit: float) -> pd.DataFrame:
+def process_zip_file(zip_path: str, limit) -> pd.DataFrame:
     """
     Process a single zip file to extract the DataFrame according to specified logic.
     """
@@ -181,7 +191,7 @@ def process_zip_file(zip_path: str, limit: float) -> pd.DataFrame:
 def aggregate_network_files(year: int, limit: float) -> pd.DataFrame:
     yearly_base = os.path.join(mis_path, f"MIS {year}/130_SSPSF")
     if os.path.exists(yearly_base):
-        yearly_zip_files = [os.path.join(yearly_base, file) for file in os.listdir(yearly_base) if file.endswith('.zip')]
+        yearly_zip_files = [os.path.join(yearly_base, file) for file in os.listdir(yearly_base) if file.endswith('_csv.zip')]
         
         # Use ThreadPoolExecutor to process files in parallel
         with ThreadPoolExecutor() as executor:  # Adjust max_workers based on your environment
@@ -212,7 +222,7 @@ def merge_paths_ercot(paths_df, ercot_df) -> pd.DataFrame:
     paths_df = paths_df[['SOURCE', 'SINK']].drop_duplicates()
     ercot_df = ercot_df.drop_duplicates(subset=['Settlement_Point', 'SCED_Time_Stamp', 'Shift_Factor', 'Constraint_Name', 'Contingency_Name'])
     merged_df = pd.merge(paths_df, ercot_df, left_on='SOURCE', right_on='Settlement_Point', how='inner', suffixes=('', '_source'))
-    merged_df = pd.merge(merged_df, ercot_df, left_on=['SINK', 'SCED_Time_Stamp', 'Contingency_Name'], right_on=['Settlement_Point', 'SCED_Time_Stamp', 'Contingency_Name'], how='inner', suffixes=('', '_sink'))
+    merged_df = pd.merge(merged_df, ercot_df, left_on=['SINK', 'SCED_Time_Stamp', 'Constraint_Name', 'Contingency_Name'], right_on=['Settlement_Point', 'SCED_Time_Stamp', 'Constraint_Name', 'Contingency_Name'], how='inner', suffixes=('', '_sink'))
 
     # Clean up and select the needed columns only once, also handling duplicates and NaNs efficiently
     merged_df = merged_df.dropna(subset=['Hour_Ending'])
@@ -267,6 +277,7 @@ filtered_df['$ Cong MWH'] = (filtered_df['Source SF'] - filtered_df['Sink SF']) 
 filtered_df = filtered_df.drop_duplicates()
 
 filtered_df = filtered_df[filtered_df["Path"].isin(paths_df['PATH'])]
+filtered_df = filtered_df[filtered_df['ShadowPrice'] > 0]
 filtered_df = filtered_df.dropna(subset=['$ Cong MWH']).drop(columns=['ShadowPrice'])
 filtered_df.to_csv(delta_path, index=False)
 
