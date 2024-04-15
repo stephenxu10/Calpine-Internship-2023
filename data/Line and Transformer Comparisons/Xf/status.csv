@@ -1,17 +1,33 @@
-Expanded Branch Name,04/13/2024 Status,04/12/2024 Status,Description
+Expanded Branch Name,04/16/2024 Status,04/15/2024 Status,Description
+BI      345 KV BI_AT5                          ,In-Service,Out-Of-Service,Changed
+BI      138 KV BI_AT5L                         ,In-Service,Out-Of-Service,Changed
+BI      23 KV BI_AT5T                         ,In-Service,Out-Of-Service,Changed
+THW     14 KV THW_XT5I                        ,In-Service,Out-Of-Service,Changed
+THW     14 KV THW_XT5H                        ,In-Service,Out-Of-Service,Changed
+THW     345 KV THW_XT5G                        ,In-Service,Out-Of-Service,Changed
+THW     345 KV THW_XT5A                        ,In-Service,Out-Of-Service,Changed
+THW     14 KV THW_XT5B                        ,In-Service,Out-Of-Service,Changed
+THW     14 KV THW_XT5C                        ,In-Service,Out-Of-Service,Changed
+THW     345 KV THW_XT5D                        ,In-Service,Out-Of-Service,Changed
+THW     14 KV THW_XT5F                        ,In-Service,Out-Of-Service,Changed
+THW     14 KV THW_XT5E                        ,In-Service,Out-Of-Service,Changed
 WAP     138 KV WAP_MT2                         ,In-Service,Out-Of-Service,Changed
-APOGEE  345 KV APOGEE_T3                       ,In-Service,Out-Of-Service,Changed
-APOGEE  345 KV APOGEE_T4                       ,In-Service,Out-Of-Service,Changed
-ALVDO   69 KV ALVDO_FMR3                      ,In-Service,Out-Of-Service,Changed
-TNP_ONE 345 KV TNP_ONE_GSU2                    ,In-Service,Out-Of-Service,Changed
-HAMILTON138 KV HAMILTON_AUT1                   ,In-Service,Out-Of-Service,Changed
-QUEEN_SL34 KV QUEEN_SL_T1TC                   ,In-Service,Out-Of-Service,Changed
-QUEEN_SL34 KV QUEEN_SL_T1SC                   ,In-Service,Out-Of-Service,Changed
-QUEEN_SL345 KV QUEEN_SL_T1PC                   ,In-Service,Out-Of-Service,Changed
-PALMITO 138 KV PALMITO_7TR1                    ,In-Service,Out-Of-Service,Changed
-PH1     345 KV PH1_T1                          ,In-Service,Out-Of-Service,Changed
-PH1     345 KV PH1_T2                          ,In-Service,Out-Of-Service,Changed
-CORONA  138 KV CORONA_GSU3                     ,Out-Of-Service,In-Service,Changed
-LPCCS   345 KV LPCCS_MR22                      ,Out-Of-Service,In-Service,Changed
-LPCCS   345 KV LPCCS_MR21                      ,Out-Of-Service,In-Service,Changed
-LPCCS   345 KV LPCCS_FMR2                      ,Out-Of-Service,In-Service,Changed
+GIDEON  138 KV GIDEON_GSU3                     ,In-Service,Out-Of-Service,Changed
+TRINITY 345 KV TRINITY_T1                      ,In-Service,Out-Of-Service,Changed
+GRIZZLY 69 KV GRIZZLY_T1                      ,In-Service,Out-Of-Service,Changed
+IH20    138 KV IH20_IHS1                       ,In-Service,Out-Of-Service,Changed
+MCDLD   138 KV MCDLD_T1                        ,In-Service,Out-Of-Service,Changed
+CCEC    138 KV CCEC_TG2                        ,In-Service,Out-Of-Service,Changed
+CCEC    138 KV CCEC_T1                         ,In-Service,Out-Of-Service,Changed
+DKNS_ESS345 KV DKNS_ESS_T1                     ,In-Service,Out-Of-Service,Changed
+BI      345 KV BI_AT2                          ,Out-Of-Service,In-Service,Changed
+BI      138 KV BI_AT2L                         ,Out-Of-Service,In-Service,Changed
+BI      23 KV BI_AT2T                         ,Out-Of-Service,In-Service,Changed
+GIDEON  138 KV GIDEON_GSU1                     ,Out-Of-Service,In-Service,Changed
+GIDEON  138 KV GIDEON_GSU2                     ,Out-Of-Service,In-Service,Changed
+ANASW   138 KV ANASW_XF1L                      ,Out-Of-Service,In-Service,Changed
+ANASW   345 KV ANASW_XF1H                      ,Out-Of-Service,In-Service,Changed
+ANASW   14 KV ANASW_XF1T                      ,Out-Of-Service,In-Service,Changed
+MASN    138 KV MASN_T1                         ,Out-Of-Service,In-Service,Changed
+FERGCC  138 KV FERGCC_GSU1                     ,Out-Of-Service,In-Service,Changed
+WINK    69 KV WINK_KAT2                       ,Out-Of-Service,In-Service,Changed

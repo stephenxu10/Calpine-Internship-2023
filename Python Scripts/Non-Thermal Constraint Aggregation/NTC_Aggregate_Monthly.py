@@ -37,7 +37,7 @@ def aggregate_year(year: int) -> pd.DataFrame:
             monthly_base = os.path.join(yearly_base, f"{year}-{convert(month)}/Network Model")
 
             if os.path.isdir(monthly_base):
-                pattern = os.path.join(monthly_base, "*Non-ThermalConstraints*.csv")
+                pattern = os.path.join(monthly_base, "*ThermalConstraints*.csv")
                 csv_files = glob.glob(pattern)
 
                 if csv_files:

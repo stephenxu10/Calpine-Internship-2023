@@ -1,49 +1,34 @@
-Expanded Branch Name,04/13/2024 Status,04/12/2024 Status,Description
-HB-KW      138 KV HB_KW_66_A                      ,In-Service,Out-Of-Service,Changed
-WAP-WAP     138 KV WAPGEN02_1                      ,In-Service,Out-Of-Service,Changed
-WI-ME      138 KV ME_WI_73_A                      ,In-Service,Out-Of-Service,Changed
-BM-WD      138 KV BM_WD_73_A                      ,In-Service,Out-Of-Service,Changed
-WD-WD      138 KV WD_TAP73_1                      ,In-Service,Out-Of-Service,Changed
-WD-ME      138 KV ME_WD_73_A                      ,In-Service,Out-Of-Service,Changed
-ME-ME      138 KV ME_TAP73_1                      ,In-Service,Out-Of-Service,Changed
-GA-MDY     138 KV GA_MDY63_A                      ,In-Service,Out-Of-Service,Changed
-FRWYPARK-DICKNSON138 KV G138_14_1                       ,In-Service,Out-Of-Service,Changed
-BOERNE-WELFAR  138 KV 385T228_1                       ,In-Service,Out-Of-Service,Changed
-T3-S1      138 KV S1_T3_1                         ,In-Service,Out-Of-Service,Changed
-BNTSW-TOWER   69 KV 2115__B                         ,In-Service,Out-Of-Service,Changed
-WSTON-MKNNY   138 KV 536__K                          ,In-Service,Out-Of-Service,Changed
-MCWTP-MKNNY   138 KV 536__G                          ,In-Service,Out-Of-Service,Changed
-MCWTP-MCWHT   138 KV 536__H                          ,In-Service,Out-Of-Service,Changed
-MCWTP-MKNSW   138 KV 536__D                          ,In-Service,Out-Of-Service,Changed
-DALLW-DVSTP   138 KV 3380__F                         ,In-Service,Out-Of-Service,Changed
-WDGTP-PFFRD   138 KV 6123__B                         ,In-Service,Out-Of-Service,Changed
-LEMON-FRMNT   138 KV 3480__A                         ,In-Service,Out-Of-Service,Changed
-MKNSW-MKNSO   138 KV 536__I                          ,In-Service,Out-Of-Service,Changed
-DAVST-DVSTP   138 KV 3380__C                         ,In-Service,Out-Of-Service,Changed
-CLCRK-LENSW   138 KV 6360__E                         ,In-Service,Out-Of-Service,Changed
-WMRNR-DVSTP   138 KV 3380__D                         ,In-Service,Out-Of-Service,Changed
-MKNSO-CRPOI   138 KV 536__J                          ,In-Service,Out-Of-Service,Changed
-CRPOI-CRARCH  138 KV CRGRNCH1_1                      ,In-Service,Out-Of-Service,Changed
-PHILLIPS-HAMNDSW 138 KV HMNDSW_PHLPS_1                  ,In-Service,Out-Of-Service,Changed
-RBS-HAMNDSW 138 KV RBS_HMNDSW_1                    ,In-Service,Out-Of-Service,Changed
-SNG-LMO     345 KV LMOSNG01_A                      ,In-Service,Out-Of-Service,Changed
-HAMMOND-HAMNDSW 138 KV HMNDSW_HMND_1                   ,In-Service,Out-Of-Service,Changed
-SFTLK-ANDNR   138 KV 6092__A                         ,In-Service,Out-Of-Service,Changed
-RSPOD-MKPOD   138 KV 15050__E                        ,In-Service,Out-Of-Service,Changed
-MKPOD-FLAND   138 KV 15050__G                        ,In-Service,Out-Of-Service,Changed
-YUCSW-YUCSW   138 KV YUCSW_SERDEV1_1                 ,In-Service,Out-Of-Service,Changed
-YUCSW-SOPOD   138 KV 6518__B                         ,In-Service,Out-Of-Service,Changed
-ADERHOLD-ELSA    138 KV ADERHO_ELSA1_1                  ,In-Service,Out-Of-Service,Changed
-BIGOAK-BEEVLES 69 KV BEEVILE_BIGOAK_1                ,In-Service,Out-Of-Service,Changed
-N_MCALLN-N_MCALLN138 KV N_MCAL_SERDEV1_1                ,In-Service,Out-Of-Service,Changed
-RAILHEAD-PH1     345 KV RAILHD_PH1_1                    ,In-Service,Out-Of-Service,Changed
-LAK-KW      138 KV KW_LAK66_A                      ,Out-Of-Service,In-Service,Changed
-NAVARRO-MBPOD   345 KV LEFTY_NAVAR_A                   ,Out-Of-Service,In-Service,Changed
-LWSSW-KRWSW   345 KV 35010__A                        ,Out-Of-Service,In-Service,Changed
-CORONA-BUCHAN  7 KV BUCH_COR_GSUT3_G3               ,Out-Of-Service,In-Service,Changed
-SUNSW-MGSES   138 KV 6474__A                         ,Out-Of-Service,In-Service,Changed
-CWPOD-DRHSW   138 KV 6149__H                         ,Out-Of-Service,In-Service,Changed
-CWPOD-DELSW   138 KV 6138__A                         ,Out-Of-Service,In-Service,Changed
-ADERHOLD-HEC     138 KV ADERHO_HEC1_1                   ,Out-Of-Service,In-Service,Changed
-PRSSW-LPCCS   345 KV 392__A                          ,Out-Of-Service,In-Service,Changed
-EDITHCLA-AVOGADRO345 KV AVOGAD_EDITHC1_1                ,Out-Of-Service,In-Service,Changed
+Expanded Branch Name,04/16/2024 Status,04/15/2024 Status,Description
+AE-RIC     138 KV AE_RIC82_A                      ,In-Service,Out-Of-Service,Changed
+PRPUTA-PRAIRPMP69 KV 804T547_1                       ,In-Service,Out-Of-Service,Changed
+WELRD-MSHLN   138 KV 3740__B                         ,In-Service,Out-Of-Service,Changed
+POTSVIL-GRIZZLY 69 KV GRIZZLY_TLINE_1                 ,In-Service,Out-Of-Service,Changed
+GVAVE-BKWST   138 KV 3490__E                         ,In-Service,Out-Of-Service,Changed
+CDCSW-OKCLS   138 KV 3150__A                         ,In-Service,Out-Of-Service,Changed
+ESTLD-LENSW   69 KV 6635__F                         ,In-Service,Out-Of-Service,Changed
+BKWST-JNKNS   138 KV 3500__B                         ,In-Service,Out-Of-Service,Changed
+RNS-SNG     345 KV RNSSNG75_A                      ,In-Service,Out-Of-Service,Changed
+ODEHV-W_GT_345345 KV T-306_1                         ,In-Service,Out-Of-Service,Changed
+WAP-WAP     138 KV WAPBR2_1                        ,Out-Of-Service,In-Service,Changed
+WAP-TM      138 KV TM_WAP82_A                      ,Out-Of-Service,In-Service,Changed
+ESPERANZ-CELANEBC138 KV CELANE_ESPERA1_1                ,Out-Of-Service,In-Service,Changed
+CELANEBC-CELANEBC138 KV CELANE_SERDEV3_1                ,Out-Of-Service,In-Service,Changed
+TM-AR      138 KV AR_TM_82_A                      ,Out-Of-Service,In-Service,Changed
+TM-TM      138 KV TM_TAP82_1                      ,Out-Of-Service,In-Service,Changed
+HIGHLAS-RAYBURN 69 KV RAY_HIGH_1                      ,Out-Of-Service,In-Service,Changed
+BLOCKH-LEANDE  138 KV 326T326_1                       ,Out-Of-Service,In-Service,Changed
+D3-BRAUNIG 138 KV D3_U2_1                         ,Out-Of-Service,In-Service,Changed
+STAGE-KLELM   138 KV 640__L                          ,Out-Of-Service,In-Service,Changed
+TMPLE-TMPSW   138 KV 1840__A                         ,Out-Of-Service,In-Service,Changed
+GTVSW-GTVAR   69 KV 2220__B                         ,Out-Of-Service,In-Service,Changed
+HLSES-ARLNG   138 KV 6415__C                         ,Out-Of-Service,In-Service,Changed
+INAIR-LIGSW   138 KV 1320__F                         ,Out-Of-Service,In-Service,Changed
+KLNTF-KLELM   138 KV 640__I                          ,Out-Of-Service,In-Service,Changed
+SHRSW-ARLNG   138 KV 6415__B                         ,Out-Of-Service,In-Service,Changed
+FERGUS-FERGCC  138 KV JO-1_1                          ,Out-Of-Service,In-Service,Changed
+SCOSW-W_LD_345345 KV T-304_1                         ,Out-Of-Service,In-Service,Changed
+WLFSW-PWPOD   138 KV 6485__A                         ,Out-Of-Service,In-Service,Changed
+W_LD_345-W_FD_345345 KV T-303_1                         ,Out-Of-Service,In-Service,Changed
+E_HARRIS-LA_PALMA69 KV E_HARR_LA_PAL1_1                ,Out-Of-Service,In-Service,Changed
+SCHRODS-BIGOAK  69 KV BIGOAK_SHROEDR_1                ,Out-Of-Service,In-Service,Changed
+WFNTH-RBNTK   69 KV 6650__A                         ,Out-Of-Service,In-Service,Changed

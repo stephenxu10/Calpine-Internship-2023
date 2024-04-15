@@ -33,21 +33,19 @@ def aggregate_year(year: int, half: int) -> pd.DataFrame:
                 if csv_files:
                     for file in csv_files:
                         filename = os.path.basename(file)
+                        seq_index = filename.find("Seq")
+                        
                         parts = filename.split("_")
-                        match = re.search(r'(\d{4}[^_]*_)', filename)
+                        month = parts[-2]
+                        year = parts[-1][:-4]
 
-                        if match:
-                            filename = match.group(0).strip('_')
-                            month = parts[-2]
-                            year = parts[-1][:-4]
-
-                            df = pd.read_csv(file)
-                            df.columns = [col.strip() for col in df.columns]
-                            df['Year'] = year
-                            df['Month'] = months.index(month) + 1
-                            df['Filename'] = filename
-
-                            dataframes.append(df)
+                        df = pd.read_csv(file)
+                        df.columns = [col.strip() for col in df.columns]
+                        df['Year'] = year
+                        df['Month'] = months.index(month) + 1
+                        df['Filename'] = filename[seq_index: seq_index + 4]
+                
+                        dataframes.append(df)
         
         if len(dataframes) == 0:
             return pd.DataFrame()
@@ -65,8 +63,11 @@ for year in range(MIN_YEAR, MAX_YEAR):
 
 aggregate_df = pd.concat(yearly_dfs)
 aggregate_df = aggregate_df[aggregate_df.columns.tolist()[6:] + aggregate_df.columns.tolist()[:6]]
-aggregate_df.to_csv(OUTPUT_PATH + "/CRR_NonThermalConstraints_SemiAnnual.csv", index=False)
-    
+aggregate_df['DeviceType'] = aggregate_df['DeviceType'].str.upper()
+
+pivot_df = pd.pivot_table(aggregate_df, values='Limit', index=['Year', 'Month', 'Name', 'DeviceName', 'DeviceType', 'FlowDirection', 'Factor'], columns=['Filename'], aggfunc="sum")
+pivot_df.to_csv(OUTPUT_PATH + "/CRR_NonThermalConstraints_SemiAnnual.csv")
+
 end_time = time.time()
 execution_time = (end_time - start_time)
 print("Generation Complete")
