@@ -11,37 +11,30 @@ from datetime import date
 from datetime import timedelta, datetime
 
 warnings.simplefilter("ignore")
+PATHID = 1073125
 
 # Global Variables and Parameters.
 start_time = time.time()
 year = date.today().year
 pd.set_option('display.max_columns', 500)
 
-DAYS_BACK = 30
-LIMIT = 0.001
+YEAR = 2024
+DAYS_BACK = 365
+LIMIT = 0.005
 mis_path = "//Pzpwuplancli01/Uplan/ERCOT"
-delta_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_Last_{DAYS_BACK}_Days.csv"
-# delta_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/ERCOT_SCED_TEST.csv"
+delta_path = f"//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/10 - Studies/2024/Summer Prep/Extracts/RT Delta/Exposure_SCED_{YEAR}_{PATHID}.csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/RT/ERCOT?"
-
+ 
 with open(credential_path, "r") as credentials:
     auth = tuple(credentials.read().split())
 
-# Extract the set of all nodes that we are interested in
-nodes_req = requests.get("https://services.yesenergy.com/PS/rest/collection/node/2697330", auth=auth)
-
-if nodes_req.status_code == 200:
-    node_names = pd.read_html(StringIO(nodes_req.text))
-    unique_nodes = set(node_names[0]['PNODENAME'].unique())
-
-else:
-    print("Request to obtain node values failed.")
-
-call1 = "https://services.yesenergy.com/PS/rest/ftr/portfolio/759847/paths.csv?"
+call1 = f"https://services.yesenergy.com/PS/rest/ftr/portfolio/{PATHID}/paths.csv?"
 r = requests.get(call1, auth=auth)
 paths_df = pd.read_csv(StringIO(r.text))
+unique_nodes = pd.concat([paths_df['SOURCE'], paths_df['SINK']]).unique()
+
 paths_df['PATH'] = paths_df['SOURCE'] + '+' + paths_df['SINK']
 paths_df = paths_df[['PATH', 'SOURCE', 'SINK']]
 paths_df = paths_df.drop_duplicates()
@@ -76,87 +69,6 @@ def grab_yes_data(start_date: str, end_date: str) -> pd.DataFrame:
     
     all_years_data['DATETIME'] = pd.to_datetime(all_years_data["DATETIME"]).dt.strftime("%m/%d/%Y")
     return all_years_data[relevant_columns]
-
-
-def grab_ercotapi_data(l_d: str, l_h: str, u_d: str, u_h: str) -> pd.DataFrame:
-    """Queries a certain range of data through ERCOT API in chunks and aggregates the results into one DataFrame."""
-    
-    def split_time_range(start_date: str, start_hour: str, end_date: str, end_hour: str, chunks: int=1):
-        """Split the time range into smaller chunks."""
-        start_datetime = datetime.strptime(f"{start_date} {start_hour}", "%Y-%m-%d %H")
-        end_datetime = datetime.strptime(f"{end_date} {end_hour}", "%Y-%m-%d %H")
-        
-        # Calculate total duration and split into chunks
-        total_duration = end_datetime - start_datetime
-        chunk_duration = total_duration / chunks
-        
-        time_ranges = []
-        for i in range(chunks):
-            chunk_start = start_datetime + i * chunk_duration
-            chunk_end = chunk_start + chunk_duration
-            if i == chunks - 1:
-                # Ensure the last chunk ends exactly at the end_datetime
-                chunk_end = end_datetime
-            time_ranges.append((chunk_start, chunk_end))
-        
-        return time_ranges
-
-    def query_ercot_data(start_datetime, end_datetime):
-        """Perform a query to the ERCOT API for the given datetime range."""
-        merged = []
-        file_type = "csv"
-        ercot_url = f"https://ercotapi.app.calpine.com/reports?reportId=16013&marketParticipantId=CRRAH&startTime={start_datetime.strftime('%Y-%m-%dT%H:00:00')}&endTime={end_datetime.strftime('%Y-%m-%dT%H:00:00')}&unzipFiles=false"
-        
-        print(ercot_url) 
-        
-        response = requests.get(ercot_url, verify=False)  
-        if response.status_code == 200:
-            zip_data = zipfile.ZipFile(BytesIO(response.content))
-            with zip_data as z:
-                for file_name in z.namelist():
-                    if file_type in file_name:
-                        inner_data = BytesIO(z.read(file_name))
-                        with zipfile.ZipFile(inner_data, 'r') as inner_zip:
-                            with inner_zip.open(inner_zip.namelist()[0]) as inner_csv:
-                                drop_columns = ["Constraint_ID", "Repeated_Hour_Flag"]
-                                df_chunk = pd.read_csv(inner_csv)
-                                
-                                df_chunk = df_chunk.drop(columns=drop_columns)
-                                df_chunk = df_chunk[df_chunk['Settlement_Point'].isin(unique_nodes)]
-                                df_chunk = df_chunk[abs(df_chunk['Shift_Factor']) > LIMIT]
-
-                                # Add the HourEnding column
-                                if len(df_chunk) > 0:
-                                    datetime_obj = datetime.strptime(df_chunk.iloc[0, 0], "%m/%d/%Y %H:%M:%S")
-                                    next_hour = (datetime_obj + timedelta(hours=1)).strftime("%H")
-    
-                                    if next_hour == "00":
-                                        next_hour = "24"
-    
-                                    next_hour = next_hour.lstrip('0')
-                                    hourEnding = [next_hour] * len(df_chunk)
-                                    df_chunk.insert(1, "Hour_Ending", hourEnding)
-                                    merged.append(df_chunk)
-        else:
-            print(response.status_code)
-            return pd.DataFrame()
-        
-        print("Success!")
-        return pd.concat(merged, axis=0)
-    
-    time_ranges = split_time_range(l_d, l_h, u_d, u_h)
-    all_data_futures = []
-    with concurrent.futures.ThreadPoolExecutor(max_workers=4) as executor:
-        # Schedule the fetch_data_range function to be called for each time range
-        for start_dt, end_dt in time_ranges:
-            future = executor.submit(query_ercot_data, start_dt, end_dt)
-            all_data_futures.append(future)
-        
-        # Wait for all futures to complete and collect their results
-        all_data = [future.result() for future in concurrent.futures.as_completed(all_data_futures)]
-    
-    # Concatenate all DataFrames into a single DataFrame
-    return pd.concat(all_data, axis=0)
 
 def process_zip_file(zip_path: str, limit) -> pd.DataFrame:
     """
@@ -236,30 +148,26 @@ def merge_paths_ercot(paths_df, ercot_df) -> pd.DataFrame:
 
     return final_df
 
-lower_bound = (date.today() - timedelta(days=DAYS_BACK)).strftime('%m/%d/%Y')
-today = (date.today() + timedelta(days=1)).strftime('%m/%d/%Y')
+lower_bound = f"01/01/{YEAR}"
+today = f"12/31/{YEAR}"
 
 yes_df = grab_yes_data(lower_bound, today)
-network_df = aggregate_network_files(2024, LIMIT)
+network_df = aggregate_network_files(YEAR, LIMIT)
 network_df = network_df[network_df['SCED_Time_Stamp'] >= lower_bound]
 
-lower_bound = (date.today() - timedelta(days=1)).strftime('%Y-%m-%d')
-today = (date.today() + timedelta(days=1)).strftime('%Y-%m-%d')
-
-ercotapi_df = grab_ercotapi_data(lower_bound, "01", today, "01")
-ercotapi_df = pd.concat([network_df, ercotapi_df])
-ercotapi_df = ercotapi_df.drop_duplicates()
-
-merged_df = merge_paths_ercot(paths_df, ercotapi_df)
+merged_df = merge_paths_ercot(paths_df, network_df)
+print("merged!")
 
 # Merge in the Shadow Prices
 merged_df['Contingency_Name'] = merged_df['Contingency_Name'].astype(str)
 merged_df['DATETIME'] = pd.to_datetime(merged_df['DATETIME']) 
 merged_df['Hour_Ending'] = merged_df['Hour_Ending'].astype(int)  
 
+#%%
 yes_df['CONTINGENCY'] = yes_df['CONTINGENCY'].astype(str)
 yes_df['DATETIME'] = pd.to_datetime(yes_df['DATETIME'])
-yes_df['HOURENDING'] = yes_df['HOURENDING'].astype(int)
+yes_df['HOURENDING'] = yes_df['HOURENDING'].fillna(0).astype(int)
+yes_df = yes_df.dropna()
 
 merged_df = pd.merge(merged_df, yes_df, left_on=['Contingency_Name', 'DATETIME', 'Hour_Ending'], right_on=['CONTINGENCY', 'DATETIME', 'HOURENDING'])
 filtered_df = merged_df[merged_df.apply(lambda x: x['Constraint_Name'] in x['REPORTED_NAME'], axis=1)]

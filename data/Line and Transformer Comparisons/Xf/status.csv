@@ -1,7 +1,4 @@
-Expanded Branch Name,04/16/2024 Status,04/15/2024 Status,Description
-BI      345 KV BI_AT5                          ,In-Service,Out-Of-Service,Changed
-BI      138 KV BI_AT5L                         ,In-Service,Out-Of-Service,Changed
-BI      23 KV BI_AT5T                         ,In-Service,Out-Of-Service,Changed
+Expanded Branch Name,04/20/2024 Status,04/19/2024 Status,Description
 THW     14 KV THW_XT5I                        ,In-Service,Out-Of-Service,Changed
 THW     14 KV THW_XT5H                        ,In-Service,Out-Of-Service,Changed
 THW     345 KV THW_XT5G                        ,In-Service,Out-Of-Service,Changed
@@ -11,23 +8,24 @@ THW     14 KV THW_XT5C                        ,In-Service,Out-Of-Service,Changed
 THW     345 KV THW_XT5D                        ,In-Service,Out-Of-Service,Changed
 THW     14 KV THW_XT5F                        ,In-Service,Out-Of-Service,Changed
 THW     14 KV THW_XT5E                        ,In-Service,Out-Of-Service,Changed
-WAP     138 KV WAP_MT2                         ,In-Service,Out-Of-Service,Changed
-GIDEON  138 KV GIDEON_GSU3                     ,In-Service,Out-Of-Service,Changed
-TRINITY 345 KV TRINITY_T1                      ,In-Service,Out-Of-Service,Changed
-GRIZZLY 69 KV GRIZZLY_T1                      ,In-Service,Out-Of-Service,Changed
-IH20    138 KV IH20_IHS1                       ,In-Service,Out-Of-Service,Changed
-MCDLD   138 KV MCDLD_T1                        ,In-Service,Out-Of-Service,Changed
-CCEC    138 KV CCEC_TG2                        ,In-Service,Out-Of-Service,Changed
-CCEC    138 KV CCEC_T1                         ,In-Service,Out-Of-Service,Changed
-DKNS_ESS345 KV DKNS_ESS_T1                     ,In-Service,Out-Of-Service,Changed
-BI      345 KV BI_AT2                          ,Out-Of-Service,In-Service,Changed
-BI      138 KV BI_AT2L                         ,Out-Of-Service,In-Service,Changed
-BI      23 KV BI_AT2T                         ,Out-Of-Service,In-Service,Changed
-GIDEON  138 KV GIDEON_GSU1                     ,Out-Of-Service,In-Service,Changed
-GIDEON  138 KV GIDEON_GSU2                     ,Out-Of-Service,In-Service,Changed
-ANASW   138 KV ANASW_XF1L                      ,Out-Of-Service,In-Service,Changed
-ANASW   345 KV ANASW_XF1H                      ,Out-Of-Service,In-Service,Changed
-ANASW   14 KV ANASW_XF1T                      ,Out-Of-Service,In-Service,Changed
-MASN    138 KV MASN_T1                         ,Out-Of-Service,In-Service,Changed
-FERGCC  138 KV FERGCC_GSU1                     ,Out-Of-Service,In-Service,Changed
-WINK    69 KV WINK_KAT2                       ,Out-Of-Service,In-Service,Changed
+GAMBIT  138 KV GAMBIT_T1                       ,In-Service,Out-Of-Service,Changed
+BROOKHOL69 KV BROOKHOL_XF3L                   ,In-Service,Out-Of-Service,Changed
+BROOKHOL138 KV BROOKHOL_XF3H                   ,In-Service,Out-Of-Service,Changed
+BROOKHOL12 KV BROOKHOL_XF3T                   ,In-Service,Out-Of-Service,Changed
+LNCRK2  138 KV LNCRK2_T21                      ,In-Service,Out-Of-Service,Changed
+LNCRK2  138 KV LNCRK2_T11                      ,In-Service,Out-Of-Service,Changed
+FREC    345 KV FREC_T4                         ,In-Service,Out-Of-Service,Changed
+FREC    345 KV FREC_T5                         ,In-Service,Out-Of-Service,Changed
+FREC    345 KV FREC_T6                         ,In-Service,Out-Of-Service,Changed
+REDCREEK138 KV REDCREEK_T1L                    ,In-Service,Out-Of-Service,Changed
+REDCREEK345 KV REDCREEK_T1H                    ,In-Service,Out-Of-Service,Changed
+REDCREEK13 KV REDCREEK_T1T                    ,In-Service,Out-Of-Service,Changed
+HAMILTON138 KV HAMILTON_AUT2                   ,In-Service,Out-Of-Service,Changed
+RUSTHILL69 KV RUSTHILL_T1                     ,In-Service,Out-Of-Service,Changed
+ANG_SLR 345 KV ANG_SLR_T1                      ,In-Service,Out-Of-Service,Changed
+ANG_SLR 345 KV ANG_SLR_T2                      ,In-Service,Out-Of-Service,Changed
+LMESA   138 KV LMESA_FMR2                      ,In-Service,Out-Of-Service,Changed
+ROUTE_66345 KV ROUTE_66_T1                     ,In-Service,Out-Of-Service,Changed
+WHCCS2  345 KV WHCCS2_4001                     ,Out-Of-Service,In-Service,Changed
+LMESA   138 KV LMESA_FMR1                      ,Out-Of-Service,In-Service,Changed
+LOBO    69 KV LOBO_AUTO                       ,Out-Of-Service,In-Service,Changed

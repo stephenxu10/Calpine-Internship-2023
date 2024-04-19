@@ -23,7 +23,6 @@ year = date.today().year
 
 json_processed = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
 output_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_{year}.csv"
-last_30_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/ERCOT_SCED_TEST_1.csv"
 
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
@@ -149,13 +148,6 @@ if lower_bound.year != today.year:
 # From February and Beyond
 else:
     df_merged_last_30 = df_merged[df_merged["Date"] >= lower_bound]
-
-"""
-try:
-    df_merged_last_30.to_csv(last_30_path, index=False)
-except IOError:
-    print("Error in writing to last 30 days' file")
-"""
 
 df_merged.to_csv(output_path, index=False)
 

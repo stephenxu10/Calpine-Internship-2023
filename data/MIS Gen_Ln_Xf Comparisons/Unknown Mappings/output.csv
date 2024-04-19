@@ -1,6 +1,8 @@
-Generator Name,Generator in Load Zone,Size,Type,English Name,04/06/2024 Status,04/07/2024 Status,Description,04/03/2024 Status,04/04/2024 Status,03/22/2024 Status,03/23/2024 Status,03/20/2024 Status,03/21/2024 Status
-CFLATS_S1,LZ_WEST,0.0,Unkwn,Unkwn,,In-Service,Missing-In-First,,,,,,
-CFLATS_S1,LZ_WEST,0.0,Unkwn,Unkwn,,,Missing-In-Second,In-Service,,,,,
-FORMOSA_FORMOSG13,LZ_SOUTH,0.0,Unkwn,Unkwn,,,Missing-In-First,,,,In-Service,,
-EAGLE_HY_EAGLE_HY2,LZ_SOUTH,0.0,Unkwn,Unkwn,,,Missing-In-First,,,,,,In-Service
-EAGLE_HY_EAGLE_HY3,LZ_SOUTH,0.0,Unkwn,Unkwn,,,Missing-In-First,,,,,,In-Service
+Generator Name,Generator in Load Zone,Size,Type,English Name,04/19/2024 Status,04/20/2024 Status,Description,04/18/2024 Status,04/06/2024 Status,04/07/2024 Status,04/03/2024 Status,04/04/2024 Status,03/22/2024 Status,03/23/2024 Status,03/20/2024 Status,03/21/2024 Status
+PR_PR_G2,LZ_HOUSTON,0.0,Unkwn,Unkwn,Out-Of-Service,Out-Of-Service,Still Out-Of-Service,,,,,,,,,
+PR_PR_G2,LZ_HOUSTON,0.0,Unkwn,Unkwn,Out-Of-Service,,Changed,In-Service,,,,,,,,
+CFLATS_S1,LZ_WEST,0.0,Unkwn,Unkwn,,,Missing-In-First,,,In-Service,,,,,,
+CFLATS_S1,LZ_WEST,0.0,Unkwn,Unkwn,,,Missing-In-Second,,,,In-Service,,,,,
+FORMOSA_FORMOSG13,LZ_SOUTH,0.0,Unkwn,Unkwn,,,Missing-In-First,,,,,,,In-Service,,
+EAGLE_HY_EAGLE_HY2,LZ_SOUTH,0.0,Unkwn,Unkwn,,,Missing-In-First,,,,,,,,,In-Service
+EAGLE_HY_EAGLE_HY3,LZ_SOUTH,0.0,Unkwn,Unkwn,,,Missing-In-First,,,,,,,,,In-Service
