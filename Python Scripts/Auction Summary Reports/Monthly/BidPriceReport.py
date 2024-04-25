@@ -112,40 +112,27 @@ def bid_price_difference(auction_bid_df: pd.DataFrame, auction_SP_df: pd.DataFra
 
     return auction_diff_df
 
+def generate_report() -> pd.DataFrame:
+    auction_df = find_and_preprocess(NODE_PLANT_MAPPING, PATH_BASE)
+    auction_SP_df = auction_cleared(auction_df)
+    auction_bid_df = max_bid_price(auction_df)
+    auction_diff_df = bid_price_difference(auction_bid_df, auction_SP_df)
+    """
+    Merge together the DataFrames and do some final reformatting
+    """
+    merged_df = pd.merge(auction_SP_df, auction_bid_df, on=['Plant'])
+    final_merge = pd.merge(merged_df, auction_diff_df, on=['Plant'])
 
-auction_df = find_and_preprocess(NODE_PLANT_MAPPING, PATH_BASE)
-auction_SP_df = auction_cleared(auction_df)
-auction_bid_df = max_bid_price(auction_df)
-auction_diff_df = bid_price_difference(auction_bid_df, auction_SP_df)
-"""
-Merge together the DataFrames and do some final reformatting
-"""
-merged_df = pd.merge(auction_SP_df, auction_bid_df, on=['Plant'])
-final_merge = pd.merge(merged_df, auction_diff_df, on=['Plant'])
-
-multi_index_columns = pd.MultiIndex.from_tuples([
-     ('', 'Plant'), 
-    ('', 'WDPEAK'), ('Auction Cleared Price ($MWh)', 'WEPEAK'), ('', 'OFFPEAK'), 
-    ('', 'WDPEAK'), ('Calpine Max Bid Price ($MWh)', 'WEPEAK'), ('', 'OFFPEAK'),
-    ('', 'WDPEAK'), ('Bid Price Difference ($MWh)', 'WEPEAK'), ('', 'OFFPEAK')
-])
-final_merge = final_merge.applymap(custom_format)
-final_merge.columns = multi_index_columns
-final_merge.to_csv(OUTPUT_PATH + "./bid_price_report.csv")
-
-
+    multi_index_columns = pd.MultiIndex.from_tuples([
+        ('', 'Plant'), 
+        ('', 'WDPEAK'), ('Auction Cleared Price ($MWh)', 'WEPEAK'), ('', 'OFFPEAK'), 
+        ('', 'WDPEAK'), ('Calpine Max Bid Price ($MWh)', 'WEPEAK'), ('', 'OFFPEAK'),
+        ('', 'WDPEAK'), ('Bid Price Difference ($MWh)', 'WEPEAK'), ('', 'OFFPEAK')
+    ])
+    final_merge = final_merge.applymap(custom_format)
+    final_merge.columns = multi_index_columns
+    final_merge.to_csv(OUTPUT_PATH + "./bid_price_report.csv")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
+if  __name__ == "__main__":
+    generate_report()

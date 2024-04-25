@@ -26,7 +26,7 @@ it generates the summary JSON like before. The overall workflow is as follows:
     4) Post-process the aggregated data into a summary JSON.
     5) Use this summarized JSON to generate the Delta Table and output it to a CSV.
 
-Current output path: \\pzpwtabapp01\Ercot
+Current output path: \\pzpwtabapp02\Ercot
 """
 warnings.simplefilter("ignore")
 
@@ -36,7 +36,7 @@ year = date.today().year
 
 json_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/" + str(year) + "_web_data.json"
 json_summary = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated DA Constraint Data/processed_" + str(year) + "_summary.json"
-delta_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_Last_30_Days.csv"
+delta_path = f"\\\\pzpwtabapp02\\Ercot\\Exposure_DAM_Last_30_Days.csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
 yes_energy = "https://services.yesenergy.com/PS/rest/constraint/hourly/DA/ERCOT?"

@@ -26,7 +26,7 @@ it generates the summary JSON like before. The overall workflow is as follows:
     4) Post-process the aggregated data into a summary JSON.
     5) Use this summarized JSON to generate the Delta Table and output it to a CSV.
 
-Current output path: \\pzpwtabapp01\Ercot
+Current output path: \\pzpwtabapp02\Ercot
 """
 warnings.simplefilter("ignore")
 PATHID = 1073291

@@ -7,12 +7,12 @@ def pre_process_branch(df: pd.DataFrame) -> pd.DataFrame:
 
     df.loc[(df['From PSS/E KV']==df['To PSS/E KV']) & ((df['From PSS/E KV'] == 0)), 'Expanded Branch Name'] = df['Branch Name']
     df.loc[(df['From PSS/E KV'] == df['To PSS/E KV']) & (df['From PSS/E KV'] != 0), 'Expanded Branch Name'] = (df['From Station Name/PSS/E Bus Name'].astype(str).str.strip() + '-' +
-                                                                                                            df['To Station Name/PSS/E Bus Name'].astype(str) +
-                                                                                                            df['From PSS/E KV'].astype(str) + ' KV ' +
+                                                                                                            df['To Station Name/PSS/E Bus Name'].astype(str) + ' ' +
+                                                                                                            df['From PSS/E KV'].astype(str) + 'KV ' +
                                                                                                             df['Branch Name'].astype(str))
 
-    df.loc[(df['From PSS/E KV'] != df['To PSS/E KV']) & (df['From PSS/E KV'] != 0), 'Expanded Branch Name'] = (df['From Station Name/PSS/E Bus Name'].astype(str).str.strip() +
-                                                                                                            df['From PSS/E KV'].astype(str) + ' KV ' +
+    df.loc[(df['From PSS/E KV'] != df['To PSS/E KV']) & (df['From PSS/E KV'] != 0), 'Expanded Branch Name'] = (df['From Station Name/PSS/E Bus Name'].astype(str).str.strip() + ' ' + 
+                                                                                                            df['From PSS/E KV'].astype(str) + 'KV ' +
                                                                                                             df['Branch Name'].astype(str))
 
 
@@ -21,13 +21,14 @@ def pre_process_branch(df: pd.DataFrame) -> pd.DataFrame:
         condition,
         np.where(
             pd.notna(df['From Station Name/PSS/E Bus Name']) & pd.notna(df['From PSS/E KV']),
-            df['From Station Name/PSS/E Bus Name'].astype(str) + df['From PSS/E KV'].astype(str) + ' KV ' + df['Branch Name'],
+            df['From Station Name/PSS/E Bus Name'].astype(str).str.strip() + ' ' + df['From PSS/E KV'].astype(str) + 'KV ' + df['Branch Name'],
             df['Branch Name']
         ),
         df['Expanded Branch Name']  # Keeps the existing value if the condition is False
     )
     
     df.drop(columns=['From Station Name/PSS/E Bus Name', 'From PSS/E KV', 'To Station Name/PSS/E Bus Name', 'To PSS/E KV', 'Branch Name'], inplace=True)
+    df['Expanded Branch Name'] = df['Expanded Branch Name'].str.replace(r'\s+', ' ', regex=True).str.strip()
     return df
 
 def compare_statuses(df1: pd.DataFrame, df2: pd.DataFrame, date1: str, date2: str, line: bool=True):

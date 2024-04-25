@@ -65,11 +65,11 @@ with zipfile.ZipFile(zip_data, 'r') as zip_file:
 
 output_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Line and Transformer Comparisons/Ln"
 df_status_comp = DAM_Ln_Xf_Comparator.compare_statuses(df_tomo, df_today, tomorrow, today)
-df_status_comp.to_csv(output_path + "./status.csv", index=False)
+df_status_comp.to_csv(output_path + "/status.csv", index=False)
 df_rate_a = DAM_Ln_Xf_Comparator.compare_rates(df_tomo, df_today, tomorrow, today, 'RATEA')
-df_rate_a.to_csv(output_path + "./RATEA.csv", index=False)
+df_rate_a.to_csv(output_path + "/RATEA.csv", index=False)
 df_rate_b = DAM_Ln_Xf_Comparator.compare_rates(df_tomo, df_today, tomorrow, today, 'RATEB')
-df_rate_b.to_csv(output_path + "./RATEB.csv", index=False)
+df_rate_b.to_csv(output_path + "/RATEB.csv", index=False)
 
 body = ""
 if len(df_rate_a) == 0:
@@ -101,7 +101,7 @@ msg['Subject'] = "Daily DAM Line Comparison Results"
 sender = 'transmission.yesapi@calpine.com'
 
 # Edit this line to determine who receives the email.
-receivers = ['Stephen.Xu@calpine.com', 'Pranil.Walke@calpine.com']
+receivers = ['Stephen.Xu@calpine.com',  'Pranil.Walke@calpine.com']
 
 part2 = MIMEText(body, 'html')
 msg.attach(part2)
@@ -116,6 +116,5 @@ part['Content-Disposition'] = 'attachment; filename="status_comparison.csv"'
 msg.attach(part)
 
 smtpObj = smtplib.SMTP(host="relay.calpine.com")
-
 smtpObj.sendmail(sender, receivers, msg.as_string())
 smtpObj.quit()

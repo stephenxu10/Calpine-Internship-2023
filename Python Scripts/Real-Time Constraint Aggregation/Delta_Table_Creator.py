@@ -14,7 +14,7 @@ a table that contains the progression of Delta data for a certain set of paths.
 Be sure to run RT_Constraint_Aggregator.py first before running this script in order to 
 collect the most-recent data.
 
-The outputted table is located in the Data subfolder or at \\pzpwtabapp01\Ercot\Exposure_SCED_2023.csv
+The outputted table is located in the Data subfolder or at \\pzpwtabapp02\Ercot\Exposure_SCED_2023.csv
 """
 
 # Global Variables and Parameters
@@ -22,7 +22,7 @@ start_time = time.time()
 year = date.today().year
 
 json_processed = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/Data/Aggregated RT Constraint Data/processed_" + str(year) + "_summary.json"
-output_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_{year}.csv"
+output_path = f"\\\\pzpwtabapp02\\Ercot\\Exposure_SCED_{year}.csv"
 
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 
@@ -132,7 +132,7 @@ lower_bound = today - timedelta(days=30)
 
 # From January 1st to January 30th
 if lower_bound.year != today.year:
-    last_year = f"\\\\pzpwtabapp01\\Ercot\\Exposure_SCED_{lower_bound.year}.csv"
+    last_year = f"\\\\pzpwtabapp02\\Ercot\\Exposure_SCED_{lower_bound.year}.csv"
     
     try:
         df_last = pd.read_csv(last_year)

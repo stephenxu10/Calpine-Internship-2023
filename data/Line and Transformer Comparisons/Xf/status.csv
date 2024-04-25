@@ -1,31 +1,29 @@
-Expanded Branch Name,04/20/2024 Status,04/19/2024 Status,Description
-THW     14 KV THW_XT5I                        ,In-Service,Out-Of-Service,Changed
-THW     14 KV THW_XT5H                        ,In-Service,Out-Of-Service,Changed
-THW     345 KV THW_XT5G                        ,In-Service,Out-Of-Service,Changed
-THW     345 KV THW_XT5A                        ,In-Service,Out-Of-Service,Changed
-THW     14 KV THW_XT5B                        ,In-Service,Out-Of-Service,Changed
-THW     14 KV THW_XT5C                        ,In-Service,Out-Of-Service,Changed
-THW     345 KV THW_XT5D                        ,In-Service,Out-Of-Service,Changed
-THW     14 KV THW_XT5F                        ,In-Service,Out-Of-Service,Changed
-THW     14 KV THW_XT5E                        ,In-Service,Out-Of-Service,Changed
-GAMBIT  138 KV GAMBIT_T1                       ,In-Service,Out-Of-Service,Changed
-BROOKHOL69 KV BROOKHOL_XF3L                   ,In-Service,Out-Of-Service,Changed
-BROOKHOL138 KV BROOKHOL_XF3H                   ,In-Service,Out-Of-Service,Changed
-BROOKHOL12 KV BROOKHOL_XF3T                   ,In-Service,Out-Of-Service,Changed
-LNCRK2  138 KV LNCRK2_T21                      ,In-Service,Out-Of-Service,Changed
-LNCRK2  138 KV LNCRK2_T11                      ,In-Service,Out-Of-Service,Changed
-FREC    345 KV FREC_T4                         ,In-Service,Out-Of-Service,Changed
-FREC    345 KV FREC_T5                         ,In-Service,Out-Of-Service,Changed
-FREC    345 KV FREC_T6                         ,In-Service,Out-Of-Service,Changed
-REDCREEK138 KV REDCREEK_T1L                    ,In-Service,Out-Of-Service,Changed
-REDCREEK345 KV REDCREEK_T1H                    ,In-Service,Out-Of-Service,Changed
-REDCREEK13 KV REDCREEK_T1T                    ,In-Service,Out-Of-Service,Changed
-HAMILTON138 KV HAMILTON_AUT2                   ,In-Service,Out-Of-Service,Changed
-RUSTHILL69 KV RUSTHILL_T1                     ,In-Service,Out-Of-Service,Changed
-ANG_SLR 345 KV ANG_SLR_T1                      ,In-Service,Out-Of-Service,Changed
-ANG_SLR 345 KV ANG_SLR_T2                      ,In-Service,Out-Of-Service,Changed
-LMESA   138 KV LMESA_FMR2                      ,In-Service,Out-Of-Service,Changed
-ROUTE_66345 KV ROUTE_66_T1                     ,In-Service,Out-Of-Service,Changed
-WHCCS2  345 KV WHCCS2_4001                     ,Out-Of-Service,In-Service,Changed
-LMESA   138 KV LMESA_FMR1                      ,Out-Of-Service,In-Service,Changed
-LOBO    69 KV LOBO_AUTO                       ,Out-Of-Service,In-Service,Changed
+Expanded Branch Name,04/26/2024 Status,04/25/2024 Status,Description
+JCK 345KV JCK_AT2H,In-Service,Out-Of-Service,Changed
+JCK 138KV JCK_AT2,In-Service,Out-Of-Service,Changed
+JCK 23KV JCK_AT2T,In-Service,Out-Of-Service,Changed
+LON 138KV LON_KT01,In-Service,Out-Of-Service,Changed
+TXCTY 138KV TXCTY_13_2,In-Service,Out-Of-Service,Changed
+CHE 138KV CHE_SUT1,In-Service,Out-Of-Service,Changed
+HAYSEN 345KV HAYSEN_UT2,In-Service,Out-Of-Service,Changed
+AUSTPL 138KV AUSTPL_GSU1,In-Service,Out-Of-Service,Changed
+FHLSW 138KV FHLSW_FMR1,In-Service,Out-Of-Service,Changed
+FLTCK 138KV FLTCK_T1,In-Service,Out-Of-Service,Changed
+BR_ARROW 345KV BR_ARROW_T1,In-Service,Out-Of-Service,Changed
+BR_ARROW 345KV BR_ARROW_T2,In-Service,Out-Of-Service,Changed
+TKWSW1 345KV TKWSW1_T2,In-Service,Out-Of-Service,Changed
+MGSES 138KV MGSES_FMR2,In-Service,Out-Of-Service,Changed
+MGSES 138KV MGSES_FMR1,In-Service,Out-Of-Service,Changed
+MGSES 138KV MGSES_FMR3,In-Service,Out-Of-Service,Changed
+COYOTE_W 345KV COYOTE_W_T1,In-Service,Out-Of-Service,Changed
+COYOTE_W 345KV COYOTE_W_T2,In-Service,Out-Of-Service,Changed
+MDLNE 345KV MDLNE_MR1H,In-Service,Out-Of-Service,Changed
+MDLNE 138KV MDLNE_MR1L,In-Service,Out-Of-Service,Changed
+MDLNE 14KV MDLNE_MR1T,In-Service,Out-Of-Service,Changed
+LON_HILL 345KV LON_HILL_381H,In-Service,Out-Of-Service,Changed
+LON_HILL 14KV LON_HILL_381T,In-Service,Out-Of-Service,Changed
+LON_HILL 138KV LON_HILL_381L,In-Service,Out-Of-Service,Changed
+MIRAGE 138KV MIRAGE_XT1,Out-Of-Service,In-Service,Changed
+CLO 138KV CLO_KT1,Out-Of-Service,In-Service,Changed
+CLO 138KV CLO_KT2,Out-Of-Service,In-Service,Changed
+HLSES 138KV HLSES_FMR4,Out-Of-Service,In-Service,Changed

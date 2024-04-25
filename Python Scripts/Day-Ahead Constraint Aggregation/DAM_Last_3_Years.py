@@ -27,7 +27,7 @@ it generates the summary JSON like before. The overall workflow is as follows:
     4) Post-process the aggregated data into a summary JSON.
     5) Use this summarized JSON to generate the Delta Table and output it to a CSV.
 
-Current output path: \\pzpwtabapp01\Ercot
+Current output path: \\pzpwtabapp02\Ercot
 """
 warnings.simplefilter("ignore")
 
@@ -35,7 +35,7 @@ warnings.simplefilter("ignore")
 start_time = time.time()
 year = date.today().year
 
-delta_path = f"\\\\pzpwtabapp01\\Ercot\\Exposure_DAM_Last_3_Years.csv"
+delta_path = f"\\\\pzpwtabapp02\\Ercot\\Exposure_DAM_Last_3_Years.csv"
 credential_path = "//pzpwcmfs01/CA/11_Transmission Analysis/ERCOT/101 - Misc/CRR Limit Aggregates/credentials.txt"
 mis_path = "//Pzpwuplancli01/Uplan/ERCOT"
 
